@@ -28,6 +28,7 @@ contract Offer {
         InsufficientBalance,
         OfferNotOpen,
         OfferAccepted,
+        OfferNotAccepted,
         OfferClosed,
         NotDomainOwner,
         WithdrawLocked
@@ -110,7 +111,7 @@ contract Offer {
         status = Status.Closed;
     }
 
-    function accept() external {
+    function accept(address receiver_) external {
         if (status == Status.Closed) {
             revert OfferError(ErrorType.OfferAccepted);
         }
@@ -118,19 +119,27 @@ contract Offer {
         status = Status.Accepted;
 
         destAsset.safeTransferFrom(msg.sender, address(this), closeAmount);
-        srcAsset.safeTransfer(msg.sender, totalDeposits);
+        srcAsset.safeTransfer(receiver_, totalDeposits);
     }
 
     function withdrawPaymentForDomainOwner(address receiver_) external {
+        if (status != Status.Accepted) {
+            revert OfferError(ErrorType.OfferNotAccepted);
+        }
+
         if (msg.sender != domainOwner) {
             revert OfferError(ErrorType.NotDomainOwner);
         }
+
+        totalDeposits = 0;
 
         srcAsset.safeTransfer(receiver_, totalDeposits * commissionRate / 100);
     }
 
     function withdrawPaymentForDepositor(address receiver_) external {
         uint256 depositAmount = deposits[msg.sender];
+
+        deposits[msg.sender] = 0;
 
         destAsset.safeTransfer(receiver_, depositAmount - depositAmount * commissionRate / 100);
     }
