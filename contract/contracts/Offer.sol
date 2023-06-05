@@ -3,44 +3,45 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./libraries/Config.sol";
 
 contract Offer {
     using SafeERC20 for IERC20;
 
-    /// @note depositors cannot withdraw their depositions before the time is passed by this value
+    /// @notice depositors cannot withdraw their depositions before the time is passed by this value
     uint256 public immutable lockWithdrawAfter;
 
-    /// @note fee of commssion rate in destination asset is sent to the domain owner when the offer is accepted
+    /// @notice fee of commssion rate in destination asset is sent to the domain owner when the offer is accepted
     uint256 public immutable commissionRate;
 
-    /// @note destination asset amount at which the offer will be closed
+    /// @notice destination asset amount at which the offer will be closed
     uint256 public immutable closeAmount;
 
-    /// @note offer creator address
+    /// @notice offer creator address
     address public immutable creator;
 
-    /// @note domain owner address
+    /// @notice domain owner address
     address public immutable domainOwner;
 
-    /// @note source asset address
+    /// @notice source asset address
     IERC20 public immutable srcAsset;
 
-    /// @note destination asset address
+    /// @notice destination asset address
     IERC20 public immutable destAsset;
 
-    /// @note mapping from user address to boolean value to represent if the payment has been withdrawn to the user (depositor or domain owner)
+    /// @notice mapping from user address to boolean value to represent if the payment has been withdrawn to the user (depositor or domain owner)
     mapping(address => bool) private withdrawPayments;
 
-    /// @note mapping from depositor address to amount value in source asset
+    /// @notice mapping from depositor address to amount value in source asset
     mapping(address => uint256) public deposits;
 
-    /// @note mapping from depositor address to when they can withdraw their funds
+    /// @notice mapping from depositor address to when they can withdraw their funds
     mapping(address => uint256) public withdrawLockedUntil;
 
-    /// @note total amount of funds deposited in source asset
+    /// @notice total amount of funds deposited in source asset
     uint256 public totalDeposits;
 
-    /// @note offer status
+    /// @notice offer status
     Status public status;
 
     enum ErrorType {
@@ -72,7 +73,7 @@ contract Offer {
     event PaymentWithdrawn(address indexed payee, uint256 amount);
 
     /**
-     * @note constructor
+     * @notice constructor
      *       Initializes the offer and sets deposition value for the creator
      * @param creator_ address of the offer creator
      * @param domainOwner_ address of user that the domain will belongs to
@@ -105,7 +106,7 @@ contract Offer {
     }
 
     /**
-     * @note deposit token which is used internally
+     * @notice deposit token which is used internally
      * @param amount_ amount of source asset to deposit
      * @param depositor_ depositor address
      */
@@ -118,13 +119,13 @@ contract Offer {
             totalDeposits += amount_;
         }
 
-        srcAsset.safeTransferFrom(depositor, address(this), amount_);
+        srcAsset.safeTransferFrom(depositor_, address(this), amount_);
 
-        emit AssetDeposited(depositor, amount_);
+        emit AssetDeposited(depositor_, amount_);
     }
 
     /**
-     * @note deposit token
+     * @notice deposit token
      * @param amount_ amount of source asset to deposit
      */
     function deposit(uint256 amount_) external {
@@ -136,7 +137,7 @@ contract Offer {
     }
 
     /**
-     * @note withdraw token deposited
+     * @notice withdraw token deposited
      * @param amount_ amount of source asset to deposit
      * @param receiver_ address where the withrawn token will be sent to
      */
@@ -164,7 +165,7 @@ contract Offer {
     }
 
     /**
-     * @note Close the offer. Only the creator can close it
+     * @notice Close the offer. Only the creator can close it
      */
     function close() external {
         if (status != Status.Open) {
@@ -181,7 +182,7 @@ contract Offer {
     }
 
     /**
-     * @note Accept the offer.
+     * @notice Accept the offer.
              Anybody can accept the offer with closeAmount of destination asset.
              Source asset will be sent to receiver
      * @param receiver_ user address who will receive the source asset deposited
@@ -200,7 +201,7 @@ contract Offer {
     }
 
     /**
-     * @note Gets payment balance for domain owner
+     * @notice Gets payment balance for domain owner
      * @return balance payment balance
      */
     function paymentBalanceForDomainOwner()
@@ -213,12 +214,12 @@ contract Offer {
         }
 
         unchecked {
-            balance = (totalDeposits * commissionRate) / 100;
+            balance = (totalDeposits * commissionRate) / Config.COMMISSION_RATE_SCALE;
         }
     }
 
     /**
-     * @note Gets payment balance for depositor
+     * @notice Gets payment balance for depositor
      * @return balance payment balance
      */
     function paymentBalanceForDepositor()
@@ -233,12 +234,12 @@ contract Offer {
         uint256 depositAmount = deposits[msg.sender];
 
         unchecked {
-            balance = depositAmount - (depositAmount * commissionRate) / 100;
+            balance = depositAmount - (depositAmount * commissionRate) /Config.COMMISSION_RATE_SCALE;
         }
     }
 
     /**
-     * @note Domain owner calls this function to withdraw payment
+     * @notice Domain owner calls this function to withdraw payment
      * @param receiver_ user address who will receive the payment
      */
     function withdrawPaymentForDomainOwner(address receiver_) external {
@@ -260,7 +261,7 @@ contract Offer {
     }
 
     /**
-     * @note Depositor calls this function to withdraw payment
+     * @notice Depositor calls this function to withdraw payment
      * @param receiver_ user address who will receive the payment
      */
     function withdrawPaymentForDepositor(address receiver_) external {

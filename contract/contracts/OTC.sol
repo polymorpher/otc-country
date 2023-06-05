@@ -4,6 +4,7 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./libraries/Config.sol";
 import "./interfaces/IDC.sol";
 import "./Offer.sol";
 
@@ -13,10 +14,10 @@ import "./Offer.sol";
 contract OTC is Ownable {
     using SafeERC20 for IERC20;
 
-    /// @note available assets
+    /// @notice available assets
     mapping(address => bool) public assets;
 
-    /// @note address of domain contract
+    /// @notice address of domain contract
     IDC public immutable domainContract;
 
     enum ErrorType {
@@ -56,7 +57,7 @@ contract OTC is Ownable {
     }
 
     /**
-     * @note Add asset
+     * @notice Add asset
      * @param asset address of asset to add
      */
     function addAsset(address asset) external onlyOwner {
@@ -70,7 +71,7 @@ contract OTC is Ownable {
     }
 
     /**
-     * @note Remove asset
+     * @notice Remove asset
      * @param asset address of asset to remove
      */
     function removeAsset(address asset) external onlyOwner {
@@ -84,7 +85,7 @@ contract OTC is Ownable {
     }
 
     /**
-     * @note Create offer with given data after purchasing the domain with ethers
+     * @notice Create offer with given data after purchasing the domain with ethers
      * @param domainName_ domain name for the offer
      * @param secret_ secret used to buy the domain name
      * @param domainOwner_ address of user that the domain will belongs to
@@ -114,7 +115,7 @@ contract OTC is Ownable {
             revert OTCError(ErrorType.DestAssetUnregistered);
         }
 
-        if (commissionRate_ > 100) {
+        if (commissionRate_ > Config.COMMISSION_RATE_SCALE) {
             revert OTCError(ErrorType.CommissionRateBeyondLimit);
         }
 

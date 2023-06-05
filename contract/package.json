@@ -2,6 +2,7 @@
   "name": "hardhat-project",
   "scripts": {
     "test": "npm run prettier && npx hardhat compile && npx hardhat test",
+    "clean": "npx hardhat clean",
     "coverage": "npx hardhat coverage && cat coverage/lcov.info | coveralls",
     "coverage-rate": "npx hardhat coverage && cat coverage/lcov.info | coveralls",
     "compile": "npx hardhat compile",
