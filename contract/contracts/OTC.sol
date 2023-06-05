@@ -100,6 +100,14 @@ contract OTC is Ownable {
     }
 
     /**
+     * @notice commission rate scale
+     * @return scale commission rate scale
+     */
+    function commissionRateScale() external pure returns (uint256 scale) {
+        scale = Config.COMMISSION_RATE_SCALE;
+    }
+
+    /**
      * @notice Create offer with given data after purchasing the domain with ethers
      * @param domainName_ domain name for the offer
      * @param secret_ secret used to buy the domain name
