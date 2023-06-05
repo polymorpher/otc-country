@@ -1,35 +1,34 @@
-import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import { ethers } from "hardhat";
+import { TestEnv } from "./types";
 
 describe("Offer", function () {
-  // We define a fixture to reuse the same setup in every test.
-  // We use loadFixture to run this setup once, snapshot that state,
-  // and reset Hardhat Network to that snapshot in every test.
-  async function deployOneYearLockFixture() {
-    const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-    const ONE_GWEI = 1_000_000_000;
+  const env: TestEnv = {} as TestEnv
 
-    const lockedAmount = ONE_GWEI;
-    const unlockTime = (await time.latest()) + ONE_YEAR_IN_SECS;
-
-    // Contracts are deployed using the first signer/account by default
-    const [owner, otherAccount] = await ethers.getSigners();
+  before(async () => {
+    const [owner, ...accounts] = await ethers.getSigners();
 
     const OfferFactory = await ethers.getContractFactory("OfferFactory");
+    const DomainContract = await ethers.getContractFactory("DomainContract");
     const Otc = await ethers.getContractFactory("OTC");
     const Erc20 = await ethers.getContractFactory("ERC20Mock");
-    const DomainContract = await ethers.getContractFactory("DomainContract");
 
-    const offerFactory = OfferFactory.deploy()
+    const offerFactory = await OfferFactory.deploy()
+    const domainContract = await DomainContract.deploy();
+    const otc = await Otc.deploy(domainContract.address, offerFactory.address)
+
     const sa1 = await Erc20.deploy("SrcAsset1", "SrcAsset2")
     const sa2 = await Erc20.deploy("SrcAsset2", "SrcAsset2")
     const da1 = await Erc20.deploy("DestAsset1", "DestAsset1")
-    const dc = await DomainContract.deploy();
 
-    return { lock, unlockTime, lockedAmount, owner, otherAccount };
-  }
+    env.otc = otc,
+    env.sourceAssets = [sa1, sa2],
+    env.destAssets = [da1],
+    env.owner = owner
+    env.accounts = accounts
+  })
 
   describe("Deployment", function () {
     it("Should set the right unlockTime", async function () {
