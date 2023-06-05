@@ -111,9 +111,9 @@ contract OTC is Ownable {
     }
 
     /**
-     * @notice Get address of offer contract
+     * @notice Get address of offer contract if created
      * @param domainName_ domain name of the offer contract
-     * @return contractAddress offer contract address
+     * @return contractAddress offer contract address if created, zero address if offer was not created
      */
     function offerAddress(
         string calldata domainName_
