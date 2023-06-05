@@ -4,6 +4,7 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 import "./libraries/Config.sol";
 import "./externals/IDC.sol";
 import "./interfaces/IOfferFactory.sol";
@@ -14,6 +15,8 @@ import "./interfaces/IOffer.sol";
 
 contract OTC is Ownable {
     using SafeERC20 for IERC20;
+
+    using Address for address;
 
     /// @notice available assets
     mapping(address => bool) public assets;
@@ -105,6 +108,23 @@ contract OTC is Ownable {
      */
     function commissionRateScale() external pure returns (uint256 scale) {
         scale = Config.COMMISSION_RATE_SCALE;
+    }
+
+    /**
+     * @notice Get address of offer contract
+     * @param domainName_ domain name of the offer contract
+     * @return contractAddress offer contract address
+     */
+    function offerAddress(
+        string calldata domainName_
+    ) external view returns (address contractAddress) {
+        contractAddress = offerFactory.getAddress(
+            keccak256(abi.encodePacked(domainName_))
+        );
+
+        if (!contractAddress.isContract()) {
+            contractAddress = address(0);
+        }
     }
 
     /**

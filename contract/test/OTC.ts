@@ -3,7 +3,7 @@ import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-describe("Lock", function () {
+describe("Offer", function () {
   // We define a fixture to reuse the same setup in every test.
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
@@ -17,8 +17,16 @@ describe("Lock", function () {
     // Contracts are deployed using the first signer/account by default
     const [owner, otherAccount] = await ethers.getSigners();
 
-    const Lock = await ethers.getContractFactory("Lock");
-    const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+    const OfferFactory = await ethers.getContractFactory("OfferFactory");
+    const Otc = await ethers.getContractFactory("OTC");
+    const Erc20 = await ethers.getContractFactory("ERC20Mock");
+    const DomainContract = await ethers.getContractFactory("DomainContract");
+
+    const offerFactory = OfferFactory.deploy()
+    const sa1 = await Erc20.deploy("SrcAsset1", "SrcAsset2")
+    const sa2 = await Erc20.deploy("SrcAsset2", "SrcAsset2")
+    const da1 = await Erc20.deploy("DestAsset1", "DestAsset1")
+    const dc = await DomainContract.deploy();
 
     return { lock, unlockTime, lockedAmount, owner, otherAccount };
   }
