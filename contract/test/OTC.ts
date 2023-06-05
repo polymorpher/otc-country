@@ -306,7 +306,7 @@ describe("Offer", () => {
   });
 
   describe("offerAddress", () => {
-    it("fail: offer not created", async () => {
+    it("success: zero address for non-created offer", async () => {
       const { otc } = await loadFixture(createOfferFixture);
 
       expect(await otc.offerAddress("domain-no-offer")).to.eq(
