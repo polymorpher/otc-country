@@ -13,8 +13,10 @@ import "./Offer.sol";
 contract OTC is Ownable {
     using SafeERC20 for IERC20;
 
+    /// @note available assets
     mapping(address => bool) public assets;
 
+    /// @note address of domain contract
     IDC public immutable domainContract;
 
     enum ErrorType {
@@ -53,6 +55,10 @@ contract OTC is Ownable {
         domainContract = domainContract_;
     }
 
+    /**
+     * @note Add asset
+     * @param asset address of asset to add
+     */
     function addAsset(address asset) external onlyOwner {
         if (assets[asset]) {
             revert OTCError(ErrorType.AssetAlreadyAdded);
@@ -63,6 +69,10 @@ contract OTC is Ownable {
         emit AssetAdded(asset);
     }
 
+    /**
+     * @note Remove asset
+     * @param asset address of asset to remove
+     */
     function removeAsset(address asset) external onlyOwner {
         if (!assets[asset]) {
             revert OTCError(ErrorType.AssetAlreadyRemoved);
@@ -73,6 +83,18 @@ contract OTC is Ownable {
         emit AssetRemoved(asset);
     }
 
+    /**
+     * @note Create offer with given data after purchasing the domain with ethers
+     * @param domainName_ domain name for the offer
+     * @param secret_ secret used to buy the domain name
+     * @param domainOwner_ address of user that the domain will belongs to
+     * @param srcAsset_ source asset address
+     * @param destAsset_ destination asset address
+     * @param depositAmount_ source asset deposit amount of the offer creator
+     * @param closeAmount_ destination asset amount at which the offer will be closed
+     * @param commissionRate_ commission rate at which the fee in destination asset is sent to the domain owner when the offer is accepted
+     * @param lockWithdrawAfter_ depositors cannot withdraw until the time is passed by this value after the deposition time
+     */
     function createOffer(
         string calldata domainName_,
         bytes32 secret_,
