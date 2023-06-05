@@ -94,7 +94,7 @@ contract Offer is Initializable, IOffer {
         uint256 closeAmount_,
         uint256 commissionRate_,
         uint256 lockWithdrawAfter_
-    ) external initializer {
+    ) external override initializer {
         closeAmount = closeAmount_;
         commissionRate = commissionRate_;
         lockWithdrawAfter = lockWithdrawAfter_;

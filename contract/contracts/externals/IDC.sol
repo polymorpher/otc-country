@@ -6,11 +6,11 @@ interface IDC {
         string memory name,
         address owner,
         bytes32 secret
-    ) external view returns (bytes32);
+    ) external returns (bytes32);
 
     function commit(bytes32 commitment) external;
 
-    function getPrice(string memory name) external view returns (uint256);
+    function getPrice(string calldata name) external view returns (uint256);
 
     function register(
         string calldata name,
