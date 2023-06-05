@@ -62,10 +62,17 @@ contract Offer {
         srcAsset = IERC20(srcAsset_);
         destAsset = IERC20(destAsset_);
 
+        _deposit(depositAmount_, creator_);
+    }
+
+    function _deposit(uint256 amount_, address depositor) internal {
         unchecked {
-            deposits[creator_] += depositAmount_;
-            totalDeposits = depositAmount_;
+            deposits[depositor] += amount_;
+            withdrawLockedUntil[depositor] = block.timestamp + lockWithdrawAfter;
+            totalDeposits += amount_;
         }
+
+        srcAsset.safeTransferFrom(depositor, address(this), amount_);
     }
 
     function deposit(uint256 amount_) external {
@@ -73,13 +80,7 @@ contract Offer {
             revert OfferError(ErrorType.OfferNotOpen);
         }
 
-        unchecked {
-            deposits[msg.sender] += amount_;
-            withdrawLockedUntil[msg.sender] = block.timestamp + lockWithdrawAfter;
-            totalDeposits += amount_;
-        }
-
-        srcAsset.safeTransferFrom(msg.sender, address(this), amount_);
+        _deposit(amount_, msg.sender);
     }
 
     function withdraw(uint256 amount_, address receiver_) external {

@@ -81,7 +81,7 @@ contract OTC is Ownable {
         domainContract.commit(commitment);
         domainContract.register{ value: price }(domainName_, domainOwner_, secret_);
 
-        address offer = address(new Offer(
+        new Offer(
             msg.sender,
             domainOwner_,
             srcAsset_,
@@ -90,8 +90,6 @@ contract OTC is Ownable {
             closeAmount_,
             commissionRate_,
             lockWithdrawAfter_
-        ));
-
-        IERC20(srcAsset_).safeTransferFrom(msg.sender, offer, depositAmount_);
+        );
     }
 }
