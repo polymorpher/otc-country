@@ -2,53 +2,9 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { Otc, Offer } from "./types";
+import { deployFixture, addAssetFixture } from "./fixtures";
 
-describe("Offer", () => {
-  const deployFixture = async () => {
-    const [owner, domainOwner, ...accounts] = await ethers.getSigners();
-
-    const OfferFactory = await ethers.getContractFactory("OfferFactory");
-    const DomainContract = await ethers.getContractFactory("DomainContract");
-    const Otc = await ethers.getContractFactory("TestOTC");
-    const Erc20 = await ethers.getContractFactory("ERC20Mock");
-
-    const offerFactory = await OfferFactory.deploy();
-    const domainContract = await DomainContract.deploy();
-    const otc = await Otc.deploy(domainContract.address, offerFactory.address);
-
-    const sa1 = await Erc20.deploy("SrcAsset1", "SrcAsset2");
-    const sa2 = await Erc20.deploy("SrcAsset2", "SrcAsset2");
-    const da1 = await Erc20.deploy("DestAsset1", "DestAsset1");
-
-    return {
-      otc,
-      domainContract,
-      srcAssets: [sa1, sa2],
-      destAssets: [da1],
-      owner,
-      domainOwner,
-      accounts,
-    };
-  };
-
-  const createOfferFixture = async () => {
-    const data = await deployFixture();
-    const {
-      otc,
-      accounts: [depositor],
-      srcAssets: [sa1],
-      destAssets: [da1],
-      owner,
-    } = data;
-
-    await otc.connect(owner).addAsset(sa1.address);
-    await otc.connect(owner).addAsset(da1.address);
-
-    await sa1.mint(depositor.address, 10000000000);
-
-    return data;
-  };
-
+describe("OTC", () => {
   describe("constructor", () => {
     it("fail: domain contract is zero", async () => {
       const OTC = await ethers.getContractFactory("TestOTC");
@@ -194,7 +150,7 @@ describe("Offer", () => {
         otc,
         srcAssets: [sa1, sa2],
         destAssets: [da1],
-      } = await loadFixture(createOfferFixture);
+      } = await loadFixture(addAssetFixture);
 
       await expect(
         otc.createOffer(
@@ -218,7 +174,7 @@ describe("Offer", () => {
         accounts: [domainOwner],
         otc,
         srcAssets: [sa1, da2],
-      } = await loadFixture(createOfferFixture);
+      } = await loadFixture(addAssetFixture);
 
       await expect(
         otc.createOffer(
@@ -243,7 +199,7 @@ describe("Offer", () => {
         otc,
         srcAssets: [sa1],
         destAssets: [sd1],
-      } = await loadFixture(createOfferFixture);
+      } = await loadFixture(addAssetFixture);
 
       const commissionRateScale = await otc.commissionRateScale();
 
@@ -271,7 +227,7 @@ describe("Offer", () => {
         otc,
         srcAssets: [sa1],
         destAssets: [da1],
-      } = await loadFixture(createOfferFixture);
+      } = await loadFixture(addAssetFixture);
 
       const price = await domainContract.getPrice("sample");
 
@@ -301,7 +257,7 @@ describe("Offer", () => {
         accounts: [depositor],
         srcAssets: [sa1],
         destAssets: [da1],
-      } = await loadFixture(createOfferFixture);
+      } = await loadFixture(addAssetFixture);
 
       const depositAmount = 100;
 
@@ -360,7 +316,7 @@ describe("Offer", () => {
 
   describe("offerAddress", () => {
     it("success: zero address for non-created offer", async () => {
-      const { otc } = await loadFixture(createOfferFixture);
+      const { otc } = await loadFixture(addAssetFixture);
 
       expect(await otc.offerAddress("domain-no-offer")).to.eq(
         ethers.constants.AddressZero
