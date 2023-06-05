@@ -49,6 +49,32 @@ describe("Offer", () => {
     return data;
   };
 
+  describe("constructor", () => {
+    it("fail: domain contract is zero", async () => {
+      const OTC = await ethers.getContractFactory("TestOTC");
+      const OfferFactory = await ethers.getContractFactory("OfferFactory");
+
+      const offerFactory = await OfferFactory.deploy();
+      await expect(
+        OTC.deploy(ethers.constants.AddressZero, offerFactory.address)
+      )
+        .to.be.revertedWithCustomError(OTC, "OTCError")
+        .withArgs(Otc.ErrorType.ZeroAddress);
+    });
+
+    it("fail: offer factory is zero", async () => {
+      const OTC = await ethers.getContractFactory("TestOTC");
+      const DomainContract = await ethers.getContractFactory("DomainContract");
+
+      const domainContract = await DomainContract.deploy();
+      await expect(
+        OTC.deploy(domainContract.address, ethers.constants.AddressZero)
+      )
+        .to.be.revertedWithCustomError(OTC, "OTCError")
+        .withArgs(Otc.ErrorType.ZeroAddress);
+    });
+  });
+
   describe("OTC.addAsset", () => {
     it("success", async () => {
       const {
@@ -209,6 +235,33 @@ describe("Offer", () => {
       )
         .to.be.revertedWithCustomError(otc, "OTCError")
         .withArgs(Otc.ErrorType.DestAssetUnregistered);
+    });
+
+    it("fail: commission rate beyond limit", async () => {
+      const {
+        accounts: [domainOwner],
+        otc,
+        srcAssets: [sa1],
+        destAssets: [sd1],
+      } = await loadFixture(createOfferFixture);
+
+      const commissionRateScale = await otc.commissionRateScale();
+
+      await expect(
+        otc.createOffer(
+          "sample",
+          ethers.utils.formatBytes32String("some bytes32 string"),
+          domainOwner.address,
+          sa1.address,
+          sd1.address,
+          0,
+          0,
+          commissionRateScale.add(1),
+          0
+        )
+      )
+        .to.be.revertedWithCustomError(otc, "OTCError")
+        .withArgs(Otc.ErrorType.CommissionRateBeyondLimit);
     });
 
     it("fail: not enough ethers sent", async () => {
