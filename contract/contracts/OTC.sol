@@ -30,15 +30,15 @@ contract OTC is Ownable {
 
     error OTCError(ErrorType errorNo);
 
-    event AssetAdded(address asset);
+    event AssetAdded(address indexed asset);
 
-    event AssetRemoved(address asset);
+    event AssetRemoved(address indexed asset);
 
     event OfferCreated(
-        string domainName,
+        string indexed domainName,
+        address indexed srcAsset,
+        address indexed destAsset,
         address domainOwner,
-        address srcAsset,
-        address destAsset,
         uint256 depositAmount,
         uint256 closeAmount,
         uint256 commissionRate,
@@ -145,9 +145,9 @@ contract OTC is Ownable {
 
         emit OfferCreated(
             domainName_,
-            domainOwner_,
             srcAsset_,
             destAsset_,
+            domainOwner_,
             depositAmount_,
             closeAmount_,
             commissionRate_,

@@ -61,15 +61,15 @@ contract Offer {
 
     error OfferError(ErrorType errorNo);
 
-    event AssetDeposited(address depositor, uint256 amount);
+    event AssetDeposited(address indexed depositor, uint256 amount);
 
-    event AssetWithdrawn(address withdrawer, uint256 amount);
+    event AssetWithdrawn(address indexed withdrawer, uint256 amount);
 
-    event OfferClosed(address creator);
+    event OfferClosed(address indexed creator);
 
-    event OfferAccepted(address acceptor);
+    event OfferAccepted(address indexed acceptor);
 
-    event PaymentWithdrawn(address payee, uint256 amount);
+    event PaymentWithdrawn(address indexed payee, uint256 amount);
 
     /**
      * @note constructor
@@ -212,21 +212,29 @@ contract Offer {
             return 0;
         }
 
-        return (totalDeposits * commissionRate) / 100;
+        unchecked {
+            balance = (totalDeposits * commissionRate) / 100;
+        }
     }
 
     /**
      * @note Gets payment balance for depositor
      * @return balance payment balance
      */
-    function paymentBalanceForDepositor() public view returns (uint256) {
+    function paymentBalanceForDepositor()
+        public
+        view
+        returns (uint256 balance)
+    {
         if (withdrawPayments[msg.sender]) {
             return 0;
         }
 
         uint256 depositAmount = deposits[msg.sender];
 
-        return depositAmount - (depositAmount * commissionRate) / 100;
+        unchecked {
+            balance = depositAmount - (depositAmount * commissionRate) / 100;
+        }
     }
 
     /**
