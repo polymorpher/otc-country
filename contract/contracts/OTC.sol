@@ -5,8 +5,9 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./libraries/Config.sol";
-import "./interfaces/IDC.sol";
-import "./Offer.sol";
+import "./externals/IDC.sol";
+import "./interfaces/IOfferFactory.sol";
+import "./interfaces/IOffer.sol";
 
 // Uncomment this line to use console.log
 // import "hardhat/console.sol";
@@ -19,6 +20,9 @@ contract OTC is Ownable {
 
     /// @notice address of domain contract
     IDC public immutable domainContract;
+
+    /// @notice address of offer factory contract
+    IOfferFactory public immutable offerFactory;
 
     enum ErrorType {
         ZeroAddress,
@@ -39,6 +43,7 @@ contract OTC is Ownable {
         string indexed domainName,
         address indexed srcAsset,
         address indexed destAsset,
+        address offerAddress,
         address domainOwner,
         uint256 depositAmount,
         uint256 closeAmount,
@@ -48,12 +53,22 @@ contract OTC is Ownable {
 
     receive() external payable {}
 
-    constructor(IDC domainContract_) Ownable() {
+    /**
+     * @notice constructor
+     * @param domainContract_ domain contract address
+     * @param offerFactory_ offer factory address
+     */
+    constructor(IDC domainContract_, IOfferFactory offerFactory_) Ownable() {
         if (address(domainContract_) == address(0)) {
             revert OTCError(ErrorType.ZeroAddress);
         }
 
+        if (address(offerFactory_) == address(0)) {
+            revert OTCError(ErrorType.ZeroAddress);
+        }
+
         domainContract = domainContract_;
+        offerFactory = offerFactory_;
     }
 
     /**
@@ -133,7 +148,11 @@ contract OTC is Ownable {
             secret_
         );
 
-        new Offer(
+        address offer = offerFactory.deploy(
+            keccak256(abi.encodePacked(domainName_))
+        );
+
+        IOffer(offer).initialize(
             msg.sender,
             domainOwner_,
             srcAsset_,
@@ -148,6 +167,7 @@ contract OTC is Ownable {
             domainName_,
             srcAsset_,
             destAsset_,
+            offer,
             domainOwner_,
             depositAmount_,
             closeAmount_,

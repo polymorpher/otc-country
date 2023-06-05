@@ -3,31 +3,33 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "./libraries/Config.sol";
+import "./interfaces/IOffer.sol";
 
-contract Offer {
+contract Offer is Initializable, IOffer {
     using SafeERC20 for IERC20;
 
     /// @notice depositors cannot withdraw their depositions before the time is passed by this value
-    uint256 public immutable lockWithdrawAfter;
+    uint256 public lockWithdrawAfter;
 
     /// @notice fee of commssion rate in destination asset is sent to the domain owner when the offer is accepted
-    uint256 public immutable commissionRate;
+    uint256 public commissionRate;
 
     /// @notice destination asset amount at which the offer will be closed
-    uint256 public immutable closeAmount;
+    uint256 public closeAmount;
 
     /// @notice offer creator address
-    address public immutable creator;
+    address public creator;
 
     /// @notice domain owner address
-    address public immutable domainOwner;
+    address public domainOwner;
 
     /// @notice source asset address
-    IERC20 public immutable srcAsset;
+    IERC20 public srcAsset;
 
     /// @notice destination asset address
-    IERC20 public immutable destAsset;
+    IERC20 public destAsset;
 
     /// @notice mapping from user address to boolean value to represent if the payment has been withdrawn to the user (depositor or domain owner)
     mapping(address => bool) private withdrawPayments;
@@ -73,8 +75,7 @@ contract Offer {
     event PaymentWithdrawn(address indexed payee, uint256 amount);
 
     /**
-     * @notice constructor
-     *       Initializes the offer and sets deposition value for the creator
+     * @notice Initializes the offer and sets deposition value for the creator
      * @param creator_ address of the offer creator
      * @param domainOwner_ address of user that the domain will belongs to
      * @param srcAsset_ source asset address
@@ -82,8 +83,9 @@ contract Offer {
      * @param depositAmount_ source asset deposit amount of the offer creator
      * @param closeAmount_ destination asset amount at which the offer will be closed
      * @param commissionRate_ commission rate at which the fee in destination asset is sent to the domain owner when the offer is accepted
-     * @param lockWithdrawAfter_ depositors cannot withdraw until the time is passed by this value after the deposition time     */
-    constructor(
+     * @param lockWithdrawAfter_ depositors cannot withdraw until the time is passed by this value after the deposition time
+     */
+    function initialize(
         address creator_,
         address domainOwner_,
         address srcAsset_,
@@ -92,7 +94,7 @@ contract Offer {
         uint256 closeAmount_,
         uint256 commissionRate_,
         uint256 lockWithdrawAfter_
-    ) {
+    ) external initializer {
         closeAmount = closeAmount_;
         commissionRate = commissionRate_;
         lockWithdrawAfter = lockWithdrawAfter_;
@@ -214,7 +216,9 @@ contract Offer {
         }
 
         unchecked {
-            balance = (totalDeposits * commissionRate) / Config.COMMISSION_RATE_SCALE;
+            balance =
+                (totalDeposits * commissionRate) /
+                Config.COMMISSION_RATE_SCALE;
         }
     }
 
@@ -234,7 +238,10 @@ contract Offer {
         uint256 depositAmount = deposits[msg.sender];
 
         unchecked {
-            balance = depositAmount - (depositAmount * commissionRate) /Config.COMMISSION_RATE_SCALE;
+            balance =
+                depositAmount -
+                (depositAmount * commissionRate) /
+                Config.COMMISSION_RATE_SCALE;
         }
     }
 
