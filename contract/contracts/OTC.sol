@@ -15,7 +15,7 @@ contract OTC is Ownable {
 
     mapping(address => bool) public assets;
 
-    IDC immutable public domainContract;
+    IDC public immutable domainContract;
 
     enum ErrorType {
         ZeroAddress,
@@ -27,6 +27,23 @@ contract OTC is Ownable {
     }
 
     error OTCError(ErrorType errorNo);
+
+    event AssetAdded(address asset);
+
+    event AssetRemoved(address asset);
+
+    event OfferCreated(
+        string domainName,
+        address domainOwner,
+        address srcAsset,
+        address destAsset,
+        uint256 depositAmount,
+        uint256 closeAmount,
+        uint256 commissionRate,
+        uint256 lockWithdrawAfter
+    );
+
+    receive() external payable {}
 
     constructor(IDC domainContract_) Ownable() {
         if (address(domainContract_) == address(0)) {
@@ -42,6 +59,8 @@ contract OTC is Ownable {
         }
 
         assets[asset] = true;
+
+        emit AssetAdded(asset);
     }
 
     function removeAsset(address asset) external onlyOwner {
@@ -50,6 +69,8 @@ contract OTC is Ownable {
         }
 
         assets[asset] = false;
+
+        emit AssetRemoved(asset);
     }
 
     function createOffer(
@@ -76,13 +97,32 @@ contract OTC is Ownable {
         }
 
         uint256 price = domainContract.getPrice(domainName_);
-        bytes32 commitment = domainContract.makeCommitment(domainName_, domainOwner_, secret_);
+        bytes32 commitment = domainContract.makeCommitment(
+            domainName_,
+            domainOwner_,
+            secret_
+        );
 
         domainContract.commit(commitment);
-        domainContract.register{ value: price }(domainName_, domainOwner_, secret_);
+        domainContract.register{value: price}(
+            domainName_,
+            domainOwner_,
+            secret_
+        );
 
         new Offer(
             msg.sender,
+            domainOwner_,
+            srcAsset_,
+            destAsset_,
+            depositAmount_,
+            closeAmount_,
+            commissionRate_,
+            lockWithdrawAfter_
+        );
+
+        emit OfferCreated(
+            domainName_,
             domainOwner_,
             srcAsset_,
             destAsset_,

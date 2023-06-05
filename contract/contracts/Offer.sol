@@ -7,15 +7,15 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract Offer {
     using SafeERC20 for IERC20;
 
-    uint256 immutable public lockWithdrawAfter;
-    uint256 immutable public commissionRate;
-    uint256 immutable public closeAmount;
+    uint256 public immutable lockWithdrawAfter;
+    uint256 public immutable commissionRate;
+    uint256 public immutable closeAmount;
 
-    address immutable public creator;
-    address immutable public domainOwner;
+    address public immutable creator;
+    address public immutable domainOwner;
 
-    IERC20 immutable public srcAsset;
-    IERC20 immutable public destAsset;
+    IERC20 public immutable srcAsset;
+    IERC20 public immutable destAsset;
 
     mapping(address => bool) private withdrawPayments;
     mapping(address => uint256) public deposits;
@@ -68,7 +68,9 @@ contract Offer {
     function _deposit(uint256 amount_, address depositor) internal {
         unchecked {
             deposits[depositor] += amount_;
-            withdrawLockedUntil[depositor] = block.timestamp + lockWithdrawAfter;
+            withdrawLockedUntil[depositor] =
+                block.timestamp +
+                lockWithdrawAfter;
             totalDeposits += amount_;
         }
 
@@ -132,7 +134,7 @@ contract Offer {
             return 0;
         }
 
-        return totalDeposits * commissionRate / 100;
+        return (totalDeposits * commissionRate) / 100;
     }
 
     function paymentBalanceForDepositor() public view returns (uint256) {
@@ -142,7 +144,7 @@ contract Offer {
 
         uint256 depositAmount = deposits[msg.sender];
 
-        return depositAmount - depositAmount * commissionRate / 100;
+        return depositAmount - (depositAmount * commissionRate) / 100;
     }
 
     function withdrawPaymentForDomainOwner(address receiver_) external {
