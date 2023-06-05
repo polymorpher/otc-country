@@ -60,7 +60,6 @@ contract OTC is Ownable {
         address destAsset_,
         uint256 depositAmount_,
         uint256 closeAmount_,
-        uint256 withdrawTimeframe_,
         uint256 commissionRate_,
         uint256 lockWithdrawAfter_
     ) external payable {
@@ -77,6 +76,9 @@ contract OTC is Ownable {
         }
 
         uint256 price = domainContract.getPrice(domainName_);
+        bytes32 commitment = domainContract.makeCommitment(domainName_, domainOwner_, secret_);
+
+        domainContract.commit(commitment);
         domainContract.register{ value: price }(domainName_, domainOwner_, secret_);
 
         address offer = address(new Offer(
@@ -86,7 +88,6 @@ contract OTC is Ownable {
             destAsset_,
             depositAmount_,
             closeAmount_,
-            withdrawTimeframe_,
             commissionRate_,
             lockWithdrawAfter_
         ));

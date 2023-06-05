@@ -9,16 +9,17 @@ contract Offer {
 
     uint256 immutable public lockWithdrawAfter;
     uint256 immutable public commissionRate;
-    uint256 immutable public withdrawTimeframe;
     uint256 immutable public closeAmount;
 
+    address immutable public creator;
     address immutable public domainOwner;
 
     IERC20 immutable public srcAsset;
     IERC20 immutable public destAsset;
 
+    mapping(address => bool) private withdrawPayments;
     mapping(address => uint256) public deposits;
-    mapping(address => uint256) public depositTimes;
+    mapping(address => uint256) public withdrawLockedUntil;
 
     uint256 public totalDeposits;
 
@@ -29,7 +30,7 @@ contract Offer {
         OfferNotOpen,
         OfferAccepted,
         OfferNotAccepted,
-        OfferClosed,
+        NotCreator,
         NotDomainOwner,
         WithdrawLocked
     }
@@ -49,15 +50,14 @@ contract Offer {
         address destAsset_,
         uint256 depositAmount_,
         uint256 closeAmount_,
-        uint256 withdrawTimeframe_,
         uint256 commissionRate_,
         uint256 lockWithdrawAfter_
     ) {
-        withdrawTimeframe = withdrawTimeframe_;
         closeAmount = closeAmount_;
         commissionRate = commissionRate_;
         lockWithdrawAfter = lockWithdrawAfter_;
         domainOwner = domainOwner_;
+        creator = creator_;
 
         srcAsset = IERC20(srcAsset_);
         destAsset = IERC20(destAsset_);
@@ -75,7 +75,7 @@ contract Offer {
 
         unchecked {
             deposits[msg.sender] += amount_;
-            depositTimes[msg.sender] = block.timestamp + lockWithdrawAfter;
+            withdrawLockedUntil[msg.sender] = block.timestamp + lockWithdrawAfter;
             totalDeposits += amount_;
         }
 
@@ -91,7 +91,7 @@ contract Offer {
             revert OfferError(ErrorType.InsufficientBalance);
         }
 
-        if (depositTimes[msg.sender] < block.timestamp) {
+        if (withdrawLockedUntil[msg.sender] < block.timestamp) {
             revert OfferError(ErrorType.WithdrawLocked);
         }
 
@@ -104,22 +104,44 @@ contract Offer {
     }
 
     function close() external {
-        if (status == Status.Closed) {
-            revert OfferError(ErrorType.OfferClosed);
+        if (status != Status.Open) {
+            revert OfferError(ErrorType.OfferNotOpen);
+        }
+
+        if (msg.sender != creator) {
+            revert OfferError(ErrorType.NotCreator);
         }
 
         status = Status.Closed;
     }
 
     function accept(address receiver_) external {
-        if (status == Status.Closed) {
-            revert OfferError(ErrorType.OfferAccepted);
+        if (status != Status.Open) {
+            revert OfferError(ErrorType.OfferNotOpen);
         }
 
         status = Status.Accepted;
 
         destAsset.safeTransferFrom(msg.sender, address(this), closeAmount);
         srcAsset.safeTransfer(receiver_, totalDeposits);
+    }
+
+    function paymentBalanceForDomainOwner() public view returns (uint256) {
+        if (withdrawPayments[msg.sender]) {
+            return 0;
+        }
+
+        return totalDeposits * commissionRate / 100;
+    }
+
+    function paymentBalanceForDepositor() public view returns (uint256) {
+        if (withdrawPayments[msg.sender]) {
+            return 0;
+        }
+
+        uint256 depositAmount = deposits[msg.sender];
+
+        return depositAmount - depositAmount * commissionRate / 100;
     }
 
     function withdrawPaymentForDomainOwner(address receiver_) external {
@@ -131,16 +153,18 @@ contract Offer {
             revert OfferError(ErrorType.NotDomainOwner);
         }
 
-        totalDeposits = 0;
+        srcAsset.safeTransfer(receiver_, paymentBalanceForDomainOwner());
 
-        srcAsset.safeTransfer(receiver_, totalDeposits * commissionRate / 100);
+        withdrawPayments[msg.sender] = true;
     }
 
     function withdrawPaymentForDepositor(address receiver_) external {
-        uint256 depositAmount = deposits[msg.sender];
+        if (status != Status.Accepted) {
+            revert OfferError(ErrorType.OfferNotAccepted);
+        }
 
-        deposits[msg.sender] = 0;
+        destAsset.safeTransfer(receiver_, paymentBalanceForDepositor());
 
-        destAsset.safeTransfer(receiver_, depositAmount - depositAmount * commissionRate / 100);
+        withdrawPayments[msg.sender] = true;
     }
 }
