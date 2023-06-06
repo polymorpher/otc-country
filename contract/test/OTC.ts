@@ -254,7 +254,7 @@ describe("OTC", () => {
         domainOwner,
         domainContract,
         otc,
-        accounts: [depositor],
+        accounts: [creator],
         srcAssets: [sa1],
         destAssets: [da1],
       } = await loadFixture(addAssetFixture);
@@ -267,11 +267,11 @@ describe("OTC", () => {
 
       const offerAddress = await otc.testOfferAddress(domain);
 
-      await sa1.connect(depositor).approve(offerAddress, depositAmount);
+      await sa1.connect(creator).approve(offerAddress, depositAmount);
 
       await expect(
         otc
-          .connect(depositor)
+          .connect(creator)
           .createOffer(
             domain,
             ethers.utils.formatBytes32String("some bytes32 string"),
@@ -306,7 +306,7 @@ describe("OTC", () => {
 
       expect(await offerContract.status()).to.eq(Offer.Status.Open);
 
-      expect(await offerContract.deposits(depositor.address)).to.eq(
+      expect(await offerContract.deposits(creator.address)).to.eq(
         depositAmount
       );
 

@@ -7,15 +7,14 @@ const createOfferFixture = async () => {
     otc,
     domainContract,
     domainOwner,
-    accounts: [depositor],
+    accounts: [creator, ...accounts],
     srcAssets: [sa1],
     destAssets: [da1],
-    owner,
   } = data;
 
   const creatorDepositAmount = 100;
 
-  const closeAmount = 50;
+  const acceptAmount = 50;
 
   const commissionRate = 0.1 * 100000;
 
@@ -27,10 +26,20 @@ const createOfferFixture = async () => {
 
   const offerAddress = await otc.testOfferAddress(domain);
 
-  await sa1.connect(depositor).approve(offerAddress, creatorDepositAmount);
+  const offer = await ethers.getContractAt("Offer", offerAddress);
+
+  const [depositor, acceptor] = accounts;
+
+  await sa1.connect(creator).approve(offerAddress, creatorDepositAmount);
+
+  await sa1.mint(depositor.address, 10000000000);
+  await da1.mint(acceptor.address, 10000000000);
+
+  await sa1.connect(depositor).approve(offerAddress, 10000000000);
+  await da1.connect(acceptor).approve(offerAddress, 10000000000);
 
   await otc
-    .connect(depositor)
+    .connect(creator)
     .createOffer(
       domain,
       ethers.utils.formatBytes32String("some bytes32 string"),
@@ -38,7 +47,7 @@ const createOfferFixture = async () => {
       sa1.address,
       da1.address,
       creatorDepositAmount,
-      closeAmount,
+      acceptAmount,
       commissionRate,
       lockWithdrawAfter,
       {
@@ -48,10 +57,12 @@ const createOfferFixture = async () => {
 
   return {
     ...data,
+    acceptAmount,
     creatorDepositAmount,
-    closeAmount,
     commissionRate,
-    lockWithdrawAfter,
+    accounts,
+    offer,
+    creator,
   };
 };
 

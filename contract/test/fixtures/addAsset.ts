@@ -4,7 +4,7 @@ const addAssetFixture = async () => {
   const data = await deployFixture();
   const {
     otc,
-    accounts: [depositor],
+    accounts: [creator],
     srcAssets: [sa1],
     destAssets: [da1],
     owner,
@@ -13,7 +13,7 @@ const addAssetFixture = async () => {
   await otc.connect(owner).addAsset(sa1.address);
   await otc.connect(owner).addAsset(da1.address);
 
-  await sa1.mint(depositor.address, 10000000000);
+  await sa1.mint(creator.address, 10000000000);
 
   return data;
 };

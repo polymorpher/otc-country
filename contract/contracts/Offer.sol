@@ -11,13 +11,13 @@ contract Offer is Initializable, IOffer {
     using SafeERC20 for IERC20;
 
     /// @notice depositors cannot withdraw their depositions before the time is passed by this value
-    uint256 public lockWithdrawAfter;
+    uint256 public lockWithdrawDuration;
 
     /// @notice fee of commssion rate in destination asset is sent to the domain owner when the offer is accepted
     uint256 public commissionRate;
 
     /// @notice destination asset amount at which the offer will be closed
-    uint256 public closeAmount;
+    uint256 public acceptAmount;
 
     /// @notice offer creator address
     address public creator;
@@ -38,7 +38,7 @@ contract Offer is Initializable, IOffer {
     mapping(address => uint256) public deposits;
 
     /// @notice mapping from depositor address to when they can withdraw their funds
-    mapping(address => uint256) public withdrawLockedUntil;
+    mapping(address => uint256) public lockWithdrawUntil;
 
     /// @notice total amount of funds deposited in source asset
     uint256 public totalDeposits;
@@ -81,9 +81,9 @@ contract Offer is Initializable, IOffer {
      * @param srcAsset_ source asset address
      * @param destAsset_ destination asset address
      * @param depositAmount_ source asset deposit amount of the offer creator
-     * @param closeAmount_ destination asset amount at which the offer will be closed
+     * @param acceptAmount_ destination asset amount at which the offer will be closed
      * @param commissionRate_ commission rate at which the fee in destination asset is sent to the domain owner when the offer is accepted
-     * @param lockWithdrawAfter_ depositors cannot withdraw until the time is passed by this value after the deposition time
+     * @param lockWithdrawDuration_ depositors cannot withdraw until the time is passed by this value after the deposition time
      */
     function initialize(
         address creator_,
@@ -91,13 +91,13 @@ contract Offer is Initializable, IOffer {
         address srcAsset_,
         address destAsset_,
         uint256 depositAmount_,
-        uint256 closeAmount_,
+        uint256 acceptAmount_,
         uint256 commissionRate_,
-        uint256 lockWithdrawAfter_
+        uint256 lockWithdrawDuration_
     ) external override initializer {
-        closeAmount = closeAmount_;
+        acceptAmount = acceptAmount_;
         commissionRate = commissionRate_;
-        lockWithdrawAfter = lockWithdrawAfter_;
+        lockWithdrawDuration = lockWithdrawDuration_;
         domainOwner = domainOwner_;
         creator = creator_;
 
@@ -115,9 +115,9 @@ contract Offer is Initializable, IOffer {
     function _deposit(uint256 amount_, address depositor_) internal {
         unchecked {
             deposits[depositor_] += amount_;
-            withdrawLockedUntil[depositor_] =
+            lockWithdrawUntil[depositor_] =
                 block.timestamp +
-                lockWithdrawAfter;
+                lockWithdrawDuration;
             totalDeposits += amount_;
         }
 
@@ -152,7 +152,7 @@ contract Offer is Initializable, IOffer {
             revert OfferError(ErrorType.InsufficientBalance);
         }
 
-        if (withdrawLockedUntil[msg.sender] < block.timestamp) {
+        if (lockWithdrawUntil[msg.sender] > block.timestamp) {
             revert OfferError(ErrorType.WithdrawLocked);
         }
 
@@ -161,7 +161,7 @@ contract Offer is Initializable, IOffer {
             totalDeposits -= amount_;
         }
 
-        srcAsset.safeTransferFrom(address(this), receiver_, amount_);
+        srcAsset.safeTransfer(receiver_, amount_);
 
         emit AssetWithdrawn(msg.sender, amount_);
     }
@@ -185,7 +185,7 @@ contract Offer is Initializable, IOffer {
 
     /**
      * @notice Accept the offer.
-             Anybody can accept the offer with closeAmount of destination asset.
+             Anybody can accept the offer with acceptAmount of destination asset.
              Source asset will be sent to receiver
      * @param receiver_ user address who will receive the source asset deposited
      */
@@ -196,7 +196,7 @@ contract Offer is Initializable, IOffer {
 
         status = Status.Accepted;
 
-        destAsset.safeTransferFrom(msg.sender, address(this), closeAmount);
+        destAsset.safeTransferFrom(msg.sender, address(this), acceptAmount);
         srcAsset.safeTransfer(receiver_, totalDeposits);
 
         emit OfferAccepted(msg.sender);
@@ -217,31 +217,32 @@ contract Offer is Initializable, IOffer {
 
         unchecked {
             balance =
-                (totalDeposits * commissionRate) /
+                (acceptAmount * commissionRate) /
                 Config.COMMISSION_RATE_SCALE;
         }
     }
 
     /**
      * @notice Gets payment balance for depositor
+     * @param depositor_ depositor address
      * @return balance payment balance
      */
-    function paymentBalanceForDepositor()
-        public
-        view
-        returns (uint256 balance)
-    {
-        if (withdrawPayments[msg.sender]) {
+    function paymentBalanceForDepositor(
+        address depositor_
+    ) public view returns (uint256 balance) {
+        if (withdrawPayments[depositor_]) {
             return 0;
         }
 
-        uint256 depositAmount = deposits[msg.sender];
+        uint256 depositAmount = deposits[depositor_];
 
         unchecked {
             balance =
-                depositAmount -
-                (depositAmount * commissionRate) /
-                Config.COMMISSION_RATE_SCALE;
+                (acceptAmount * depositAmount) /
+                totalDeposits -
+                (acceptAmount * depositAmount * commissionRate) /
+                Config.COMMISSION_RATE_SCALE /
+                totalDeposits;
         }
     }
 
@@ -260,7 +261,7 @@ contract Offer is Initializable, IOffer {
 
         uint256 amount = paymentBalanceForDomainOwner();
 
-        srcAsset.safeTransfer(receiver_, amount);
+        destAsset.safeTransfer(receiver_, amount);
 
         withdrawPayments[msg.sender] = true;
 
@@ -276,7 +277,7 @@ contract Offer is Initializable, IOffer {
             revert OfferError(ErrorType.OfferNotAccepted);
         }
 
-        uint256 amount = paymentBalanceForDepositor();
+        uint256 amount = paymentBalanceForDepositor(msg.sender);
 
         destAsset.safeTransfer(receiver_, amount);
 

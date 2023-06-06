@@ -135,9 +135,9 @@ contract OTC is Ownable {
      * @param srcAsset_ source asset address
      * @param destAsset_ destination asset address
      * @param depositAmount_ source asset deposit amount of the offer creator
-     * @param closeAmount_ destination asset amount at which the offer will be closed
+     * @param acceptAmount_ destination asset amount at which the offer will be closed
      * @param commissionRate_ commission rate at which the fee in destination asset is sent to the domain owner when the offer is accepted
-     * @param lockWithdrawAfter_ depositors cannot withdraw until the time is passed by this value after the deposition time
+     * @param lockWithdrawDuration_ depositors cannot withdraw until the time is passed by this value after the deposition time
      */
     function createOffer(
         string calldata domainName_,
@@ -146,9 +146,9 @@ contract OTC is Ownable {
         address srcAsset_,
         address destAsset_,
         uint256 depositAmount_,
-        uint256 closeAmount_,
+        uint256 acceptAmount_,
         uint256 commissionRate_,
-        uint256 lockWithdrawAfter_
+        uint256 lockWithdrawDuration_
     ) external payable {
         if (!assets[srcAsset_]) {
             revert OTCError(ErrorType.SourceAssetUnregistered);
@@ -186,9 +186,9 @@ contract OTC is Ownable {
             srcAsset_,
             destAsset_,
             depositAmount_,
-            closeAmount_,
+            acceptAmount_,
             commissionRate_,
-            lockWithdrawAfter_
+            lockWithdrawDuration_
         );
 
         emit OfferCreated(
@@ -198,9 +198,9 @@ contract OTC is Ownable {
             offer,
             domainOwner_,
             depositAmount_,
-            closeAmount_,
+            acceptAmount_,
             commissionRate_,
-            lockWithdrawAfter_
+            lockWithdrawDuration_
         );
     }
 }
