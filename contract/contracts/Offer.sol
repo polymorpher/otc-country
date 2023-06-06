@@ -211,7 +211,7 @@ contract Offer is Initializable, IOffer {
         view
         returns (uint256 balance)
     {
-        if (withdrawPayments[msg.sender]) {
+        if (withdrawPayments[domainOwner]) {
             return 0;
         }
 

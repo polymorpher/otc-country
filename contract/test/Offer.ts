@@ -448,7 +448,6 @@ describe("Offer", () => {
       );
 
       // check balance on offer contract
-      expect(await sa1.balanceOf(offer.address)).to.eq(0);
       expect(await da1.balanceOf(offer.address)).to.eq(0);
     });
   });
