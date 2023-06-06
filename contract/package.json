@@ -5,7 +5,7 @@
     "clean": "npx hardhat clean",
     "coverage": "npx hardhat coverage && cat coverage/lcov.info | coveralls",
     "compile": "npx hardhat compile",
-    "deploy": "hardhat deploy",
+    "deploy": "npx hardhat deploy",
     "prettier:solidity": "npx prettier --write contracts/.",
     "prettier:typescript": "npx prettier --write test/.",
     "prettier": "npx prettier --write contracts/. test/.",
@@ -16,6 +16,7 @@
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^4.2.1",
     "hardhat": "^2.14.1",
+    "hardhat-deploy": "^0.11.30",
     "prettier": "^2.8.8",
     "prettier-plugin-solidity": "^1.1.3"
   },
