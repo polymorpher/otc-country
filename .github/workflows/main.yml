@@ -17,6 +17,7 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       - names: Tests
+        working-directory: ./contract
         run: |
           npm install --no-lockfile
           npm run prettier:solidity
