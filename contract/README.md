@@ -1,4 +1,5 @@
-[![Coverage Status](./coverage_badge.svg)]
+[![Coverage Status](https://coveralls.io/repos/github/polymorpher/otc-country/badge.svg?branch=otc-contract)](https://coveralls.io/github/polymorpher/otc-country?branch=otc-contract)
+
 # Sample Hardhat Project
 
 This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.

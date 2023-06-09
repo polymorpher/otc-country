@@ -3,7 +3,7 @@
   "scripts": {
     "test": "npm run prettier && npx hardhat compile && npx hardhat test",
     "clean": "npx hardhat clean",
-    "coverage": "npx hardhat coverage && node gen-badge.js",
+    "coverage": "npx hardhat coverage && cat coverage/lcov.info | coveralls",
     "compile": "npx hardhat compile",
     "deploy": "npx hardhat deploy",
     "prettier:solidity": "npx prettier --write contracts/.",
@@ -13,6 +13,7 @@
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^2.0.2",
+    "coveralls": "^3.1.1",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^4.2.1",
     "hardhat": "^2.14.1",
