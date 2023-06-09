@@ -3,7 +3,6 @@ module.exports = async ({ getNamedAccounts, deployments, ...other }) => {
   const { deployer } = await getNamedAccounts();
 
   const domainContract = process.env.DOMAIN_CONTRACT
-  console.log(domainContract)
   const offerFactory = await deployments.get('OfferFactory')
 
   await deploy('OTC', {
