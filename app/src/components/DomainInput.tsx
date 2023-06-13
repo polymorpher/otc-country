@@ -1,17 +1,23 @@
-import React from 'react'
-import { Input, InputGroup, InputProps, InputRightAddon } from '@chakra-ui/react'
+import React, { useCallback } from 'react';
+import { Input, InputGroup, InputRightAddon } from '@chakra-ui/react';
+import debounce from 'lodash/debounce';
 
 interface DomainInputProps {
-  onChange: InputProps['onChange']
+  onChange: (value: string) => void;
 }
 
 const DomainInput: React.FC<DomainInputProps> = ({ onChange }) => {
+  const debouncedChange = useCallback(
+    debounce((e) => onChange(e.target.value), 300),
+    [onChange],
+  );
+
   return (
     <InputGroup>
-      <Input placeholder='mysite' onChange={onChange} />
+      <Input placeholder=".country.com" onChange={debouncedChange} />
       <InputRightAddon>.country.com</InputRightAddon>
     </InputGroup>
-  )
-}
+  );
+};
 
-export default DomainInput
+export default DomainInput;
