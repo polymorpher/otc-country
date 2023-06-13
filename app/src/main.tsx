@@ -1,43 +1,42 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { ChakraProvider, Container } from '@chakra-ui/react'
-import { WagmiConfig, createClient, configureChains } from 'wagmi'
-import { harmonyOne } from 'wagmi/chains'
-import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
-import App from './app'
-import { rpcProvider, walletConnectProjectId } from '~/config'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { ChakraProvider } from '@chakra-ui/react';
+// import { WagmiConfig, createClient, configureChains } from 'wagmi'
+// import { harmonyOne } from 'wagmi/chains'
+// import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
+// import App from './app'
 
-import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
-import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
-// import { InjectedConnector } from 'wagmi/connectors/injected'
+// import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
+// import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
+// // import { InjectedConnector } from 'wagmi/connectors/injected'
 
-const { chains, provider, webSocketProvider } = configureChains(
-  [harmonyOne],
-  [jsonRpcProvider({ rpc: (chain) => ({ http: rpcProvider }) })]
-)
+// const { chains, provider, webSocketProvider } = configureChains(
+//   [harmonyOne],
+//   [jsonRpcProvider({ rpc: (chain) => ({ http: rpcProvider }) })]
+// )
 
-const client = createClient({
-  autoConnect: true,
-  connectors: [
-    new MetaMaskConnector({ chains }),
-    // new InjectedConnector({ chains }),
-    new WalletConnectConnector({
-      chains,
-      options: { projectId: walletConnectProjectId }
-    })
-  ],
-  provider,
-  webSocketProvider
-})
+// const client = createClient({
+//   // autoConnect: true,
+//   // connectors: [
+//   //   new MetaMaskConnector({ chains }),
+//   //   // new InjectedConnector({ chains }),
+//   //   new WalletConnectConnector({
+//   //     chains,
+//   //     options: { projectId: walletConnectProjectId }
+//   //   })
+//   // ],
+//   // provider,
+//   // webSocketProvider
+// })
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <ChakraProvider>
-      <WagmiConfig client={client}>
+      {/* <WagmiConfig client={client}>
         <Container my="8">
           <App />
         </Container>
-      </WagmiConfig>
+      </WagmiConfig> */}
     </ChakraProvider>
-  </React.StrictMode>
-)
+  </React.StrictMode>,
+);
