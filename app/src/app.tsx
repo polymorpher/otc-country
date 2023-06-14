@@ -73,7 +73,7 @@ const App = () => {
         <NewOffer domain={domain} />
       ) : address === offerInfo?.[0] ? (
         <OfferCreator />
-      ) : (BigNumber.from(offerInfo?.[1])).gt(0) ? (
+      ) : BigNumber.from(offerInfo?.[1]).gt(0) ? (
         <OfferDepositor />
       ) : (
         <OfferAcceptor />
