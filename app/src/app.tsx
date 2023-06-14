@@ -77,13 +77,15 @@ const App = () => {
         <NewOffer domain={domain} />
       ) : (
         <Offer address={offerAddress}>
-          {address === offerInfo?.[0] ? (
-            <OfferCreator />
-          ) : BigNumber.from(offerInfo?.[1]).gt(0) ? (
-            <OfferDepositor />
-          ) : (
-            <OfferAcceptor />
-          )}
+          {(refetch) =>
+            address === offerInfo?.[0] ? (
+              <OfferCreator refetch={refetch} />
+            ) : BigNumber.from(offerInfo?.[1]).gt(0) ? (
+              <OfferDepositor refetch={refetch} />
+            ) : (
+              <OfferAcceptor refetch={refetch} />
+            )
+          }
         </Offer>
       )}
       {error && (

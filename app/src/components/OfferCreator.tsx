@@ -1,5 +1,9 @@
 import React from 'react';
 
-const OfferCreator = () => <div>offer creator</div>;
+interface OfferCreatorProps {
+  refetch: VoidFunction;
+}
+
+const OfferCreator: React.FC<OfferCreatorProps> = ({ refetch }) => <div>offer creator</div>;
 
 export default OfferCreator;
