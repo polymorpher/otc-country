@@ -8,7 +8,7 @@ import NewOffer from './components/NewOffer';
 import OfferCreator from './components/OfferCreator';
 import OfferDepositor from './components/OfferDepositor';
 import OfferAcceptor from './components/OfferAcceptor';
-import { offerContract, otcContract } from './contracts';
+import { offerContract, otcContract } from './helpers/contracts';
 
 const App = () => {
   const { address, isConnected } = useAccount();
@@ -73,7 +73,7 @@ const App = () => {
         <NewOffer domain={domain} />
       ) : address === offerInfo?.[0] ? (
         <OfferCreator />
-      ) : (offerInfo?.[1] as BigNumber).gt(0) ? (
+      ) : (BigNumber.from(offerInfo?.[1])).gt(0) ? (
         <OfferDepositor />
       ) : (
         <OfferAcceptor />

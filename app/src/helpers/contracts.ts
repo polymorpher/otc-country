@@ -1,5 +1,5 @@
-import otcAbi from '../../contract/artifacts/contracts/OTC.sol/OTC.json';
-import offerAbi from '../../contract/artifacts/contracts/Offer.sol/Offer.json';
+import otcAbi from '../../../contract/artifacts/contracts/OTC.sol/OTC.json';
+import offerAbi from '../../../contract/artifacts/contracts/Offer.sol/Offer.json';
 import { Address } from 'abitype';
 
 export const otcContract = {

@@ -13,6 +13,7 @@
     "@chakra-ui/react": "^2.5.1",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
+    "@hookform/resolvers": "^3.1.1",
     "@wagmi/core": "^0.10.8",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-import": "^2.27.5",
@@ -25,7 +26,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.43.7",
-    "wagmi": "^0.12.8"
+    "wagmi": "^0.12.8",
+    "yup": "^1.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.27",
