@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { Box, Button, FormControl, FormErrorMessage, FormLabel, Input, Text } from '@chakra-ui/react';
 import * as ethers from 'ethers';
 import { useAccount, useContractRead, useContractWrite, usePrepareContractWrite } from 'wagmi';
-import { readContract } from '@wagmi/core';
+import { readContract, writeContract } from '@wagmi/core';
 import * as yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -40,7 +40,7 @@ const schema = (commissionRate: number) =>
   });
 
 const NewOffer: React.FC<NewOfferProps> = ({ domain }) => {
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
 
   const { data: commissionRateScale } = useContractRead({
     ...otcContract,
@@ -50,6 +50,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain }) => {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema(ethers.BigNumber.from(commissionRateScale).toNumber())),
@@ -58,32 +59,20 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain }) => {
   const { config } = usePrepareContractWrite({
     ...otcContract,
     functionName: 'createOffer',
+    args: [
+      domain,
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes(Math.random().toString())),
+      watch('domainOwner'),
+      watch('srcAsset'),
+      watch('destAsset'),
+      watch('depositAmount'),
+      watch('acceptAmount'),
+      watch('commissionRate'),
+      watch('lockWithdrawDuration'),
+    ],
   });
 
   const { write: createOffer } = useContractWrite(config);
-
-  const handleOfferSubmit = useCallback(
-    (data: Parameters<Parameters<typeof handleSubmit>[0]>[0]) => {
-      if (!createOffer) {
-        return;
-      }
-
-      createOffer({
-        args: [
-          domain,
-          ethers.utils.keccak256(ethers.utils.toUtf8Bytes(Math.random().toString())),
-          data.domainOwner,
-          data.srcAsset,
-          data.destAsset,
-          data.depositAmount,
-          data.acceptAmount,
-          data.commissionRate,
-          data.lockWithdrawDuration,
-        ],
-      });
-    },
-    [createOffer],
-  );
 
   if (!isConnected) {
     return (
@@ -96,7 +85,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain }) => {
   return (
     <Box>
       <Text>Please create a new offer with the following information.</Text>
-      <form onSubmit={handleSubmit(handleOfferSubmit)}>
+      <form onSubmit={handleSubmit(() => createOffer?.())}>
         <FormControl isInvalid={!!errors.domainOwner}>
           <FormLabel>Domain owner</FormLabel>
           <Input {...register('domainOwner')} />

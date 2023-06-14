@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Alert, AlertIcon, Button, Spinner, VStack } from '@chakra-ui/react';
+import { Alert, AlertIcon, Spinner, VStack } from '@chakra-ui/react';
 import { useAccount, useContractRead, useContractReads } from 'wagmi';
 import { BigNumber, ethers } from 'ethers';
 import { Address } from 'abitype';
@@ -8,10 +8,11 @@ import NewOffer from './components/NewOffer';
 import OfferCreator from './components/OfferCreator';
 import OfferDepositor from './components/OfferDepositor';
 import OfferAcceptor from './components/OfferAcceptor';
+import MetaMaskConnector from './components/MetamaskConnector';
 import { offerContract, otcContract } from './helpers/contracts';
 
 const App = () => {
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
 
   const [domain, setDomain] = useState<string>();
 
@@ -63,7 +64,7 @@ const App = () => {
   return (
     <VStack>
       <DomainInput onChange={setDomain} />
-      {!isConnected && <Button>Connect Metamask</Button>}
+      <MetaMaskConnector />
       {!domain ? (
         <Alert status="warning">
           <AlertIcon />
