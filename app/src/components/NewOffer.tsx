@@ -1,8 +1,8 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { Box, Button, FormControl, FormErrorMessage, FormLabel, Input, Text } from '@chakra-ui/react';
 import * as ethers from 'ethers';
-import { useAccount, useContractRead, useContractWrite, usePrepareContractWrite } from 'wagmi';
-import { readContract, writeContract } from '@wagmi/core';
+import { useAccount, useContractRead, useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi';
+import { readContract } from '@wagmi/core';
 import * as yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -72,7 +72,11 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain }) => {
     ],
   });
 
-  const { write: createOffer } = useContractWrite(config);
+  const { data, write: createOffer } = useContractWrite(config);
+
+  const { isLoading } = useWaitForTransaction({
+    hash: data?.hash,
+  });
 
   if (!isConnected) {
     return (
@@ -127,7 +131,9 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain }) => {
           <Input {...register('lockWithdrawDuration')} />
           <FormErrorMessage>{errors.lockWithdrawDuration?.message}</FormErrorMessage>
         </FormControl>
-        <Button type="submit">Create</Button>
+        <Button type="submit" disabled={isLoading} loadingText="Create">
+          Create
+        </Button>
       </form>
     </Box>
   );

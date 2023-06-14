@@ -8,6 +8,7 @@ import NewOffer from './components/NewOffer';
 import OfferCreator from './components/OfferCreator';
 import OfferDepositor from './components/OfferDepositor';
 import OfferAcceptor from './components/OfferAcceptor';
+import Offer from './components/Offer';
 import MetaMaskConnector from './components/MetamaskConnector';
 import { offerContract, otcContract } from './helpers/contracts';
 
@@ -70,14 +71,20 @@ const App = () => {
           <AlertIcon />
           Please enter domain name
         </Alert>
+      ) : isLoading ? (
+        <Spinner />
       ) : offerAddress === ethers.constants.AddressZero ? (
         <NewOffer domain={domain} />
-      ) : address === offerInfo?.[0] ? (
-        <OfferCreator />
-      ) : BigNumber.from(offerInfo?.[1]).gt(0) ? (
-        <OfferDepositor />
       ) : (
-        <OfferAcceptor />
+        <Offer address={offerAddress}>
+          {address === offerInfo?.[0] ? (
+            <OfferCreator />
+          ) : BigNumber.from(offerInfo?.[1]).gt(0) ? (
+            <OfferDepositor />
+          ) : (
+            <OfferAcceptor />
+          )}
+        </Offer>
       )}
       {error && (
         <Alert status="error">
@@ -85,7 +92,6 @@ const App = () => {
           {error.message}
         </Alert>
       )}
-      {isLoading && <Spinner />}
     </VStack>
   );
 };
