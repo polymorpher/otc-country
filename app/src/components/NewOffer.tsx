@@ -1,9 +1,21 @@
 import React from 'react';
-import { Box, Button, FormControl, FormErrorMessage, FormLabel, Input, Text } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  InputGroup,
+  InputRightElement,
+  Spinner,
+  Text,
+} from '@chakra-ui/react';
 import * as ethers from 'ethers';
-import { useAccount, useContractRead, useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi';
+import { useAccount, useContractRead, useContractWrite, usePrepareContractWrite } from 'wagmi';
 import { readContract } from '@wagmi/core';
 import * as yup from 'yup';
+import debounce from 'lodash/debounce';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { otcContract } from '~/helpers/contracts';
@@ -11,14 +23,18 @@ import { regexEtherAddress } from '~/helpers/regex';
 
 interface NewOfferProps {
   domain: string;
+  onCreate: () => void;
 }
 
-const checkAssetAvailable = (asset: string) =>
-  readContract({
-    ...otcContract,
-    functionName: 'assets',
-    args: [asset],
-  }).then((res) => !!res);
+const checkAssetAvailable = debounce(
+  (asset: string) =>
+    readContract({
+      ...otcContract,
+      functionName: 'assets',
+      args: [asset],
+    }).then((res) => !!res),
+  300,
+);
 
 const schema = (commissionRate: number) =>
   yup.object({
@@ -27,19 +43,19 @@ const schema = (commissionRate: number) =>
       .string()
       .required()
       .matches(regexEtherAddress)
-      .test('available', 'not available', checkAssetAvailable),
+      .test('asset-availability', 'not available', checkAssetAvailable),
     destAsset: yup
       .string()
       .required()
       .matches(regexEtherAddress)
-      .test('available', 'not available', checkAssetAvailable),
+      .test('asset-availability', 'not available', checkAssetAvailable),
     depositAmount: yup.number().required().min(0),
     acceptAmount: yup.number().required().min(0),
     commissionRate: yup.number().required().min(commissionRate),
     lockWithdrawDuration: yup.number().required().min(0),
   });
 
-const NewOffer: React.FC<NewOfferProps> = ({ domain }) => {
+const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
   const { isConnected } = useAccount();
 
   const { data: commissionRateScale } = useContractRead({
@@ -51,12 +67,12 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain }) => {
     register,
     handleSubmit,
     watch,
-    formState: { errors },
+    formState: { errors, isValidating },
   } = useForm({
     resolver: yupResolver(schema(ethers.BigNumber.from(commissionRateScale).toNumber())),
   });
 
-  const { config } = usePrepareContractWrite({
+  const { config, isLoading } = usePrepareContractWrite({
     ...otcContract,
     functionName: 'createOffer',
     args: [
@@ -70,13 +86,10 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain }) => {
       watch('commissionRate'),
       watch('lockWithdrawDuration'),
     ],
+    onSuccess: onCreate,
   });
 
-  const { data, write: createOffer } = useContractWrite(config);
-
-  const { isLoading } = useWaitForTransaction({
-    hash: data?.hash,
-  });
+  const { write: createOffer } = useContractWrite(config);
 
   if (!isConnected) {
     return (
@@ -98,13 +111,27 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain }) => {
 
         <FormControl isInvalid={!!errors.srcAsset}>
           <FormLabel>Source asset</FormLabel>
-          <Input {...register('srcAsset')} />
+          <InputGroup>
+            <Input {...register('srcAsset')} />
+            {isValidating && (
+              <InputRightElement>
+                <Spinner />
+              </InputRightElement>
+            )}
+          </InputGroup>
           <FormErrorMessage>{errors.srcAsset?.message}</FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.destAsset}>
           <FormLabel>Destination asset</FormLabel>
-          <Input {...register('destAsset')} />
+          <InputGroup>
+            <Input {...register('destAsset')} />
+            {isValidating && (
+              <InputRightElement>
+                <Spinner />
+              </InputRightElement>
+            )}
+          </InputGroup>
           <FormErrorMessage>{errors.destAsset?.message}</FormErrorMessage>
         </FormControl>
 

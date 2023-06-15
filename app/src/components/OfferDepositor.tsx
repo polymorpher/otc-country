@@ -1,9 +1,9 @@
 import React from 'react';
 
 interface OfferDepositorProps {
-  refetch: VoidFunction;
+  isCreator: boolean;
 }
 
-const OfferDepositor: React.FC<OfferDepositorProps> = ({ refetch }) => <div>offer creator</div>;
+const OfferDepositor: React.FC<OfferDepositorProps> = () => <div>offer creator</div>;
 
 export default OfferDepositor;

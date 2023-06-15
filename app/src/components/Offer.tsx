@@ -6,10 +6,9 @@ import { offerContract, otcContract } from '~/helpers/contracts';
 
 interface OfferProps {
   address: Address;
-  children: (refetch: VoidFunction) => JSX.Element;
 }
 
-const Offer: React.FC<OfferProps> = ({ address, children }) => {
+const Offer: React.FC<OfferProps> = ({ address }) => {
   const { address: walletAddr } = useAccount();
 
   const {
@@ -127,7 +126,7 @@ const Offer: React.FC<OfferProps> = ({ address, children }) => {
         <Text textAlign="right">status</Text>
         <Text>{status}</Text>
       </Box>
-      {children(refetch)}
+      {children}
     </VStack>
   );
 };
