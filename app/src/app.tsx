@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Alert, AlertIcon, Spinner, VStack } from '@chakra-ui/react';
-import { useContractRead } from 'wagmi';
+import { useAccount, useContractRead } from 'wagmi';
 import { ethers } from 'ethers';
 import DomainInput from './components/DomainInput';
-import NewOffer from './components/NewOffer';
-import Offer from './components/Offer';
+import NewOffer from './pages/NewOffer';
+import Offer from './pages/Offer';
 import MetaMaskConnector from './components/MetamaskConnector';
 import { otcContract } from './helpers/contracts';
+import Admin from './pages/Admin';
 
 const App = () => {
+  const { address } = useAccount();
+
   const [domain, setDomain] = useState<string>();
 
   const {
@@ -23,11 +26,20 @@ const App = () => {
     args: [domain],
   });
 
+  const { data: ownerAddress } = useContractRead({
+    ...otcContract,
+    functionName: 'owner',
+  });
+
   useEffect(() => {
     if (domain) {
       refetch();
     }
   }, [domain, refetch]);
+
+  if (ownerAddress === address) {
+    return <Admin />;
+  }
 
   return (
     <VStack>
