@@ -1,5 +1,7 @@
 import React from 'react';
 import {
+  Alert,
+  AlertIcon,
   Box,
   Button,
   FormControl,
@@ -93,9 +95,10 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
 
   if (!isConnected) {
     return (
-      <Box>
-        <Text>Offer is available from the given domain. Please connect your wallet to proceed.</Text>
-      </Box>
+      <Alert status="info">
+        <AlertIcon />
+        Offer is available from the given domain. Please connect your wallet to proceed.
+      </Alert>
     );
   }
 
@@ -158,7 +161,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
           <Input {...register('lockWithdrawDuration')} />
           <FormErrorMessage>{errors.lockWithdrawDuration?.message}</FormErrorMessage>
         </FormControl>
-        <Button type="submit" disabled={isLoading} loadingText="Create">
+        <Button type="submit" isLoading={isLoading} loadingText="Create">
           Create
         </Button>
       </form>
