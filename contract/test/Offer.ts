@@ -189,6 +189,8 @@ describe("Offer", () => {
       } = await loadFixture(createOfferFixture);
       const depositAmount = await offer.deposits(creator.address);
 
+      await offer.connect(creator).close();
+
       const lockDuration = await offer.lockWithdrawDuration();
       await time.increase(lockDuration);
 
