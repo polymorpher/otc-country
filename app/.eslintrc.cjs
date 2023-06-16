@@ -22,6 +22,11 @@ module.exports = {
         paths: ['src'],
         extensions: ['.js', '.jsx', '.ts', '.tsx'],
       },
+      alias: {
+        map: [
+          ['~', 'src'],
+        ],
+      },
     },
   },
   rules: {

@@ -4,8 +4,8 @@ import { Address } from 'abitype';
 import { useAccount, useContractRead, useContractReads, useContractWrite, usePublicClient } from 'wagmi';
 import OfferStatus from '~/components/OfferStatus';
 import { offerContract, otcContract } from '~/helpers/contracts';
-import { Status } from '~/helpers/types';
 import { formatSeconds } from '~/helpers/time';
+import { Status } from '~/helpers/types';
 
 interface OfferProps {
   address: Address;

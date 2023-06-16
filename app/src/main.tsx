@@ -5,8 +5,8 @@ import { WagmiConfig, createConfig, configureChains, mainnet } from 'wagmi';
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
-import App from './app';
-import * as CONFIG from './helpers/config';
+import App from '~/app';
+import * as CONFIG from '~/helpers/config';
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [mainnet],

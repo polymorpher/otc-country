@@ -1,6 +1,6 @@
-import otcAbi from '../../../contract/artifacts/contracts/OTC.sol/OTC.json';
-import offerAbi from '../../../contract/artifacts/contracts/Offer.sol/Offer.json';
 import { Address } from 'abitype';
+import otcAbi from '~/../../contract/artifacts/contracts/OTC.sol/OTC.json';
+import offerAbi from '~/../../contract/artifacts/contracts/Offer.sol/Offer.json';
 import * as CONFIG from './config';
 
 export const otcContract = {

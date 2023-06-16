@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Alert, AlertIcon, Spinner, VStack } from '@chakra-ui/react';
-import { useAccount, useContractRead } from 'wagmi';
 import { zeroAddress } from 'viem';
-import DomainInput from './components/DomainInput';
-import NewOffer from './pages/NewOffer';
-import Offer from './pages/Offer';
-import MetaMaskConnector from './components/MetamaskConnector';
-import { otcContract } from './helpers/contracts';
-import Admin from './pages/Admin';
+import { useAccount, useContractRead } from 'wagmi';
+import DomainInput from '~/components/DomainInput';
+import MetaMaskConnector from '~/components/MetamaskConnector';
+import { otcContract } from '~/helpers/contracts';
+import Admin from '~/pages/Admin';
+import NewOffer from '~/pages/NewOffer';
+import Offer from '~/pages/Offer';
 
 const App = () => {
   const { address } = useAccount();

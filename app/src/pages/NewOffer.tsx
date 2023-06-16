@@ -1,4 +1,5 @@
 import React from 'react';
+import { useForm } from 'react-hook-form';
 import {
   Alert,
   AlertIcon,
@@ -13,13 +14,12 @@ import {
   Spinner,
   Text,
 } from '@chakra-ui/react';
-import { useAccount, useContractRead, useContractWrite, usePrepareContractWrite } from 'wagmi';
-import { readContract } from '@wagmi/core';
-import * as yup from 'yup';
-import { keccak256, toHex } from 'viem';
-import debounce from 'lodash/debounce';
-import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { readContract } from '@wagmi/core';
+import debounce from 'lodash/debounce';
+import { keccak256, toHex } from 'viem';
+import { useAccount, useContractRead, useContractWrite, usePrepareContractWrite } from 'wagmi';
+import * as yup from 'yup';
 import { otcContract } from '~/helpers/contracts';
 import { regexEtherAddress } from '~/helpers/regex';
 

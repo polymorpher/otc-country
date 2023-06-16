@@ -4,5 +4,16 @@ module.exports = {
   "semi": true,
   "singleQuote": true,
   "printWidth": 120,
-  "bracketSpacing": true
+  "bracketSpacing": true,
+  "importOrder": [
+    "^react",
+    "^@",
+    "<THIRD_PARTY_MODULES>",
+    "^~",
+    "^./",
+    "^../",
+  ],
+  "plugins": [
+    "@trivago/prettier-plugin-sort-imports"
+  ]
 }
