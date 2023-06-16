@@ -58,7 +58,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
   const {
     data: depositInfo,
     refetch: refetchDeposit,
-    isLoading: isDepositLoading,
+    isRefetching: isDepositLoading,
   } = useContractReads({
     enabled: false,
     contracts: [

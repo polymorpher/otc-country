@@ -14,6 +14,7 @@ import {
 } from '@chakra-ui/react';
 import debounce from 'lodash/debounce';
 import { useContractRead, useContractWrite } from 'wagmi';
+import { regexEtherAddress } from '~/helpers/address';
 import { debounceTimeout } from '~/helpers/config';
 import { otcContract } from '~/helpers/contracts';
 import useToast from '~/hooks/useToast';
@@ -28,7 +29,7 @@ const Admin: React.FC = () => {
   const {
     data: assetRegistered,
     refetch,
-    isLoading: isChecking,
+    isRefetching: isChecking,
   } = useContractRead({
     ...otcContract,
     functionName: 'assets',
@@ -65,8 +66,10 @@ const Admin: React.FC = () => {
   });
 
   useEffect(() => {
-    refetch();
-  }, [asset]);
+    if (asset && regexEtherAddress.test(asset)) {
+      refetch();
+    }
+  }, [asset, refetch]);
 
   return (
     <VStack>
@@ -82,7 +85,15 @@ const Admin: React.FC = () => {
             </InputRightElement>
           )}
         </InputGroup>
-        <FormHelperText>{assetRegistered ? 'The asset is registered' : 'The asset is not registered'}</FormHelperText>
+        <FormHelperText>
+          {asset
+            ? regexEtherAddress.test(asset)
+              ? assetRegistered
+                ? 'The asset is registered'
+                : 'The asset is not registered'
+              : 'Asset address is not correct'
+            : ''}
+        </FormHelperText>
       </FormControl>
 
       <HStack>
@@ -91,6 +102,8 @@ const Admin: React.FC = () => {
           isLoading={isAdding}
           loadingText="Add"
           onClick={() =>
+            asset &&
+            regexEtherAddress.test(asset) &&
             addAsset({
               args: [asset],
             })
@@ -103,6 +116,8 @@ const Admin: React.FC = () => {
           isLoading={isRemoving}
           loadingText="Remove"
           onClick={() =>
+            asset &&
+            regexEtherAddress.test(asset) &&
             removeAsset({
               args: [asset],
             })

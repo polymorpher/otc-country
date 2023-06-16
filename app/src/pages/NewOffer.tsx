@@ -20,9 +20,9 @@ import debounce from 'lodash/debounce';
 import { keccak256, toHex } from 'viem';
 import { useAccount, useContractRead, useContractWrite } from 'wagmi';
 import * as yup from 'yup';
+import { regexEtherAddress } from '~/helpers/address';
 import { debounceTimeout } from '~/helpers/config';
 import { otcContract } from '~/helpers/contracts';
-import { regexEtherAddress } from '~/helpers/regex';
 
 interface NewOfferProps {
   domain: string;

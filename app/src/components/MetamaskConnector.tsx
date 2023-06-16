@@ -1,6 +1,7 @@
 import React from 'react';
-import { Button, Image, Box, Text, Alert, AlertIcon } from '@chakra-ui/react';
-import { useAccount, useConnect, useDisconnect, useEnsAvatar, useEnsName } from 'wagmi';
+import { Button, Box, Text, Alert, AlertIcon, HStack, Tooltip } from '@chakra-ui/react';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { shortenAddress } from '~/helpers/address';
 import { connector } from '~/main';
 
 const MetamskConnector = () => {
@@ -10,18 +11,17 @@ const MetamskConnector = () => {
 
   const { disconnect } = useDisconnect();
 
-  const { data: ensAvatar } = useEnsAvatar({ address });
-
-  const { data: ensName } = useEnsName({ address });
-
-  if (isConnected) {
+  if (isConnected && address) {
     return (
-      <Box>
-        {ensAvatar && <Image src={ensAvatar} alt="ENS Avatar" />}
-        <Text>{ensName ? `${ensName} (${address})` : address}</Text>
-        <Text>Connected to {connector.name}</Text>
+      <HStack padding="4" border="1px solid gray" borderRadius="lg">
+        <Box>
+          <Tooltip label={address}>
+            <Text>{shortenAddress(address)}</Text>
+          </Tooltip>
+          <Text color="gray.500">Connected to {connector.name}</Text>
+        </Box>
         <Button onClick={() => disconnect()}>Disconnect</Button>
-      </Box>
+      </HStack>
     );
   }
 
