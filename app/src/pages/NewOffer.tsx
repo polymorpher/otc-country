@@ -20,6 +20,7 @@ import debounce from 'lodash/debounce';
 import { keccak256, toHex } from 'viem';
 import { useAccount, useContractRead, useContractWrite } from 'wagmi';
 import * as yup from 'yup';
+import { debounceTimeout } from '~/helpers/config';
 import { otcContract } from '~/helpers/contracts';
 import { regexEtherAddress } from '~/helpers/regex';
 
@@ -35,7 +36,7 @@ const checkAssetAvailable = debounce(
       functionName: 'assets',
       args: [asset],
     }).then((res) => !!res),
-  300,
+  debounceTimeout,
 );
 
 const schema = (commissionRate: number) =>
@@ -94,7 +95,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
           data.lockWithdrawDuration,
         ],
       }),
-    [],
+    [createOffer, domain],
   );
 
   if (!isConnected) {

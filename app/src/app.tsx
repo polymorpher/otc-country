@@ -11,7 +11,7 @@ import NewOffer from '~/pages/NewOffer';
 import Offer from '~/pages/Offer';
 
 const App = () => {
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
 
   const [domain, setDomain] = useState<string>();
 
@@ -38,7 +38,7 @@ const App = () => {
     }
   }, [domain, refetch]);
 
-  if (ownerAddress === address) {
+  if (isConnected && ownerAddress === address) {
     return (
       <VStack>
         <MetaMaskConnector />

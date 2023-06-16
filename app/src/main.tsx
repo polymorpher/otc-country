@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { ChakraProvider } from '@chakra-ui/react';
+import { ChakraProvider, Container } from '@chakra-ui/react';
 import { WagmiConfig, createConfig, configureChains, mainnet } from 'wagmi';
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
@@ -24,9 +24,11 @@ const config = createConfig({
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <ChakraProvider>
-      <WagmiConfig config={config}>
-        <App />
-      </WagmiConfig>
+      <Container my="10">
+        <WagmiConfig config={config}>
+          <App />
+        </WagmiConfig>
+      </Container>
     </ChakraProvider>
   </React.StrictMode>,
 );

@@ -14,6 +14,7 @@ import {
 } from '@chakra-ui/react';
 import debounce from 'lodash/debounce';
 import { useContractRead, useContractWrite } from 'wagmi';
+import { debounceTimeout } from '~/helpers/config';
 import { otcContract } from '~/helpers/contracts';
 import useToast from '~/hooks/useToast';
 
@@ -22,7 +23,7 @@ const Admin: React.FC = () => {
 
   const { toastSuccess, toastError } = useToast();
 
-  const handleDebouncedChange = useMemo(() => debounce((e) => setAsset(e.target.value), 300), []);
+  const handleDebouncedChange = useMemo(() => debounce((e) => setAsset(e.target.value), debounceTimeout), []);
 
   const {
     data: assetRegistered,
