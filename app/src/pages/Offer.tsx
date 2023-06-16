@@ -187,7 +187,15 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
   });
 
   const working =
-    isClosing || isAccepting || isDepositing || isWithdrawing || isInfoLoading || isStatusLoading || isDepositLoading;
+    isClosing ||
+    isAccepting ||
+    isDepositing ||
+    isWithdrawing ||
+    isInfoLoading ||
+    isStatusLoading ||
+    isDepositLoading ||
+    isClaimingDepositorPayment ||
+    isClaimingDomainOwnerPayment;
 
   return (
     <VStack>
@@ -242,7 +250,12 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
                     <Text>{formatSeconds(Number(lockWithdrawUntil) - timestamp)}</Text>
                   </>
                 )}
-                <Button onClick={withdraw} isDisabled={Number(lockWithdrawUntil) > timestamp}>
+                <Button
+                  onClick={withdraw}
+                  isDisabled={working || Number(lockWithdrawUntil) > timestamp}
+                  isLoading={isWithdrawing}
+                  loadingText="Withdraw"
+                >
                   Withdraw
                 </Button>
               </>
@@ -251,29 +264,39 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
             <>
               <Text textAlign="right">Payment balance</Text>
               <Text>{divideByDecimals(paymentBalanceForDomainOwner, Number(destDecimals))}</Text>
-              <Button
-                isDisabled={paymentBalanceForDomainOwner === 0n}
-                onClick={() => claimDomainOwnerPayment({ args: [walletAddr] })}
-              >
-                Claim payment
-              </Button>
+              {paymentBalanceForDomainOwner > 0n && (
+                <Button
+                  isDisabled={working}
+                  isLoading={isClaimingDomainOwnerPayment}
+                  loadingText="Claim payment"
+                  onClick={() => claimDomainOwnerPayment({ args: [walletAddr] })}
+                >
+                  Claim payment
+                </Button>
+              )}
             </>
           ) : (
             <>
               <Text textAlign="right">Payment balance</Text>
               <Text>{divideByDecimals(paymentBalanceForDepositor, Number(destDecimals))}</Text>
-              <Button
-                isDisabled={paymentBalanceForDepositor === 0n}
-                onClick={() => claimDepositorPayment({ args: [walletAddr] })}
-              >
-                Claim payment
-              </Button>
+              {paymentBalanceForDepositor > 0n && (
+                <Button
+                  isDisabled={working}
+                  isLoading={isClaimingDepositorPayment}
+                  loadingText="Claim payment"
+                  onClick={() => claimDepositorPayment({ args: [walletAddr] })}
+                >
+                  Claim payment
+                </Button>
+              )}
             </>
           )}
 
           {status === Status.Open && (
             <>
-              <Button onClick={depositFund}>Deposit</Button>
+              <Button onClick={depositFund} isDisabled={working} isLoading={isDepositing} loadingText="Deposit">
+                Deposit
+              </Button>
               {deposit === 0n && (
                 <Button onClick={() => acceptOffer()} isDisabled={working} isLoading={isAccepting} loadingText="Accept">
                   Accept
