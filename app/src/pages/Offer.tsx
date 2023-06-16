@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Alert, AlertIcon, Box, Button, Spinner, Text, VStack } from '@chakra-ui/react';
 import { Address } from 'abitype';
 import { useAccount, useContractRead, useContractReads, useContractWrite, usePublicClient } from 'wagmi';
+import ClaimPayment from '~/components/ClaimPayment';
 import OfferStatus from '~/components/OfferStatus';
+import Withdraw from '~/components/Withdraw';
 import { erc20Contract, offerContract, otcContract } from '~/helpers/contracts';
 import { formatSeconds } from '~/helpers/time';
 import { divideByDecimals } from '~/helpers/token';
@@ -243,53 +245,30 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
 
           {status !== Status.Accepted ? (
             deposit > 0 && (
-              <>
-                {Number(lockWithdrawUntil) > timestamp && (
-                  <>
-                    <Text textAlign="right">Withdraw locked left</Text>
-                    <Text>{formatSeconds(Number(lockWithdrawUntil) - timestamp)}</Text>
-                  </>
-                )}
-                <Button
-                  onClick={withdraw}
-                  isDisabled={working || Number(lockWithdrawUntil) > timestamp}
-                  isLoading={isWithdrawing}
-                  loadingText="Withdraw"
-                >
-                  Withdraw
-                </Button>
-              </>
+              <Withdraw
+                lockWithdrawUntil={Number(lockWithdrawUntil)}
+                timestamp={timestamp}
+                disabled={working}
+                isWithdrawing={isWithdrawing}
+                onClick={withdraw}
+              />
             )
           ) : walletAddr === domainOwner ? (
-            <>
-              <Text textAlign="right">Payment balance</Text>
-              <Text>{divideByDecimals(paymentBalanceForDomainOwner, Number(destDecimals))}</Text>
-              {paymentBalanceForDomainOwner > 0n && (
-                <Button
-                  isDisabled={working}
-                  isLoading={isClaimingDomainOwnerPayment}
-                  loadingText="Claim payment"
-                  onClick={() => claimDomainOwnerPayment({ args: [walletAddr] })}
-                >
-                  Claim payment
-                </Button>
-              )}
-            </>
+            <ClaimPayment
+              balance={paymentBalanceForDomainOwner}
+              decimals={Number(destDecimals)}
+              onClick={() => claimDomainOwnerPayment({ args: [walletAddr] })}
+              isClaiming={isClaimingDomainOwnerPayment}
+              disabled={working}
+            />
           ) : (
-            <>
-              <Text textAlign="right">Payment balance</Text>
-              <Text>{divideByDecimals(paymentBalanceForDepositor, Number(destDecimals))}</Text>
-              {paymentBalanceForDepositor > 0n && (
-                <Button
-                  isDisabled={working}
-                  isLoading={isClaimingDepositorPayment}
-                  loadingText="Claim payment"
-                  onClick={() => claimDepositorPayment({ args: [walletAddr] })}
-                >
-                  Claim payment
-                </Button>
-              )}
-            </>
+            <ClaimPayment
+              balance={paymentBalanceForDepositor}
+              decimals={Number(destDecimals)}
+              onClick={() => claimDepositorPayment({ args: [walletAddr] })}
+              isClaiming={isClaimingDepositorPayment}
+              disabled={working}
+            />
           )}
 
           {status === Status.Open && (
