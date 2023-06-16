@@ -6,7 +6,6 @@ import ClaimPayment from '~/components/ClaimPayment';
 import OfferStatus from '~/components/OfferStatus';
 import Withdraw from '~/components/Withdraw';
 import { erc20Contract, offerContract, otcContract } from '~/helpers/contracts';
-import { formatSeconds } from '~/helpers/time';
 import { divideByDecimals } from '~/helpers/token';
 import { Status } from '~/helpers/types';
 import useToast from '~/hooks/useToast';
@@ -57,7 +56,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
   });
 
   const {
-    data: [deposit, totalDeposits, lockWithdrawUntil],
+    data: depositInfo,
     refetch: refetchDeposit,
     isLoading: isDepositLoading,
   } = useContractReads({
@@ -136,7 +135,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
   });
 
   const {
-    data: [commissionRateScale, creator, domainOwner, commissionRate, acceptAmount, srcAsset, destAsset],
+    data: info,
     error,
     isLoading: isInfoLoading,
   } = useContractReads({
@@ -176,14 +175,26 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
     ],
   });
 
+  const { result: deposit } = depositInfo?.[0] ?? {};
+  const { result: totalDeposits } = depositInfo?.[1] ?? {};
+  const { result: lockWithdrawUntil } = depositInfo?.[2] ?? {};
+
+  const { result: commissionRateScale } = info?.[0] ?? {};
+  const { result: creator } = info?.[1] ?? {};
+  const { result: domainOwner } = info?.[2] ?? {};
+  const { result: commissionRate } = info?.[3] ?? {};
+  const { result: acceptAmount } = info?.[4] ?? {};
+  const { result: srcAsset } = info?.[5] ?? {};
+  const { result: destAsset } = info?.[6] ?? {};
+
   const { data: srcDecimals, refetch: refetchSrcDecimals } = useContractRead({
-    ...erc20Contract(srcAsset),
+    ...erc20Contract(srcAsset as Address),
     functionName: 'decimals',
     enabled: false,
   });
 
   const { data: destDecimals, refetch: refetchDestDecimals } = useContractRead({
-    ...erc20Contract(destAsset),
+    ...erc20Contract(destAsset as Address),
     functionName: 'decimals',
     enabled: false,
   });
@@ -216,41 +227,41 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
 
       <Box display="grid" gridTemplateColumns="1fr 1fr 1fr 1fr" gridRowGap="2" gridColumnGap="2">
         <Text textAlign="right">Creator</Text>
-        <Text>{creator === walletAddr ? 'You' : creator}</Text>
+        <Text>{creator === walletAddr ? 'You' : String(creator)}</Text>
 
         <Text textAlign="right">Domain owner</Text>
-        <Text>{domainOwner}</Text>
+        <Text>{String(domainOwner)}</Text>
 
-        <Text textAlign="right">commissionRate</Text>
-        <Text>{commissionRate / commissionRateScale}</Text>
+        <Text textAlign="right">Commission rate</Text>
+        <Text>{(Number(commissionRate) * 100) / Number(commissionRateScale)}</Text>
 
-        <Text textAlign="right">acceptAmount</Text>
-        <Text>{acceptAmount}</Text>
+        <Text textAlign="right">Accept amount</Text>
+        <Text>{divideByDecimals(acceptAmount as bigint, Number(destDecimals))}</Text>
 
         <Text textAlign="right">Source asset</Text>
-        <Text>{srcAsset}</Text>
+        <Text>{String(srcAsset)}</Text>
 
         <Text textAlign="right">Destination asset</Text>
-        <Text>{destAsset}</Text>
+        <Text>{String(destAsset)}</Text>
 
         <Text textAlign="right">Total deposits</Text>
-        <Text>{totalDeposits}</Text>
+        <Text>{divideByDecimals(totalDeposits as bigint, Number(srcDecimals))}</Text>
       </Box>
 
       {isConnected && (
         <Box>
           {deposit === 0n && <Text>You can deposit your funds or accept the offer</Text>}
           <Text textAlign="right">Deposit</Text>
-          <Text>{divideByDecimals(deposit, Number(srcDecimals))}</Text>
+          <Text>{divideByDecimals(deposit as bigint, Number(srcDecimals))}</Text>
 
           {status !== Status.Accepted ? (
-            deposit > 0 && (
+            (deposit as bigint) > 0 && (
               <Withdraw
                 lockWithdrawUntil={Number(lockWithdrawUntil)}
                 timestamp={timestamp}
                 disabled={working}
                 isWithdrawing={isWithdrawing}
-                onClick={withdraw}
+                onClick={withdraw} // todo
               />
             )
           ) : walletAddr === domainOwner ? (
@@ -273,11 +284,21 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
 
           {status === Status.Open && (
             <>
-              <Button onClick={depositFund} isDisabled={working} isLoading={isDepositing} loadingText="Deposit">
+              <Button
+                onClick={() => depositFund()} // todo
+                isDisabled={working}
+                isLoading={isDepositing}
+                loadingText="Deposit"
+              >
                 Deposit
               </Button>
               {deposit === 0n && (
-                <Button onClick={() => acceptOffer()} isDisabled={working} isLoading={isAccepting} loadingText="Accept">
+                <Button
+                  onClick={() => acceptOffer()} // todo
+                  isDisabled={working}
+                  isLoading={isAccepting}
+                  loadingText="Accept"
+                >
                   Accept
                 </Button>
               )}
