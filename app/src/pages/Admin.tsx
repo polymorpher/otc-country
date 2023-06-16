@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Button,
   FormControl,
@@ -21,34 +21,33 @@ import useContractWriteComplete from '~/hooks/useContractWriteComplete';
 import useToast from '~/hooks/useToast';
 
 const Admin: React.FC = () => {
-  const [asset, setAsset] = useState();
+  const [asset, setAsset] = useState<string>();
 
-  const inputRef = useRef(null);
+  const [assetRegistered, setAssetRegistered] = useState<boolean>();
 
   const { toastSuccess, toastError } = useToast();
 
   const handleDebouncedChange = useMemo(() => debounce((e) => setAsset(e.target.value), debounceTimeout), []);
 
-  const {
-    data: assetRegistered,
-    refetch,
-    isRefetching: isChecking,
-  } = useContractRead({
+  const { refetch, isRefetching: isChecking } = useContractRead({
     ...otcContract,
     functionName: 'assets',
     args: [asset],
     enabled: false,
+    onSuccess: setAssetRegistered,
   });
 
   const { write: addAsset, isLoading: isAdding } = useContractWriteComplete({
     ...otcContract,
     functionName: 'addAsset',
     description: 'Adding asset',
-    onSuccess: (data) =>
+    onSuccess: (data) => {
+      setAssetRegistered(true);
       toastSuccess({
         title: 'Asset has been added',
         txHash: data.transactionHash,
-      }),
+      });
+    },
     onSettled: (data, err) =>
       err &&
       toastError({
@@ -62,11 +61,13 @@ const Admin: React.FC = () => {
     ...otcContract,
     functionName: 'removeAsset',
     description: 'Removing asset',
-    onSuccess: (data) =>
+    onSuccess: (data) => {
+      setAssetRegistered(false);
       toastSuccess({
         title: 'Asset has been removed',
         txHash: data.transactionHash,
-      }),
+      });
+    },
     onSettled: (data, err) =>
       err &&
       toastError({
@@ -84,12 +85,14 @@ const Admin: React.FC = () => {
 
   return (
     <VStack width="full">
-      <Text>Manage available assets</Text>
+      <Text fontSize="3xl" my="10">
+        Manage assets here
+      </Text>
 
       <FormControl>
         <FormLabel>Asset address</FormLabel>
         <InputGroup>
-          <Input onChange={handleDebouncedChange} ref={inputRef} />
+          <Input onChange={handleDebouncedChange} />
           {isChecking && (
             <InputRightElement>
               <Spinner />
