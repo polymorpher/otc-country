@@ -8,6 +8,7 @@ import { otcContract } from '~/helpers/contracts';
 import Admin from '~/pages/Admin';
 import NewOffer from '~/pages/NewOffer';
 import Offer from '~/pages/Offer';
+import OfferAction from './pages/OfferAction';
 
 const App = () => {
   const { address, isConnected } = useAccount();
@@ -54,7 +55,9 @@ const App = () => {
       ) : offerAddress === zeroAddress ? (
         <NewOffer domain={domain} onCreate={refetch} />
       ) : offerAddress ? (
-        <Offer address={offerAddress as Address} />
+        <Offer address={offerAddress as Address}>
+          {(context) => isConnected && <OfferAction address={offerAddress as Address} {...context} />}
+        </Offer>
       ) : null}
       {error && (
         <Alert status="error">
