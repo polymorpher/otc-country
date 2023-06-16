@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Alert, AlertIcon, Spinner, VStack } from '@chakra-ui/react';
+import { Address } from 'abitype';
 import { zeroAddress } from 'viem';
 import { useAccount, useContractRead } from 'wagmi';
 import DomainInput from '~/components/DomainInput';
@@ -38,7 +39,12 @@ const App = () => {
   }, [domain, refetch]);
 
   if (ownerAddress === address) {
-    return <Admin />;
+    return (
+      <VStack>
+        <MetaMaskConnector />
+        <Admin />
+      </VStack>
+    );
   }
 
   return (
@@ -55,7 +61,7 @@ const App = () => {
       ) : offerAddress === zeroAddress ? (
         <NewOffer domain={domain} onCreate={refetch} />
       ) : (
-        <Offer address={offerAddress} />
+        <Offer address={offerAddress as Address} />
       )}
       {error && (
         <Alert status="error">

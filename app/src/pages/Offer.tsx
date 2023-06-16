@@ -42,7 +42,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
 
   const { write: acceptOffer, isLoading: isAccepting } = useContractWrite({
     ...offerContract(address),
-    functionName: 'accept',
+    functionName: 'accept', // todo: send value
     onSuccess: () => setStatus(Status.Accepted),
   });
 
@@ -51,11 +51,12 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
     refetch: refetchDeposit,
     isLoading: isDepositLoading,
   } = useContractReads({
+    enabled: false,
     contracts: [
       {
         ...offerContract(address),
         functionName: 'deposits',
-        args: [walletAddr],
+        args: [walletAddr!],
       },
       {
         ...offerContract(address),
@@ -68,12 +69,12 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
       {
         ...offerContract(address),
         functionName: 'paymentBalanceForDepositor',
-        args: [walletAddr],
+        args: [walletAddr!],
       },
       {
         ...offerContract(address),
         functionName: 'lockWithdrawUntil',
-        args: [walletAddr],
+        args: [walletAddr!],
       },
     ],
   });
@@ -131,10 +132,10 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
 
   const working =
     isClosing || isAccepting || isDepositing || isWithdrawing || isInfoLoading || isStatusLoading || isDepositLoading;
-  lockWithdrawUntil;
+
   return (
     <VStack>
-      <OfferStatus status={status} />
+      {status !== undefined && <OfferStatus status={status} />}
 
       <Text>Offer information</Text>
 
@@ -150,9 +151,6 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
       <Box display="grid" gridTemplateColumns="1fr 1fr 1fr 1fr" gridRowGap="2" gridColumnGap="2">
         <Text textAlign="right">Creator</Text>
         <Text>{creator === walletAddr ? 'You' : creator}</Text>
-
-        <Text textAlign="right">Deposit</Text>
-        <Text>{deposit}</Text>
 
         <Text textAlign="right">Domain owner</Text>
         <Text>{domainOwner}</Text>
@@ -173,44 +171,55 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
         <Text>{totalDeposits}</Text>
       </Box>
 
-      {status !== Status.Accepted ? (
-        deposit > 0 && (
-          <>
-            <Text textAlign="right">Withdraw locked left</Text>
-            <Text>{formatSeconds(Number(lockWithdrawUntil) - timestamp)}</Text>
-            <Button onClick={withdraw} isDisabled={Number(lockWithdrawUntil) > timestamp}>
-              Withdraw
-            </Button>
-          </>
-        )
-      ) : walletAddr === domainOwner ? (
-        <>
-          <Text textAlign="right">Payment balance</Text>
-          <Text>{paymentBalanceForDomainOwner}</Text>
-          <Button isDisabled={paymentBalanceForDomainOwner === 0n}>Claim payment</Button>
-        </>
-      ) : (
-        <>
-          <Text textAlign="right">Payment balance</Text>
-          <Text>{paymentBalanceForDepositor}</Text>
-          <Button isDisabled={paymentBalanceForDepositor === 0n}>Claim payment</Button>
-        </>
-      )}
+      {isConnected && (
+        <Box>
+          <Text textAlign="right">Deposit</Text>
+          <Text>{deposit}</Text>
 
-      {status === Status.Open && (
-        <>
-          <Button onClick={depositFund}>Deposit</Button>
-          {deposit === 0n && (
-            <Button onClick={acceptOffer} isDisabled={working} isLoading={isAccepting} loadingText="Accept">
-              Accept
-            </Button>
+          {status !== Status.Accepted ? (
+            deposit > 0 && (
+              <>
+                {Number(lockWithdrawUntil) > timestamp && (
+                  <>
+                    <Text textAlign="right">Withdraw locked left</Text>
+                    <Text>{formatSeconds(Number(lockWithdrawUntil) - timestamp)}</Text>
+                  </>
+                )}
+                <Button onClick={withdraw} isDisabled={Number(lockWithdrawUntil) > timestamp}>
+                  Withdraw
+                </Button>
+              </>
+            )
+          ) : walletAddr === domainOwner ? (
+            <>
+              <Text textAlign="right">Payment balance</Text>
+              <Text>{paymentBalanceForDomainOwner}</Text>
+              <Button isDisabled={paymentBalanceForDomainOwner === 0n}>Claim payment</Button>
+            </>
+          ) : (
+            <>
+              <Text textAlign="right">Payment balance</Text>
+              <Text>{paymentBalanceForDepositor}</Text>
+              <Button isDisabled={paymentBalanceForDepositor === 0n}>Claim payment</Button>
+            </>
           )}
-          {creator === walletAddr && (
-            <Button onClick={closeOffer} isDisabled={working} isLoading={isClosing} loadingText="Close">
-              Close
-            </Button>
+
+          {status === Status.Open && (
+            <>
+              <Button onClick={depositFund}>Deposit</Button>
+              {deposit === 0n && (
+                <Button onClick={acceptOffer} isDisabled={working} isLoading={isAccepting} loadingText="Accept">
+                  Accept
+                </Button>
+              )}
+              {creator === walletAddr && (
+                <Button onClick={closeOffer} isDisabled={working} isLoading={isClosing} loadingText="Close">
+                  Close
+                </Button>
+              )}
+            </>
           )}
-        </>
+        </Box>
       )}
     </VStack>
   );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   Alert,
@@ -18,7 +18,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { readContract } from '@wagmi/core';
 import debounce from 'lodash/debounce';
 import { keccak256, toHex } from 'viem';
-import { useAccount, useContractRead, useContractWrite, usePrepareContractWrite } from 'wagmi';
+import { useAccount, useContractRead, useContractWrite } from 'wagmi';
 import * as yup from 'yup';
 import { otcContract } from '~/helpers/contracts';
 import { regexEtherAddress } from '~/helpers/regex';
@@ -68,30 +68,34 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors, isValidating },
   } = useForm({
     resolver: yupResolver(schema(Number(commissionRateScale))),
   });
 
-  const { config, isLoading } = usePrepareContractWrite({
+  const { write: createOffer, isLoading } = useContractWrite({
     ...otcContract,
     functionName: 'createOffer',
-    args: [
-      domain,
-      keccak256(toHex(Math.random().toString())),
-      watch('domainOwner'),
-      watch('srcAsset'),
-      watch('destAsset'),
-      watch('depositAmount'),
-      watch('acceptAmount'),
-      watch('commissionRate'),
-      watch('lockWithdrawDuration'),
-    ],
     onSuccess: onCreate,
   });
 
-  const { write: createOffer } = useContractWrite(config);
+  const handleCreateOffer: Parameters<typeof handleSubmit>[0] = useCallback(
+    (data) =>
+      createOffer?.({
+        args: [
+          domain,
+          keccak256(toHex(Math.random().toString())),
+          data.domainOwner,
+          data.srcAsset,
+          data.destAsset,
+          data.depositAmount,
+          data.acceptAmount,
+          data.commissionRate,
+          data.lockWithdrawDuration,
+        ],
+      }),
+    [],
+  );
 
   if (!isConnected) {
     return (
@@ -105,7 +109,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
   return (
     <Box>
       <Text>Please create a new offer with the following information.</Text>
-      <form onSubmit={handleSubmit(() => createOffer?.())}>
+      <form onSubmit={handleSubmit(handleCreateOffer)}>
         <FormControl isInvalid={!!errors.domainOwner}>
           <FormLabel>Domain owner</FormLabel>
           <Input {...register('domainOwner')} />
