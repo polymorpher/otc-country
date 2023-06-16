@@ -4,12 +4,10 @@ import { Address } from 'abitype';
 import { zeroAddress } from 'viem';
 import { useAccount, useContractRead } from 'wagmi';
 import DomainInput from '~/components/DomainInput';
-import MetaMaskConnector from '~/components/MetamaskConnector';
 import { otcContract } from '~/helpers/contracts';
 import Admin from '~/pages/Admin';
 import NewOffer from '~/pages/NewOffer';
 import Offer from '~/pages/Offer';
-import ChainDetector from './components/ChainDetector';
 
 const App = () => {
   const { address, isConnected } = useAccount();
@@ -40,19 +38,12 @@ const App = () => {
   }, [domain, refetch]);
 
   if (isConnected && ownerAddress === address) {
-    return (
-      <VStack>
-        <MetaMaskConnector />
-        <Admin />
-      </VStack>
-    );
+    return <Admin />;
   }
 
   return (
-    <VStack>
+    <VStack width="full">
       <DomainInput onChange={setDomain} />
-      <MetaMaskConnector />
-      <ChainDetector />
       {!domain ? (
         <Alert status="warning">
           <AlertIcon />

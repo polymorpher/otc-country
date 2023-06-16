@@ -6,7 +6,7 @@ import chain from '~/helpers/chain';
 const ChainDetector = () => {
   const { isConnected } = useAccount();
 
-  const { switchNetwork } = useSwitchNetwork({ chainId: chain.id });
+  const { isLoading, switchNetwork } = useSwitchNetwork({ chainId: chain.id });
 
   const { chain: currentChain } = useNetwork();
 
@@ -17,9 +17,13 @@ const ChainDetector = () => {
   return (
     <Alert status="warning">
       <AlertIcon />
-      Your metamask is on a wrong chain. Please switch to {chain.name} to continue.
+      Your metamask is on a wrong chain.
+      <br />
+      Please switch to {chain.name} to continue.
       <Spacer />
-      <Button onClick={() => switchNetwork?.()}>Switch</Button>
+      <Button colorScheme="yellow" onClick={() => switchNetwork?.()} isLoading={isLoading} loadingText="Switch">
+        Switch
+      </Button>
     </Alert>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useRef } from 'react';
-import { Box, CloseButton, HStack, Spinner, Text, ToastId, useToast, VStack } from '@chakra-ui/react';
+import { CloseButton, HStack, Spinner, Text, ToastId, useToast, VStack } from '@chakra-ui/react';
 import TxHashLink from '~/components/TxHashLink';
 
 interface TxToastDataBase {
@@ -17,7 +17,7 @@ const PendingTransactionsContext = React.createContext<PendingTransactionsContex
 });
 
 interface PendingTransactionsProviderProps {
-  children: JSX.Element;
+  children: React.ReactNode;
 }
 
 const PendingTransactionsProvider: React.FC<PendingTransactionsProviderProps> = ({ children }) => {
