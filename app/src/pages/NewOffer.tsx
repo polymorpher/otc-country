@@ -13,10 +13,10 @@ import {
   Spinner,
   Text,
 } from '@chakra-ui/react';
-import * as ethers from 'ethers';
 import { useAccount, useContractRead, useContractWrite, usePrepareContractWrite } from 'wagmi';
 import { readContract } from '@wagmi/core';
 import * as yup from 'yup';
+import { keccak256, toHex } from 'viem';
 import debounce from 'lodash/debounce';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -71,7 +71,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     watch,
     formState: { errors, isValidating },
   } = useForm({
-    resolver: yupResolver(schema(ethers.BigNumber.from(commissionRateScale).toNumber())),
+    resolver: yupResolver(schema(Number(commissionRateScale))),
   });
 
   const { config, isLoading } = usePrepareContractWrite({
@@ -79,7 +79,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     functionName: 'createOffer',
     args: [
       domain,
-      ethers.utils.keccak256(ethers.utils.toUtf8Bytes(Math.random().toString())),
+      keccak256(toHex(Math.random().toString())),
       watch('domainOwner'),
       watch('srcAsset'),
       watch('destAsset'),

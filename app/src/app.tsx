@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Alert, AlertIcon, Spinner, VStack } from '@chakra-ui/react';
 import { useAccount, useContractRead } from 'wagmi';
-import { ethers } from 'ethers';
+import { zeroAddress } from 'viem';
 import DomainInput from './components/DomainInput';
 import NewOffer from './pages/NewOffer';
 import Offer from './pages/Offer';
@@ -52,7 +52,7 @@ const App = () => {
         </Alert>
       ) : isLoading ? (
         <Spinner />
-      ) : offerAddress === ethers.constants.AddressZero ? (
+      ) : offerAddress === zeroAddress ? (
         <NewOffer domain={domain} onCreate={refetch} />
       ) : (
         <Offer address={offerAddress} />

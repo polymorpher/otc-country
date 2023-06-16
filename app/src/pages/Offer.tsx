@@ -1,38 +1,49 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, AlertIcon, Box, Button, Spinner, Text, VStack } from '@chakra-ui/react';
 import { Address } from 'abitype';
-import { useAccount, useContractRead, useContractReads, useContractWrite } from 'wagmi';
-import { ethers } from 'ethers';
+import { useAccount, useContractRead, useContractReads, useContractWrite, usePublicClient } from 'wagmi';
 import OfferStatus from '~/components/OfferStatus';
 import { offerContract, otcContract } from '~/helpers/contracts';
 import { Status } from '~/helpers/types';
+import { formatSeconds } from '~/helpers/time';
 
 interface OfferProps {
   address: Address;
 }
 
 const Offer: React.FC<OfferProps> = ({ address }) => {
-  const { address: walletAddr } = useAccount();
+  const { address: walletAddr, isConnected } = useAccount();
 
-  const {
-    data: status,
-    refetch: refetchStatus,
-    isLoading: isStatusLoading,
-  } = useContractRead({
+  const [status, setStatus] = useState<Status>();
+
+  const client = usePublicClient();
+
+  const [timestamp, setTimestamp] = useState<number>(0);
+
+  useEffect(() => {
+    client.getBlock().then((block) => setTimestamp(Number(block.timestamp)));
+
+    const timer = setInterval(() => setTimestamp((prev) => prev + 1), 1000);
+
+    return () => clearInterval(timer);
+  }, [client]);
+
+  const { isLoading: isStatusLoading } = useContractRead({
     ...offerContract(address),
     functionName: 'status',
+    onSuccess: setStatus,
   });
 
   const { write: closeOffer, isLoading: isClosing } = useContractWrite({
     ...offerContract(address),
     functionName: 'close',
-    onSuccess: refetchStatus,
+    onSuccess: () => setStatus(Status.Closed),
   });
 
   const { write: acceptOffer, isLoading: isAccepting } = useContractWrite({
     ...offerContract(address),
     functionName: 'accept',
-    onSuccess: refetchStatus,
+    onSuccess: () => setStatus(Status.Accepted),
   });
 
   const {
@@ -57,6 +68,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
       {
         ...offerContract(address),
         functionName: 'paymentBalanceForDepositor',
+        args: [walletAddr],
       },
       {
         ...offerContract(address),
@@ -69,14 +81,14 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
   const { write: depositFund, isLoading: isDepositing } = useContractWrite({
     ...offerContract(address),
     functionName: 'deposit',
-    onSuccess: refetchDeposit,
+    onSuccess: () => refetchDeposit(),
     args: [],
   });
 
   const { write: withdraw, isLoading: isWithdrawing } = useContractWrite({
     ...offerContract(address),
     functionName: 'withdraw',
-    onSuccess: refetchDeposit,
+    onSuccess: () => refetchDeposit(),
     args: [],
   });
 
@@ -119,7 +131,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
 
   const working =
     isClosing || isAccepting || isDepositing || isWithdrawing || isInfoLoading || isStatusLoading || isDepositLoading;
-
+  lockWithdrawUntil;
   return (
     <VStack>
       <OfferStatus status={status} />
@@ -162,31 +174,33 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
       </Box>
 
       {status !== Status.Accepted ? (
-        ethers.BigNumber.from(deposit).gt(0) && (
+        deposit > 0 && (
           <>
             <Text textAlign="right">Withdraw locked left</Text>
-            <Text>{lockWithdrawUntil}</Text>
-            <Button onClick={withdraw}>Withdraw</Button>
+            <Text>{formatSeconds(Number(lockWithdrawUntil) - timestamp)}</Text>
+            <Button onClick={withdraw} isDisabled={Number(lockWithdrawUntil) > timestamp}>
+              Withdraw
+            </Button>
           </>
         )
       ) : walletAddr === domainOwner ? (
         <>
           <Text textAlign="right">Payment balance</Text>
           <Text>{paymentBalanceForDomainOwner}</Text>
-          <Button isDisabled={ethers.BigNumber.from(paymentBalanceForDomainOwner).eq(0)}>Claim payment</Button>
+          <Button isDisabled={paymentBalanceForDomainOwner === 0n}>Claim payment</Button>
         </>
       ) : (
         <>
           <Text textAlign="right">Payment balance</Text>
           <Text>{paymentBalanceForDepositor}</Text>
-          <Button isDisabled={ethers.BigNumber.from(paymentBalanceForDepositor).eq(0)}>Claim payment</Button>
+          <Button isDisabled={paymentBalanceForDepositor === 0n}>Claim payment</Button>
         </>
       )}
 
       {status === Status.Open && (
         <>
           <Button onClick={depositFund}>Deposit</Button>
-          {ethers.BigNumber.from(deposit).toNumber() === 0 && (
+          {deposit === 0n && (
             <Button onClick={acceptOffer} isDisabled={working} isLoading={isAccepting} loadingText="Accept">
               Accept
             </Button>
