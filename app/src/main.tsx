@@ -1,15 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ChakraProvider, Container } from '@chakra-ui/react';
-import { WagmiConfig, createConfig, configureChains, mainnet, sepolia } from 'wagmi';
+import { WagmiConfig, createConfig, configureChains } from 'wagmi';
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 import App from '~/app';
+import chain from '~/helpers/chain';
 import * as CONFIG from '~/helpers/config';
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [CONFIG.prod ? mainnet : sepolia],
+  [chain],
   [alchemyProvider({ apiKey: CONFIG.alchemyApiKey }), publicProvider()],
 );
 

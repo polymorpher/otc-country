@@ -13,10 +13,11 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import debounce from 'lodash/debounce';
-import { useContractRead, useContractWrite } from 'wagmi';
-import { regexEtherAddress } from '~/helpers/address';
+import { isAddress } from 'viem';
+import { useContractRead } from 'wagmi';
 import { debounceTimeout } from '~/helpers/config';
 import { otcContract } from '~/helpers/contracts';
+import useContractWriteComplete from '~/hooks/useContractWriteComplete';
 import useToast from '~/hooks/useToast';
 
 const Admin: React.FC = () => {
@@ -37,7 +38,7 @@ const Admin: React.FC = () => {
     enabled: false,
   });
 
-  const { write: addAsset, isLoading: isAdding } = useContractWrite({
+  const { write: addAsset, isLoading: isAdding } = useContractWriteComplete({
     ...otcContract,
     functionName: 'addAsset',
     onSuccess: () =>
@@ -51,7 +52,7 @@ const Admin: React.FC = () => {
       }),
   });
 
-  const { write: removeAsset, isLoading: isRemoving } = useContractWrite({
+  const { write: removeAsset, isLoading: isRemoving } = useContractWriteComplete({
     ...otcContract,
     functionName: 'removeAsset',
     onSuccess: () =>
@@ -66,13 +67,13 @@ const Admin: React.FC = () => {
   });
 
   useEffect(() => {
-    if (asset && regexEtherAddress.test(asset)) {
+    if (asset && isAddress(asset)) {
       refetch();
     }
   }, [asset, refetch]);
 
   return (
-    <VStack>
+    <VStack width="full">
       <Text>Manage available assets</Text>
 
       <FormControl>
@@ -85,15 +86,15 @@ const Admin: React.FC = () => {
             </InputRightElement>
           )}
         </InputGroup>
-        <FormHelperText>
-          {asset
-            ? regexEtherAddress.test(asset)
-              ? assetRegistered
-                ? 'The asset is registered'
-                : 'The asset is not registered'
-              : 'Asset address is not correct'
-            : ''}
-        </FormHelperText>
+        {asset && (
+          <FormHelperText>
+            {!isAddress(asset)
+              ? 'incorrect value'
+              : assetRegistered
+              ? 'The asset is registered'
+              : 'The asset is not registered'}
+          </FormHelperText>
+        )}
       </FormControl>
 
       <HStack>
@@ -103,8 +104,8 @@ const Admin: React.FC = () => {
           loadingText="Add"
           onClick={() =>
             asset &&
-            regexEtherAddress.test(asset) &&
-            addAsset({
+            isAddress(asset) &&
+            addAsset?.({
               args: [asset],
             })
           }
@@ -117,8 +118,8 @@ const Admin: React.FC = () => {
           loadingText="Remove"
           onClick={() =>
             asset &&
-            regexEtherAddress.test(asset) &&
-            removeAsset({
+            isAddress(asset) &&
+            removeAsset?.({
               args: [asset],
             })
           }

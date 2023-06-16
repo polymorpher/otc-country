@@ -9,6 +9,7 @@ import { otcContract } from '~/helpers/contracts';
 import Admin from '~/pages/Admin';
 import NewOffer from '~/pages/NewOffer';
 import Offer from '~/pages/Offer';
+import ChainDetector from './components/ChainDetector';
 
 const App = () => {
   const { address, isConnected } = useAccount();
@@ -51,6 +52,7 @@ const App = () => {
     <VStack>
       <DomainInput onChange={setDomain} />
       <MetaMaskConnector />
+      <ChainDetector />
       {!domain ? (
         <Alert status="warning">
           <AlertIcon />

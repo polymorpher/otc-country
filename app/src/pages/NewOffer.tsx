@@ -17,10 +17,9 @@ import {
 import { yupResolver } from '@hookform/resolvers/yup';
 import { readContract } from '@wagmi/core';
 import debounce from 'lodash/debounce';
-import { keccak256, toHex } from 'viem';
+import { isAddress, keccak256, toHex } from 'viem';
 import { useAccount, useContractRead, useContractWrite } from 'wagmi';
 import * as yup from 'yup';
-import { regexEtherAddress } from '~/helpers/address';
 import { debounceTimeout } from '~/helpers/config';
 import { otcContract } from '~/helpers/contracts';
 
@@ -41,16 +40,16 @@ const checkAssetAvailable = debounce(
 
 const schema = (commissionRate: number) =>
   yup.object({
-    domainOwner: yup.string().required().matches(regexEtherAddress),
+    domainOwner: yup.string().required().test('address-syntax', 'invalid address', isAddress),
     srcAsset: yup
       .string()
       .required()
-      .matches(regexEtherAddress)
+      .test('address-syntax', 'invalid address', isAddress)
       .test('asset-availability', 'not available', checkAssetAvailable),
     destAsset: yup
       .string()
       .required()
-      .matches(regexEtherAddress)
+      .test('address-syntax', 'invalid address', isAddress)
       .test('asset-availability', 'not available', checkAssetAvailable),
     depositAmount: yup.number().required().min(0),
     acceptAmount: yup.number().required().min(0),
