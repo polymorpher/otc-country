@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Button,
   FormControl,
@@ -23,6 +23,8 @@ import useToast from '~/hooks/useToast';
 const Admin: React.FC = () => {
   const [asset, setAsset] = useState();
 
+  const inputRef = useRef(null);
+
   const { toastSuccess, toastError } = useToast();
 
   const handleDebouncedChange = useMemo(() => debounce((e) => setAsset(e.target.value), debounceTimeout), []);
@@ -41,28 +43,36 @@ const Admin: React.FC = () => {
   const { write: addAsset, isLoading: isAdding } = useContractWriteComplete({
     ...otcContract,
     functionName: 'addAsset',
-    onSuccess: () =>
+    description: 'Adding asset',
+    onSuccess: (data) =>
       toastSuccess({
         title: 'Asset has been added',
+        txHash: data.transactionHash,
       }),
-    onError: (err) =>
+    onSettled: (data, err) =>
+      err &&
       toastError({
         title: 'Failed to add the asset',
-        description: err.message,
+        description: err.details,
+        txHash: data?.transactionHash,
       }),
   });
 
   const { write: removeAsset, isLoading: isRemoving } = useContractWriteComplete({
     ...otcContract,
     functionName: 'removeAsset',
-    onSuccess: () =>
+    description: 'Removing asset',
+    onSuccess: (data) =>
       toastSuccess({
         title: 'Asset has been removed',
+        txHash: data.transactionHash,
       }),
-    onError: (err) =>
+    onSettled: (data, err) =>
+      err &&
       toastError({
-        title: 'Failed to remove the asset',
-        description: err.message,
+        title: 'Failed to removed the asset',
+        description: err.details,
+        txHash: data?.transactionHash,
       }),
   });
 
@@ -79,7 +89,7 @@ const Admin: React.FC = () => {
       <FormControl>
         <FormLabel>Asset address</FormLabel>
         <InputGroup>
-          <Input onChange={handleDebouncedChange} />
+          <Input onChange={handleDebouncedChange} ref={inputRef} />
           {isChecking && (
             <InputRightElement>
               <Spinner />

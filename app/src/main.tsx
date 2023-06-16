@@ -8,6 +8,7 @@ import { publicProvider } from 'wagmi/providers/public';
 import App from '~/app';
 import chain from '~/helpers/chain';
 import * as CONFIG from '~/helpers/config';
+import PendingTransactionsProvider from '~/providers/PendingTransactionsProvider';
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [chain],
@@ -27,7 +28,9 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <ChakraProvider>
       <Container my="10">
         <WagmiConfig config={config}>
-          <App />
+          <PendingTransactionsProvider>
+            <App />
+          </PendingTransactionsProvider>
         </WagmiConfig>
       </Container>
     </ChakraProvider>
