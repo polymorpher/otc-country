@@ -17,7 +17,7 @@ contract DomainContract is IDC {
     function getPrice(
         string calldata /* name */
     ) external pure override returns (uint256 price) {
-        price = 1;
+        price = 54321;
     }
 
     function register(

@@ -13,6 +13,29 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
+    },
+    mainnet: {
+      url: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_KEY_MAINNET}`,
+      accounts: [process.env.PRIVATE_KEY!],
+      verify: {
+        etherscan: {
+          apiUrl: 'https://api.etherscan.io'
+        }
+      }
+    },
+    sepolia: {
+      url: `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_KEY_SEPOLIA}`,
+      accounts: [process.env.PRIVATE_KEY!],
+      verify: {
+        etherscan: {
+          apiUrl: 'https://api-sepolia.etherscan.io'
+        }
+      }
+    }
+  },
+  verify: {
+    etherscan: {
+      apiKey: process.env.ETHERSCAN_KEY
     }
   }
 };
