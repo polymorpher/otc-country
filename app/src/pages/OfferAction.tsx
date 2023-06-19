@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Text } from '@chakra-ui/react';
+import { Alert, AlertIcon, Box, Button, Text } from '@chakra-ui/react';
 import { Address } from 'abitype';
-import { useAccount, useContractReads, useContractWrite, usePublicClient } from 'wagmi';
+import { formatUnits } from 'viem';
+import { useAccount, useContractReads, usePublicClient } from 'wagmi';
 import ClaimPayment from '~/components/ClaimPayment';
 import Withdraw from '~/components/Withdraw';
-import { offerContract } from '~/helpers/contracts';
-import { divideByDecimals } from '~/helpers/token';
+import { erc20Contract, offerContract } from '~/helpers/contracts';
 import { Status } from '~/helpers/types';
 import useContractWriteComplete from '~/hooks/useContractWriteComplete';
 import useToast from '~/hooks/useToast';
@@ -18,13 +18,14 @@ interface OfferAction extends OfferContext {
 const OfferAction: React.FC<OfferAction> = ({
   address,
   status,
-  onStateUpdate,
+  onStatusUpdate,
   onTotalDepositUpdate,
   loading,
   creator,
   srcDecimals,
   destDecimals,
   domainOwner,
+  destAsset,
 }) => {
   const { address: walletAddr } = useAccount();
 
@@ -51,7 +52,7 @@ const OfferAction: React.FC<OfferAction> = ({
     functionName: 'close',
     description: 'Closing offer',
     onSuccess: (data) => {
-      onStateUpdate(Status.Closed);
+      onStatusUpdate(Status.Closed);
       toastSuccess({
         title: 'Offer has been closed',
         txHash: data.transactionHash,
@@ -61,10 +62,10 @@ const OfferAction: React.FC<OfferAction> = ({
 
   const { write: acceptOffer, isLoading: isAccepting } = useContractWriteComplete({
     ...offerContract(address),
-    functionName: 'accept', // todo: send value
+    functionName: 'accept',
     description: 'Accepting offer',
     onSuccess: (data) => {
-      onStateUpdate(Status.Accepted);
+      onStatusUpdate(Status.Accepted);
       toastSuccess({
         title: 'Offer has been accepted',
         txHash: data.transactionHash,
@@ -160,8 +161,24 @@ const OfferAction: React.FC<OfferAction> = ({
     },
   });
 
-  const { result: deposit } = depositInfo?.[0] ?? {};
-  const { result: lockWithdrawUntil } = depositInfo?.[2] ?? {};
+  const { data: destAssetInfo } = useContractReads({
+    contracts: [
+      {
+        ...erc20Contract(destAsset),
+        functionName: 'balanceOf',
+      },
+      {
+        ...offerContract(address),
+        functionName: 'acceptAmount',
+      },
+    ],
+  });
+
+  const destBalance = destAssetInfo?.[0].result as bigint;
+  const acceptAmount = destAssetInfo?.[1].result as bigint;
+
+  const { result: deposit } = depositInfo?.[3] ?? {};
+  const { result: lockWithdrawUntil } = depositInfo?.[4] ?? {};
 
   const working =
     loading ||
@@ -177,7 +194,7 @@ const OfferAction: React.FC<OfferAction> = ({
     <Box>
       {deposit === 0n && <Text>You can deposit your funds or accept the offer</Text>}
       <Text textAlign="right">Deposit</Text>
-      <Text>{divideByDecimals(deposit as bigint, srcDecimals)}</Text>
+      <Text>{formatUnits(deposit as bigint, srcDecimals)}</Text>
 
       {status !== Status.Accepted ? (
         (deposit as bigint) > 0 && (
@@ -218,14 +235,23 @@ const OfferAction: React.FC<OfferAction> = ({
             Deposit
           </Button>
           {deposit === 0n && (
-            <Button
-              onClick={() => acceptOffer()} // todo
-              isDisabled={working}
-              isLoading={isAccepting}
-              loadingText="Accept"
-            >
-              Accept
-            </Button>
+            <>
+              {destBalance >= acceptAmount && (
+                <Alert status="warning">
+                  <AlertIcon />
+                  You have ${formatUnits(acceptAmount, Number(destDecimals))} of destination asset, which is not
+                  sufficient to accept the offer.
+                </Alert>
+              )}
+              <Button
+                onClick={() => acceptOffer?.()}
+                isDisabled={working || destBalance < acceptAmount}
+                isLoading={isAccepting}
+                loadingText="Accept"
+              >
+                Accept
+              </Button>
+            </>
           )}
           {creator === walletAddr && (
             <Button onClick={() => closeOffer?.()} isDisabled={working} isLoading={isClosing} loadingText="Close">

@@ -18,7 +18,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { readContract } from '@wagmi/core';
 import { Address } from 'abitype';
 import debounce from 'lodash/debounce';
-import { isAddress, keccak256, toHex } from 'viem';
+import { formatEther, isAddress, keccak256, toHex } from 'viem';
 import { useAccount, useContractRead, useContractWrite } from 'wagmi';
 import * as yup from 'yup';
 import { debounceTimeout } from '~/helpers/config';
@@ -71,7 +71,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     functionName: 'domainContract',
   });
 
-  const { refetch: refetchDomainPrice, isRefetching: isRefetchingDomainPrice } = useContractRead({
+  const { data: domainPrice, isRefetching: isRefetchingDomainPrice } = useContractRead({
     ...domainContract(domainContractAddress as Address),
     functionName: 'getPrice',
     args: [domain],
@@ -94,8 +94,6 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
 
   const handleCreateOffer: Parameters<typeof handleSubmit>[0] = useCallback(
     async (data) => {
-      const domainPrice = await refetchDomainPrice();
-
       createOffer?.({
         args: [
           domain,
@@ -108,10 +106,10 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
           data.commissionRate,
           data.lockWithdrawDuration,
         ],
-        value: domainPrice.data as bigint,
+        value: domainPrice as bigint,
       });
     },
-    [createOffer, domain, refetchDomainPrice],
+    [createOffer, domain, domainPrice],
   );
 
   if (!isConnected) {
@@ -126,6 +124,13 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
   return (
     <Box>
       <Text>Please create a new offer with the following information.</Text>
+
+      <Alert status="info">
+        <AlertIcon />
+        It costs {formatEther(domainPrice as bigint)} ether to buy that domain, and you need to have that amount of
+        ether to create an offer for the domain name.
+      </Alert>
+
       <form onSubmit={handleSubmit(handleCreateOffer)}>
         <FormControl isInvalid={!!errors.domainOwner}>
           <FormLabel>Domain owner</FormLabel>

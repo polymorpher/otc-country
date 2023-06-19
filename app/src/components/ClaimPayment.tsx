@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Button, Text } from '@chakra-ui/react';
-import { divideByDecimals } from '~/helpers/token';
+import { formatUnits } from 'viem';
 
 interface ClaimPaymentProps {
   balance: bigint;
@@ -13,7 +13,7 @@ interface ClaimPaymentProps {
 const ClaimPayment: React.FC<ClaimPaymentProps> = ({ balance, decimals, onClick, isClaiming, disabled }) => (
   <Box>
     <Text textAlign="right">Payment balance</Text>
-    <Text>{divideByDecimals(balance, decimals)}</Text>
+    <Text>{formatUnits(balance, decimals)}</Text>
     {balance > 0n && (
       <Button isDisabled={disabled} isLoading={isClaiming} loadingText="Claim payment" onClick={onClick}>
         Claim payment

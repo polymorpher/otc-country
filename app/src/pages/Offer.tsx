@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
 import { Alert, AlertIcon, Box, Spinner, Text, VStack } from '@chakra-ui/react';
 import { Address } from 'abitype';
+import { formatUnits } from 'viem';
 import { useAccount, useContractRead, useContractReads } from 'wagmi';
 import OfferStatus from '~/components/OfferStatus';
 import { erc20Contract, offerContract, otcContract } from '~/helpers/contracts';
-import { divideByDecimals } from '~/helpers/token';
 import { Status } from '~/helpers/types';
 
 export interface OfferContext {
   status: Status;
-  onStateUpdate: (status: Status) => void;
+  onStatusUpdate: (status: Status) => void;
   onTotalDepositUpdate: (value: bigint) => void;
   loading: boolean;
   creator: Address;
   domainOwner: Address;
+  destAsset: Address;
   srcDecimals: number;
   destDecimals: number;
 }
@@ -123,7 +124,7 @@ const Offer: React.FC<OfferProps> = ({ address, children }) => {
         <Text>{(Number(commissionRate) * 100) / Number(commissionRateScale)}</Text>
 
         <Text textAlign="right">Accept amount</Text>
-        <Text>{divideByDecimals(acceptAmount as bigint, Number(destDecimals))}</Text>
+        <Text>{formatUnits(acceptAmount as bigint, Number(destDecimals))}</Text>
 
         <Text textAlign="right">Source asset</Text>
         <Text>{String(srcAsset)}</Text>
@@ -132,17 +133,18 @@ const Offer: React.FC<OfferProps> = ({ address, children }) => {
         <Text>{String(destAsset)}</Text>
 
         <Text textAlign="right">Total deposits</Text>
-        {totalDeposits ? <Text>{divideByDecimals(totalDeposits, Number(srcDecimals))}</Text> : <Spinner />}
+        {totalDeposits ? <Text>{formatUnits(totalDeposits, Number(srcDecimals))}</Text> : <Spinner />}
       </Box>
 
       {status !== undefined &&
         children({
           status,
-          onStateUpdate: setStatus,
+          onStatusUpdate: setStatus,
           onTotalDepositUpdate: setTotalDeppsits,
           loading: isInfoLoading || isStatusLoading,
           creator: creator as Address,
           domainOwner: domainOwner as Address,
+          destAsset: destAsset as Address,
           srcDecimals: Number(srcDecimals),
           destDecimals: Number(destDecimals),
         })}
