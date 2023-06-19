@@ -3,6 +3,7 @@ import { Alert, AlertIcon, Box, Button, Text } from '@chakra-ui/react';
 import { Address } from 'abitype';
 import { formatUnits } from 'viem';
 import { useAccount, useContractReads, usePublicClient } from 'wagmi';
+import AmountPopover from '~/components/AmountPopover';
 import ClaimPayment from '~/components/ClaimPayment';
 import Withdraw from '~/components/Withdraw';
 import { erc20Contract, offerContract } from '~/helpers/contracts';
@@ -26,6 +27,7 @@ const OfferAction: React.FC<OfferAction> = ({
   destDecimals,
   domainOwner,
   destAsset,
+  srcAsset,
 }) => {
   const { address: walletAddr } = useAccount();
 
@@ -153,6 +155,11 @@ const OfferAction: React.FC<OfferAction> = ({
         functionName: 'lockWithdrawUntil',
         args: [walletAddr!],
       },
+      {
+        ...erc20Contract(srcAsset),
+        functionName: 'balanceOf',
+        args: [walletAddr!],
+      },
     ],
     onSuccess: ([totalDeposits, paymentBalanceForDomainOwner, paymentBalanceForDepositor]) => {
       onTotalDepositUpdate(totalDeposits.result as bigint);
@@ -161,11 +168,16 @@ const OfferAction: React.FC<OfferAction> = ({
     },
   });
 
+  const deposit = depositInfo?.[3].result as bigint;
+  const lockWithdrawUntil = depositInfo?.[4].result as bigint;
+  const srcBalance = depositInfo?.[5].result as bigint;
+
   const { data: destAssetInfo } = useContractReads({
     contracts: [
       {
         ...erc20Contract(destAsset),
         functionName: 'balanceOf',
+        args: [walletAddr!],
       },
       {
         ...offerContract(address),
@@ -176,9 +188,6 @@ const OfferAction: React.FC<OfferAction> = ({
 
   const destBalance = destAssetInfo?.[0].result as bigint;
   const acceptAmount = destAssetInfo?.[1].result as bigint;
-
-  const { result: deposit } = depositInfo?.[3] ?? {};
-  const { result: lockWithdrawUntil } = depositInfo?.[4] ?? {};
 
   const working =
     loading ||
@@ -194,17 +203,26 @@ const OfferAction: React.FC<OfferAction> = ({
     <Box>
       {deposit === 0n && <Text>You can deposit your funds or accept the offer</Text>}
       <Text textAlign="right">Deposit</Text>
-      <Text>{formatUnits(deposit as bigint, srcDecimals)}</Text>
+      <Text>{formatUnits(deposit, srcDecimals)}</Text>
 
       {status !== Status.Accepted ? (
-        (deposit as bigint) > 0 && (
-          <Withdraw
-            lockWithdrawUntil={Number(lockWithdrawUntil)}
-            timestamp={timestamp}
-            disabled={working}
-            isWithdrawing={isWithdrawing}
-            onClick={withdraw} // todo
-          />
+        deposit > 0 && (
+          <AmountPopover
+            max={deposit}
+            decimals={destDecimals}
+            onOkay={(amount) =>
+              withdraw?.({
+                args: [amount, walletAddr],
+              })
+            }
+          >
+            <Withdraw
+              lockWithdrawUntil={Number(lockWithdrawUntil)}
+              timestamp={timestamp}
+              disabled={working}
+              isWithdrawing={isWithdrawing}
+            />
+          </AmountPopover>
         )
       ) : walletAddr === domainOwner ? (
         <ClaimPayment
@@ -226,14 +244,19 @@ const OfferAction: React.FC<OfferAction> = ({
 
       {status === Status.Open && (
         <>
-          <Button
-            onClick={() => depositFund()} // todo
-            isDisabled={working}
-            isLoading={isDepositing}
-            loadingText="Deposit"
+          <AmountPopover
+            max={srcBalance}
+            decimals={srcDecimals}
+            onOkay={(amount) =>
+              depositFund?.({
+                args: [amount],
+              })
+            }
           >
-            Deposit
-          </Button>
+            <Button isDisabled={working} isLoading={isDepositing} loadingText="Deposit">
+              Deposit
+            </Button>
+          </AmountPopover>
           {deposit === 0n && (
             <>
               {destBalance >= acceptAmount && (

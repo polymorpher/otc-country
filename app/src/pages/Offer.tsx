@@ -14,6 +14,7 @@ export interface OfferContext {
   loading: boolean;
   creator: Address;
   domainOwner: Address;
+  srcAsset: Address;
   destAsset: Address;
   srcDecimals: number;
   destDecimals: number;
@@ -144,6 +145,7 @@ const Offer: React.FC<OfferProps> = ({ address, children }) => {
           loading: isInfoLoading || isStatusLoading,
           creator: creator as Address,
           domainOwner: domainOwner as Address,
+          srcAsset: srcAsset as Address,
           destAsset: destAsset as Address,
           srcDecimals: Number(srcDecimals),
           destDecimals: Number(destDecimals),

@@ -7,7 +7,7 @@ interface WithdrawProps {
   timestamp: number;
   disabled: boolean;
   isWithdrawing: boolean;
-  onClick: VoidFunction;
+  onClick?: VoidFunction;
 }
 
 const Withdraw: React.FC<WithdrawProps> = ({ lockWithdrawUntil, timestamp, disabled, isWithdrawing, onClick }) => (
