@@ -16,12 +16,13 @@ import {
 } from '@chakra-ui/react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { readContract } from '@wagmi/core';
+import { Address } from 'abitype';
 import debounce from 'lodash/debounce';
 import { isAddress, keccak256, toHex } from 'viem';
 import { useAccount, useContractRead, useContractWrite } from 'wagmi';
 import * as yup from 'yup';
 import { debounceTimeout } from '~/helpers/config';
-import { otcContract } from '~/helpers/contracts';
+import { otcContract, domainContract } from '~/helpers/contracts';
 
 interface NewOfferProps {
   domain: string;
@@ -65,6 +66,18 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     functionName: 'commissionRateScale',
   });
 
+  const { data: domainContractAddress } = useContractRead({
+    ...otcContract,
+    functionName: 'domainContract',
+  });
+
+  const { refetch: refetchDomainPrice, isRefetching: isRefetchingDomainPrice } = useContractRead({
+    ...domainContract(domainContractAddress as Address),
+    functionName: 'getPrice',
+    args: [domain],
+    enabled: false,
+  });
+
   const {
     register,
     handleSubmit,
@@ -73,14 +86,16 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     resolver: yupResolver(schema(Number(commissionRateScale))),
   });
 
-  const { write: createOffer, isLoading } = useContractWrite({
+  const { write: createOffer, isLoading: isCreatingOffer } = useContractWrite({
     ...otcContract,
     functionName: 'createOffer',
     onSuccess: onCreate,
   });
 
   const handleCreateOffer: Parameters<typeof handleSubmit>[0] = useCallback(
-    (data) =>
+    async (data) => {
+      const domainPrice = await refetchDomainPrice();
+
       createOffer?.({
         args: [
           domain,
@@ -93,8 +108,10 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
           data.commissionRate,
           data.lockWithdrawDuration,
         ],
-      }),
-    [createOffer, domain],
+        value: domainPrice.data as bigint,
+      });
+    },
+    [createOffer, domain, refetchDomainPrice],
   );
 
   if (!isConnected) {
@@ -165,7 +182,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
           <Input {...register('lockWithdrawDuration')} />
           <FormErrorMessage>{errors.lockWithdrawDuration?.message}</FormErrorMessage>
         </FormControl>
-        <Button type="submit" isLoading={isLoading} loadingText="Create">
+        <Button type="submit" isLoading={isRefetchingDomainPrice || isCreatingOffer} loadingText="Create">
           Create
         </Button>
       </form>
