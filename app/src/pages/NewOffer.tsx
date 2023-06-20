@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form';
 import {
   Alert,
   AlertIcon,
-  Box,
   Button,
   FormControl,
   FormErrorMessage,
@@ -13,14 +12,16 @@ import {
   InputRightElement,
   Spinner,
   Text,
+  VStack,
 } from '@chakra-ui/react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { readContract } from '@wagmi/core';
 import { Address } from 'abitype';
 import debounce from 'lodash/debounce';
 import { formatEther, isAddress, keccak256, toHex } from 'viem';
-import { useAccount, useContractRead, useContractWrite } from 'wagmi';
+import { useAccount, useBalance, useContractRead, useContractWrite } from 'wagmi';
 import * as yup from 'yup';
+import chain from '~/helpers/chain';
 import { debounceTimeout } from '~/helpers/config';
 import { otcContract, domainContract } from '~/helpers/contracts';
 
@@ -31,6 +32,7 @@ interface NewOfferProps {
 
 const checkAssetAvailable = debounce(
   (asset: string) =>
+    isAddress(asset) &&
     readContract({
       ...otcContract,
       functionName: 'assets',
@@ -54,12 +56,17 @@ const schema = (commissionRate: number) =>
       .test('asset-availability', 'not available', checkAssetAvailable),
     depositAmount: yup.number().required().min(0),
     acceptAmount: yup.number().required().min(0),
-    commissionRate: yup.number().required().min(commissionRate),
+    commissionRate: yup.number().required().max(commissionRate),
     lockWithdrawDuration: yup.number().required().min(0),
   });
 
 const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
+
+  const { data: balance } = useBalance({
+    address,
+    chainId: chain.id,
+  });
 
   const { data: commissionRateScale } = useContractRead({
     ...otcContract,
@@ -75,7 +82,6 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     ...domainContract(domainContractAddress as Address),
     functionName: 'getPrice',
     args: [domain],
-    enabled: false,
   });
 
   const {
@@ -122,16 +128,22 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
   }
 
   return (
-    <Box>
-      <Text>Please create a new offer with the following information.</Text>
+    <VStack>
+      <Text fontSize="2xl" my="10">
+        Please create a new offer with the following information.
+      </Text>
 
-      <Alert status="info">
-        <AlertIcon />
-        It costs {formatEther(domainPrice as bigint)} ether to buy that domain, and you need to have that amount of
-        ether to create an offer for the domain name.
-      </Alert>
+      {balance?.value !== undefined && domainPrice !== undefined && domainPrice !== null && (
+        <Alert status={balance?.value > domainPrice ? 'info' : 'warning'}>
+          <AlertIcon />
+          It costs {formatEther(domainPrice as bigint)} ETH to buy that domain.
+          {balance?.value > domainPrice
+            ? 'You will spend that amount of ETH to create an offer for the domain name.'
+            : 'Your ETH balance is not sufficient now.'}
+        </Alert>
+      )}
 
-      <form onSubmit={handleSubmit(handleCreateOffer)}>
+      <VStack onSubmit={handleSubmit(handleCreateOffer)} as="form" width="full">
         <FormControl isInvalid={!!errors.domainOwner}>
           <FormLabel>Domain owner</FormLabel>
           <Input {...register('domainOwner')} />
@@ -190,8 +202,8 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
         <Button type="submit" isLoading={isRefetchingDomainPrice || isCreatingOffer} loadingText="Create">
           Create
         </Button>
-      </form>
-    </Box>
+      </VStack>
+    </VStack>
   );
 };
 
