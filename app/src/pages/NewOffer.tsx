@@ -162,7 +162,6 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
               )}
             />
           )}
-          <Input {...register('depositAmount')} />
           <FormErrorMessage>{errors.depositAmount?.message}</FormErrorMessage>
         </FormControl>
 
