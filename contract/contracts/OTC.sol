@@ -111,6 +111,19 @@ contract OTC is Ownable {
     }
 
     /**
+     * @notice Get address of offer contract
+     * @param domainName_ domain name of the offer contract
+     * @return contractAddress offer contract address
+     */
+    function computedOfferAddress(
+        string calldata domainName_
+    ) external view returns (address contractAddress) {
+        contractAddress = offerFactory.getAddress(
+            keccak256(abi.encodePacked(domainName_))
+        );
+    }
+
+    /**
      * @notice Get address of offer contract if created
      * @param domainName_ domain name of the offer contract
      * @return contractAddress offer contract address if created, zero address if offer was not created

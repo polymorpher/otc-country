@@ -77,7 +77,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     handleSubmit,
     control,
     getValues,
-    formState: { errors, isValidating },
+    formState: { errors, isValidating, isDirty },
   } = useForm({
     resolver: yupResolver(schema(Number(commissionRateScale))),
   });
@@ -90,8 +90,9 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
       srcAsset: getValues('srcAsset') as Address,
       domain,
       chainId: chain.id,
-      onCreate,
     });
+
+  const isInvalidSrcAsset = srcBalance === undefined || srcDecimals === undefined;
 
   if (!isConnected) {
     return (
@@ -118,14 +119,14 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
         </Alert>
       )}
 
-      <VStack onSubmit={handleSubmit((data) => createOffer(data).then(() => onCreate()))} as="form" width="full">
+      <VStack onSubmit={handleSubmit((data) => createOffer(data).then(onCreate))} as="form" width="full">
         <FormControl isInvalid={!!errors.domainOwner}>
           <FormLabel>Domain owner</FormLabel>
           <Input {...register('domainOwner')} />
           <FormErrorMessage>{errors.domainOwner?.message}</FormErrorMessage>
         </FormControl>
 
-        <FormControl isInvalid={!!errors.srcAsset}>
+        <FormControl isInvalid={!!errors.srcAsset || (isDirty && isInvalidSrcAsset)}>
           <FormLabel>Source asset</FormLabel>
           <InputGroup>
             <Input {...register('srcAsset')} />
@@ -135,7 +136,9 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
               </InputRightElement>
             )}
           </InputGroup>
-          <FormErrorMessage>{errors.srcAsset?.message}</FormErrorMessage>
+          <FormErrorMessage>
+            {errors.srcAsset?.message ?? (isDirty && isInvalidSrcAsset && 'source asset is invalid')}
+          </FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.destAsset}>
@@ -151,9 +154,9 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
           <FormErrorMessage>{errors.destAsset?.message}</FormErrorMessage>
         </FormControl>
 
-        <FormControl isInvalid={!!errors.depositAmount}>
-          <FormLabel>Deposit amount</FormLabel>
-          {srcBalance !== undefined && srcDecimals !== undefined && (
+        {!isInvalidSrcAsset && (
+          <FormControl isInvalid={!!errors.depositAmount}>
+            <FormLabel>Deposit amount</FormLabel>
             <Controller
               control={control}
               name="depositAmount"
@@ -161,9 +164,9 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
                 <AmountPicker onChange={field.onChange} max={srcBalance} decimals={Number(srcDecimals)} />
               )}
             />
-          )}
-          <FormErrorMessage>{errors.depositAmount?.message}</FormErrorMessage>
-        </FormControl>
+            <FormErrorMessage>{errors.depositAmount?.message}</FormErrorMessage>
+          </FormControl>
+        )}
 
         <FormControl isInvalid={!!errors.acceptAmount}>
           <FormLabel>Accept amount</FormLabel>

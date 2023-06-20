@@ -44,7 +44,7 @@ const useAccept = ({ userAddress, offerAddress, destAsset, onSuccess }: Config) 
   });
 
   const { writeAsync: approveDestAsset, isLoading: isApproving } = useContractWriteComplete({
-    ...offerContract(offerAddress),
+    ...erc20Contract(destAsset),
     functionName: 'approve',
     description: 'Allowing the offer to handle destination asset',
   });
@@ -52,12 +52,12 @@ const useAccept = ({ userAddress, offerAddress, destAsset, onSuccess }: Config) 
   const onAccept = useCallback(async () => {
     if (allowance < acceptAmount) {
       await approveDestAsset?.({
-        args: [userAddress, offerAddress],
+        args: [offerAddress, acceptAmount],
       });
     }
 
     await acceptOffer?.();
-  }, [acceptAmount, acceptOffer, allowance, approveDestAsset, offerAddress, userAddress]);
+  }, [acceptAmount, acceptOffer, allowance, approveDestAsset, offerAddress]);
 
   return {
     destBalance,

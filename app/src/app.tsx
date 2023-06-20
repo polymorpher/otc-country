@@ -44,15 +44,13 @@ const App = () => {
 
   return (
     <VStack width="full">
-      <DomainInput onChange={setDomain} />
+      <DomainInput onChange={setDomain} loading={isRefetching} />
       {!domain ? (
         <Alert status="warning">
           <AlertIcon />
           Please enter domain name
         </Alert>
-      ) : isRefetching ? (
-        <Spinner />
-      ) : offerAddress === zeroAddress ? (
+      ) : isRefetching ? null : offerAddress === zeroAddress ? (
         <NewOffer domain={domain} onCreate={refetch} />
       ) : offerAddress ? (
         <Offer address={offerAddress as Address}>

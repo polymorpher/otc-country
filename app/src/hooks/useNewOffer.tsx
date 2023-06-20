@@ -10,7 +10,6 @@ interface Config {
   srcAsset: Address;
   chainId: number;
   domain: string;
-  onCreate: VoidFunction;
 }
 
 interface OfferData {
@@ -23,7 +22,7 @@ interface OfferData {
   lockWithdrawDuration: bigint;
 }
 
-const useNewOffer = ({ address, srcAsset, domain, chainId, onCreate }: Config) => {
+const useNewOffer = ({ address, srcAsset, domain, chainId }: Config) => {
   const { data: balance } = useBalance({
     address,
     chainId,
@@ -46,16 +45,33 @@ const useNewOffer = ({ address, srcAsset, domain, chainId, onCreate }: Config) =
     args: [address],
   });
 
+  const { data: computedOfferAddress } = useContractRead({
+    ...otcContract,
+    functionName: 'computedOfferAddress',
+    args: [domain],
+  });
+
+  const { data: allowance } = useContractRead({
+    ...erc20Contract(srcAsset),
+    functionName: 'allowance',
+    args: [address, computedOfferAddress],
+  });
+
   const { data: srcDecimals } = useContractRead({
     ...erc20Contract(srcAsset),
     functionName: 'decimals',
+  });
+
+  const { writeAsync: approveSrcAsset, isLoading: isApproving } = useContractWriteComplete({
+    ...erc20Contract(srcAsset),
+    functionName: 'approve',
+    description: 'Allowing deposition of source asset',
   });
 
   const { writeAsync: createOfferAsync, isLoading: isCreatingOffer } = useContractWriteComplete({
     ...otcContract,
     functionName: 'createOffer',
     description: 'Creating offer',
-    onSuccess: onCreate,
   });
 
   const createOffer = useCallback(
@@ -67,8 +83,14 @@ const useNewOffer = ({ address, srcAsset, domain, chainId, onCreate }: Config) =
       acceptAmount,
       commissionRate,
       lockWithdrawDuration,
-    }: OfferData) =>
-      createOfferAsync?.({
+    }: OfferData) => {
+      if ((allowance as bigint) < depositAmount) {
+        await approveSrcAsset?.({
+          args: [computedOfferAddress, depositAmount],
+        });
+      }
+
+      return createOfferAsync?.({
         args: [
           domain,
           keccak256(toHex(Math.random().toString())),
@@ -81,8 +103,9 @@ const useNewOffer = ({ address, srcAsset, domain, chainId, onCreate }: Config) =
           lockWithdrawDuration,
         ],
         value: domainPrice as bigint,
-      }),
-    [createOfferAsync, domain, domainPrice],
+      });
+    },
+    [allowance, approveSrcAsset, computedOfferAddress, createOfferAsync, domain, domainPrice],
   );
 
   return {
@@ -91,7 +114,7 @@ const useNewOffer = ({ address, srcAsset, domain, chainId, onCreate }: Config) =
     srcDecimals: srcDecimals as bigint,
     domainPrice: domainPrice as bigint,
     isRefetchingDomainPrice,
-    isCreatingOffer,
+    isCreatingOffer: isApproving || isCreatingOffer,
     createOffer,
   };
 };
