@@ -15,7 +15,7 @@ const DomainInput: React.FC<DomainInputProps> = ({ onChange, loading }) => {
     <InputGroup>
       <Input placeholder="3rd level domain" onChange={handleDebouncedChange} />
       {loading && (
-        <InputRightElement>
+        <InputRightElement right="7.7em">
           <Spinner />
         </InputRightElement>
       )}

@@ -8,6 +8,7 @@ import {
   NumberInputStepper,
   Slider,
   SliderFilledTrack,
+  SliderMark,
   SliderThumb,
   SliderTrack,
 } from '@chakra-ui/react';
@@ -51,6 +52,17 @@ const AmountPicker: React.FC<AmountPickerProps> = ({ onChange, max, decimals }) 
         value={(value * 100) / maxVal}
         onChange={(value) => setValue((maxVal * value) / 100)}
       >
+        <SliderMark
+          value={(value * 100) / maxVal}
+          textAlign="center"
+          bg="blue.500"
+          color="white"
+          mt="-6"
+          ml="-5"
+          px="1"
+        >
+          {(value & (100 / maxVal)).toFixed(2)}%
+        </SliderMark>
         <SliderTrack>
           <SliderFilledTrack />
         </SliderTrack>
