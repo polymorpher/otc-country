@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { useForm } from 'react-hook-form';
+import React from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import {
   Alert,
   AlertIcon,
@@ -18,12 +18,14 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { readContract } from '@wagmi/core';
 import { Address } from 'abitype';
 import debounce from 'lodash/debounce';
-import { formatEther, isAddress, keccak256, toHex } from 'viem';
-import { useAccount, useBalance, useContractRead, useContractWrite } from 'wagmi';
+import { formatEther, isAddress } from 'viem';
+import { useAccount, useContractRead } from 'wagmi';
 import * as yup from 'yup';
+import AmountPicker from '~/components/AmountPicker';
 import chain from '~/helpers/chain';
 import { debounceTimeout } from '~/helpers/config';
-import { otcContract, domainContract } from '~/helpers/contracts';
+import { otcContract } from '~/helpers/contracts';
+import useNewOffer from '~/hooks/useNewOffer';
 
 interface NewOfferProps {
   domain: string;
@@ -54,69 +56,42 @@ const schema = (commissionRate: number) =>
       .required()
       .test('address-syntax', 'invalid address', isAddress)
       .test('asset-availability', 'not available', checkAssetAvailable),
-    depositAmount: yup.number().required().min(0),
-    acceptAmount: yup.number().required().min(0),
-    commissionRate: yup.number().required().max(commissionRate),
-    lockWithdrawDuration: yup.number().required().min(0),
+    depositAmount: yup.number().typeError('must be a number').required().min(0, 'min value 0'),
+    acceptAmount: yup.number().typeError('must be a number').required().min(0, 'min value 0'),
+    commissionRate: yup
+      .number()
+      .typeError('must be a number')
+      .required()
+      .max(commissionRate, `max value ${commissionRate}`),
+    lockWithdrawDuration: yup.number().typeError('must be a number').required().min(0, 'min value 0'),
   });
 
 const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
-  const { address, isConnected } = useAccount();
-
-  const { data: balance } = useBalance({
-    address,
-    chainId: chain.id,
-  });
-
   const { data: commissionRateScale } = useContractRead({
     ...otcContract,
     functionName: 'commissionRateScale',
   });
 
-  const { data: domainContractAddress } = useContractRead({
-    ...otcContract,
-    functionName: 'domainContract',
-  });
-
-  const { data: domainPrice, isRefetching: isRefetchingDomainPrice } = useContractRead({
-    ...domainContract(domainContractAddress as Address),
-    functionName: 'getPrice',
-    args: [domain],
-  });
-
   const {
     register,
     handleSubmit,
+    control,
+    getValues,
     formState: { errors, isValidating },
   } = useForm({
     resolver: yupResolver(schema(Number(commissionRateScale))),
   });
 
-  const { write: createOffer, isLoading: isCreatingOffer } = useContractWrite({
-    ...otcContract,
-    functionName: 'createOffer',
-    onSuccess: onCreate,
-  });
+  const { address, isConnected } = useAccount();
 
-  const handleCreateOffer: Parameters<typeof handleSubmit>[0] = useCallback(
-    async (data) => {
-      createOffer?.({
-        args: [
-          domain,
-          keccak256(toHex(Math.random().toString())),
-          data.domainOwner,
-          data.srcAsset,
-          data.destAsset,
-          data.depositAmount,
-          data.acceptAmount,
-          data.commissionRate,
-          data.lockWithdrawDuration,
-        ],
-        value: domainPrice as bigint,
-      });
-    },
-    [createOffer, domain, domainPrice],
-  );
+  const { balance, domainPrice, srcBalance, srcDecimals, isRefetchingDomainPrice, isCreatingOffer, createOffer } =
+    useNewOffer({
+      address,
+      srcAsset: getValues('srcAsset') as Address,
+      domain,
+      chainId: chain.id,
+      onCreate,
+    });
 
   if (!isConnected) {
     return (
@@ -133,17 +108,17 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
         Please create a new offer with the following information.
       </Text>
 
-      {balance?.value !== undefined && domainPrice !== undefined && domainPrice !== null && (
-        <Alert status={balance?.value > domainPrice ? 'info' : 'warning'}>
+      {!isRefetchingDomainPrice && (
+        <Alert status={balance > domainPrice ? 'info' : 'warning'}>
           <AlertIcon />
           It costs {formatEther(domainPrice as bigint)} ETH to buy that domain.
-          {balance?.value > domainPrice
+          {balance > domainPrice
             ? 'You will spend that amount of ETH to create an offer for the domain name.'
             : 'Your ETH balance is not sufficient now.'}
         </Alert>
       )}
 
-      <VStack onSubmit={handleSubmit(handleCreateOffer)} as="form" width="full">
+      <VStack onSubmit={handleSubmit((data) => createOffer(data).then(() => onCreate()))} as="form" width="full">
         <FormControl isInvalid={!!errors.domainOwner}>
           <FormLabel>Domain owner</FormLabel>
           <Input {...register('domainOwner')} />
@@ -178,6 +153,15 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
 
         <FormControl isInvalid={!!errors.depositAmount}>
           <FormLabel>Deposit amount</FormLabel>
+          {srcBalance !== undefined && srcDecimals !== undefined && (
+            <Controller
+              control={control}
+              name="depositAmount"
+              render={({ field }) => (
+                <AmountPicker onChange={field.onChange} max={srcBalance} decimals={Number(srcDecimals)} />
+              )}
+            />
+          )}
           <Input {...register('depositAmount')} />
           <FormErrorMessage>{errors.depositAmount?.message}</FormErrorMessage>
         </FormControl>
@@ -199,7 +183,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
           <Input {...register('lockWithdrawDuration')} />
           <FormErrorMessage>{errors.lockWithdrawDuration?.message}</FormErrorMessage>
         </FormControl>
-        <Button type="submit" isLoading={isRefetchingDomainPrice || isCreatingOffer} loadingText="Create">
+        <Button type="submit" isLoading={isCreatingOffer} loadingText="Create">
           Create
         </Button>
       </VStack>

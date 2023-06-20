@@ -2,12 +2,6 @@ import React, { useCallback, useState } from 'react';
 import {
   Button,
   ButtonGroup,
-  Flex,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
   Popover,
   PopoverArrow,
   PopoverBody,
@@ -17,32 +11,24 @@ import {
   PopoverHeader,
   PopoverTrigger,
   Portal,
-  Slider,
-  SliderFilledTrack,
-  SliderThumb,
-  SliderTrack,
 } from '@chakra-ui/react';
-import { formatUnits, parseUnits } from 'viem';
+import AmountPicker, { AmountPickerProps } from './AmountPicker';
 
-interface AmountPopover {
+interface AmountPopover extends AmountPickerProps {
   children: JSX.Element;
-  max: bigint;
-  decimals: number;
   onOkay: (value: bigint) => void;
 }
 
 const AmountPopover: React.FC<AmountPopover> = ({ max, decimals, onOkay, children }) => {
-  const [value, setValue] = useState(0);
+  const [value, setValue] = useState(0n);
 
   const handleOkayClick = useCallback(
     (onClose: VoidFunction) => () => {
       onClose();
-      onOkay(parseUnits(`${value}`, decimals));
+      onOkay(value);
     },
-    [onOkay, value, decimals],
+    [onOkay, value],
   );
-
-  const maxVal = Number(formatUnits(max, decimals));
 
   return (
     <Popover>
@@ -56,34 +42,7 @@ const AmountPopover: React.FC<AmountPopover> = ({ max, decimals, onOkay, childre
               <PopoverCloseButton />
 
               <PopoverBody>
-                <Flex>
-                  <NumberInput
-                    maxW="100px"
-                    mr="2rem"
-                    min={0}
-                    max={maxVal}
-                    value={value}
-                    onChange={(val) => setValue(Number(val))}
-                  >
-                    <NumberInputField />
-                    <NumberInputStepper>
-                      <NumberIncrementStepper />
-                      <NumberDecrementStepper />
-                    </NumberInputStepper>
-                  </NumberInput>
-
-                  <Slider
-                    flex="1"
-                    focusThumbOnChange={false}
-                    value={(value * 100) / maxVal}
-                    onChange={(value) => setValue((maxVal * value) / 100)}
-                  >
-                    <SliderTrack>
-                      <SliderFilledTrack />
-                    </SliderTrack>
-                    <SliderThumb />
-                  </Slider>
-                </Flex>
+                <AmountPicker max={max} decimals={decimals} onChange={setValue} />
               </PopoverBody>
 
               <PopoverFooter textAlign="right">
