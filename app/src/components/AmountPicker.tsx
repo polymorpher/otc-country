@@ -58,10 +58,10 @@ const AmountPicker: React.FC<AmountPickerProps> = ({ onChange, max, decimals }) 
           bg="blue.500"
           color="white"
           mt="-6"
-          ml="-5"
+          ml="-6"
           px="1"
         >
-          {(value & (100 / maxVal)).toFixed(2)}%
+          {((value * 100) / maxVal).toFixed(0)}%
         </SliderMark>
         <SliderTrack>
           <SliderFilledTrack />

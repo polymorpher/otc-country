@@ -1,29 +1,23 @@
 import React from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, RegisterOptions } from 'react-hook-form';
 import {
   Alert,
   AlertIcon,
   Button,
   FormControl,
   FormErrorMessage,
+  FormHelperText,
   FormLabel,
   Input,
-  InputGroup,
-  InputRightElement,
-  Spinner,
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { yupResolver } from '@hookform/resolvers/yup';
 import { readContract } from '@wagmi/core';
 import { Address } from 'abitype';
-import debounce from 'lodash/debounce';
 import { formatEther, isAddress } from 'viem';
 import { useAccount, useContractRead } from 'wagmi';
-import * as yup from 'yup';
 import AmountPicker from '~/components/AmountPicker';
 import chain from '~/helpers/chain';
-import { debounceTimeout } from '~/helpers/config';
 import { otcContract } from '~/helpers/contracts';
 import useNewOffer from '~/hooks/useNewOffer';
 
@@ -32,39 +26,63 @@ interface NewOfferProps {
   onCreate: () => void;
 }
 
-const checkAssetAvailable = debounce(
-  (asset: string) =>
-    isAddress(asset) &&
-    readContract({
-      ...otcContract,
-      functionName: 'assets',
-      args: [asset],
-    }).then((res) => !!res),
-  debounceTimeout,
-);
+const checkAssetAvailable = (asset: string) =>
+  readContract({
+    ...otcContract,
+    functionName: 'assets',
+    args: [asset],
+  }).then((res) => !!res);
 
-const schema = (commissionRate: number) =>
-  yup.object({
-    domainOwner: yup.string().required().test('address-syntax', 'invalid address', isAddress),
-    srcAsset: yup
-      .string()
-      .required()
-      .test('address-syntax', 'invalid address', isAddress)
-      .test('asset-availability', 'not available', checkAssetAvailable),
-    destAsset: yup
-      .string()
-      .required()
-      .test('address-syntax', 'invalid address', isAddress)
-      .test('asset-availability', 'not available', checkAssetAvailable),
-    depositAmount: yup.number().typeError('must be a number').required().min(0, 'min value 0'),
-    acceptAmount: yup.number().typeError('must be a number').required().min(0, 'min value 0'),
-    commissionRate: yup
-      .number()
-      .typeError('must be a number')
-      .required()
-      .max(commissionRate, `max value ${commissionRate}`),
-    lockWithdrawDuration: yup.number().typeError('must be a number').required().min(0, 'min value 0'),
-  });
+const rules: Record<string, RegisterOptions> = {
+  domainOwner: {
+    required: 'required',
+    validate: {
+      address: (v: string) => isAddress(v) || 'not address format',
+    },
+  },
+  srcAsset: {
+    required: 'required',
+    validate: {
+      address: (v: string) => isAddress(v) || 'not address format',
+      available: async (v: string) => (await checkAssetAvailable(v)) || 'not available',
+    },
+  },
+  destAsset: {
+    required: 'required',
+    validate: {
+      address: (v: string) => isAddress(v) || 'not address format',
+      available: async (v: string) => (await checkAssetAvailable(v)) || 'not available',
+    },
+  },
+  depositAmount: {
+    required: 'required',
+    validate: {
+      number: (v: string) => !isNaN(Number(v)) || 'not number',
+    },
+    min: { value: 0, message: 'should be above 0' },
+  },
+  acceptAmount: {
+    required: 'required',
+    validate: {
+      number: (v: string) => !isNaN(Number(v)) || 'not number',
+    },
+    min: { value: 0, message: 'should be above 0' },
+  },
+  commissionRate: {
+    required: true,
+    validate: {
+      number: (v: string) => !isNaN(Number(v)) || 'not number',
+    },
+    min: { value: 0, message: 'should be above 0' },
+  },
+  lockWithdrawDuration: {
+    required: true,
+    validate: {
+      number: (v: string) => !isNaN(Number(v)) || 'not number',
+    },
+    min: { value: 0, message: 'should be above 0' },
+  },
+};
 
 const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
   const { data: commissionRateScale } = useContractRead({
@@ -76,11 +94,10 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     register,
     handleSubmit,
     control,
+    watch,
     getValues,
-    formState: { errors, isValidating, isDirty },
-  } = useForm({
-    resolver: yupResolver(schema(Number(commissionRateScale))),
-  });
+    formState: { errors, isDirty },
+  } = useForm();
 
   const { address, isConnected } = useAccount();
 
@@ -109,7 +126,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
         Please create a new offer with the following information.
       </Text>
 
-      {!isRefetchingDomainPrice && (
+      {!isRefetchingDomainPrice && domainPrice !== undefined && (
         <Alert status={balance > domainPrice ? 'info' : 'warning'}>
           <AlertIcon />
           It costs {formatEther(domainPrice as bigint)} ETH to buy that domain.
@@ -122,35 +139,22 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
       <VStack onSubmit={handleSubmit((data) => createOffer(data).then(onCreate))} as="form" width="full">
         <FormControl isInvalid={!!errors.domainOwner}>
           <FormLabel>Domain owner</FormLabel>
-          <Input {...register('domainOwner')} />
+          <Input {...register('domainOwner', rules.domainOwner)} />
           <FormErrorMessage>{errors.domainOwner?.message}</FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.srcAsset || (isDirty && isInvalidSrcAsset)}>
           <FormLabel>Source asset</FormLabel>
-          <InputGroup>
-            <Input {...register('srcAsset')} />
-            {isValidating && (
-              <InputRightElement>
-                <Spinner />
-              </InputRightElement>
-            )}
-          </InputGroup>
+          <Input {...register('srcAsset', rules.srcAsset)} />
           <FormErrorMessage>
-            {errors.srcAsset?.message ?? (isDirty && isInvalidSrcAsset && 'source asset is invalid')}
+            {errors.srcAsset?.message ?? (isDirty && isInvalidSrcAsset && 'source asset is not ERC20')}
           </FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.destAsset}>
           <FormLabel>Destination asset</FormLabel>
-          <InputGroup>
-            <Input {...register('destAsset')} />
-            {isValidating && (
-              <InputRightElement>
-                <Spinner />
-              </InputRightElement>
-            )}
-          </InputGroup>
+          <Input {...register('destAsset', rules.destAsset)} />
+
           <FormErrorMessage>{errors.destAsset?.message}</FormErrorMessage>
         </FormControl>
 
@@ -170,19 +174,30 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
 
         <FormControl isInvalid={!!errors.acceptAmount}>
           <FormLabel>Accept amount</FormLabel>
-          <Input {...register('acceptAmount')} />
+          <Input {...register('acceptAmount', rules.acceptAmount)} />
           <FormErrorMessage>{errors.acceptAmount?.message}</FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.commissionRate}>
           <FormLabel>Commission rate</FormLabel>
-          <Input {...register('commissionRate')} />
+          <Input
+            {...register('commissionRate', {
+              ...rules.commissionRate,
+              max: {
+                value: commissionRateScale,
+                message: `should be less than ${commissionRateScale}`,
+              },
+            })}
+          />
+          {!errors.commissionRate && commissionRateScale !== undefined && watch('commissionRate') !== undefined && (
+            <FormHelperText>{(Number(watch('commissionRate')) * 100) / Number(commissionRateScale)}%</FormHelperText>
+          )}
           <FormErrorMessage>{errors.commissionRate?.message}</FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.lockWithdrawDuration}>
           <FormLabel>Lock withdraw duration</FormLabel>
-          <Input {...register('lockWithdrawDuration')} />
+          <Input {...register('lockWithdrawDuration', rules.lockWithdrawDuration)} />
           <FormErrorMessage>{errors.lockWithdrawDuration?.message}</FormErrorMessage>
         </FormControl>
         <Button type="submit" isLoading={isCreatingOffer} loadingText="Create">
