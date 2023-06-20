@@ -8,6 +8,7 @@ import ClaimPayment from '~/components/ClaimPayment';
 import Withdraw from '~/components/Withdraw';
 import { erc20Contract, offerContract } from '~/helpers/contracts';
 import { Status } from '~/helpers/types';
+import useAccept from '~/hooks/useAccept';
 import useContractWriteComplete from '~/hooks/useContractWriteComplete';
 import useToast from '~/hooks/useToast';
 import { OfferContext } from './Offer';
@@ -62,10 +63,15 @@ const OfferAction: React.FC<OfferAction> = ({
     },
   });
 
-  const { write: acceptOffer, isLoading: isAccepting } = useContractWriteComplete({
-    ...offerContract(address),
-    functionName: 'accept',
-    description: 'Accepting offer',
+  const {
+    destBalance,
+    acceptAmount,
+    isLoading: isAccepting,
+    onAccept,
+  } = useAccept({
+    userAddress: walletAddr!,
+    offerAddress: address,
+    destAsset,
     onSuccess: (data) => {
       onStatusUpdate(Status.Accepted);
       toastSuccess({
@@ -172,23 +178,6 @@ const OfferAction: React.FC<OfferAction> = ({
   const lockWithdrawUntil = depositInfo?.[4].result as bigint;
   const srcBalance = depositInfo?.[5].result as bigint;
 
-  const { data: destAssetInfo } = useContractReads({
-    contracts: [
-      {
-        ...erc20Contract(destAsset),
-        functionName: 'balanceOf',
-        args: [walletAddr!],
-      },
-      {
-        ...offerContract(address),
-        functionName: 'acceptAmount',
-      },
-    ],
-  });
-
-  const destBalance = destAssetInfo?.[0].result as bigint;
-  const acceptAmount = destAssetInfo?.[1].result as bigint;
-
   const working =
     loading ||
     isClosing ||
@@ -267,7 +256,7 @@ const OfferAction: React.FC<OfferAction> = ({
                 </Alert>
               )}
               <Button
-                onClick={() => acceptOffer?.()}
+                onClick={onAccept}
                 isDisabled={working || destBalance < acceptAmount}
                 isLoading={isAccepting}
                 loadingText="Accept"

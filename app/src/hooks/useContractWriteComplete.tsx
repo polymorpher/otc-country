@@ -1,3 +1,5 @@
+import { useCallback, useRef } from 'react';
+import { WriteContractResult } from '@wagmi/core';
 import { TransactionReceipt } from 'viem';
 import { useContractWrite, useWaitForTransaction } from 'wagmi';
 import { usePendingTransactions } from '~/providers/PendingTransactionsProvider';
@@ -18,9 +20,15 @@ const useContractWriteComplete = ({
   onError?: (error: Record<string, string>) => void;
   onSettled?: (data: TransactionReceipt | undefined, error: Record<string, string> | null) => void;
 }) => {
+  const resolveRef = useRef<(value: WriteContractResult) => void>();
+
   const { initiateNewTx, completeTx } = usePendingTransactions();
 
-  const { data, ...other } = useContractWrite({
+  const {
+    data,
+    writeAsync: writeTxAsync,
+    ...other
+  } = useContractWrite({
     ...options,
     onSuccess: (data) =>
       initiateNewTx({
@@ -37,14 +45,26 @@ const useContractWriteComplete = ({
         hash: arg.transactionHash,
       });
       onSuccess?.(arg);
+      resolveRef.current?.({ hash: arg.transactionHash });
     },
     onError,
     onSettled,
   } as WaitForTransactionOptions);
 
+  const writeAsync: ReturnType<typeof useContractWrite>['writeAsync'] = useCallback(
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    (config) => {
+      writeTxAsync?.(config);
+      return new Promise<WriteContractResult>((resolve) => (resolveRef.current = resolve));
+    },
+    [writeTxAsync],
+  );
+
   return {
     ...waitResult,
     ...other,
+    writeAsync,
     isLoading: waitResult.isLoading || other.isLoading,
   };
 };
