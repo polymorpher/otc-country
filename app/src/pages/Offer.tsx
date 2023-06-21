@@ -46,8 +46,8 @@ const Offer: React.FC<OfferProps> = ({ address, children }) => {
   } = useContractReads({
     contracts: [
       {
-        ...otcContract,
-        functionName: 'commissionRateScale',
+        ...offerContract(address),
+        functionName: 'totalDeposits',
       },
       {
         ...offerContract(address),
@@ -73,16 +73,22 @@ const Offer: React.FC<OfferProps> = ({ address, children }) => {
         ...offerContract(address),
         functionName: 'destAsset',
       },
+
+      {
+        ...otcContract,
+        functionName: 'commissionRateScale',
+      },
     ],
+    onSuccess: ([totalDeposits]) => setTotalDeppsits(totalDeposits.result as bigint),
   });
 
-  const { result: commissionRateScale } = info?.[0] ?? {};
   const { result: creator } = info?.[1] ?? {};
   const { result: domainOwner } = info?.[2] ?? {};
   const { result: commissionRate } = info?.[3] ?? {};
   const { result: acceptAmount } = info?.[4] ?? {};
   const { result: srcAsset } = info?.[5] ?? {};
   const { result: destAsset } = info?.[6] ?? {};
+  const { result: commissionRateScale } = info?.[7] ?? {};
 
   const { data: srcDecimals } = useContractRead({
     ...erc20Contract(srcAsset as Address),
@@ -104,7 +110,7 @@ const Offer: React.FC<OfferProps> = ({ address, children }) => {
         Offer information
       </Text>
 
-      {isInfoLoading && <Spinner />}
+      {(isInfoLoading || totalDeposits === undefined) && <Spinner />}
 
       {error && (
         <Alert status="error">
@@ -113,7 +119,7 @@ const Offer: React.FC<OfferProps> = ({ address, children }) => {
         </Alert>
       )}
 
-      {info && (
+      {info && totalDeposits !== undefined && (
         <Box display="grid" gridTemplateColumns="10em 1fr" gridRowGap="4" gridColumnGap="4">
           <Text textAlign="right">Creator</Text>
           <AddressField text={creator === walletAddr ? 'You' : undefined}>{String(creator)}</AddressField>
@@ -134,7 +140,7 @@ const Offer: React.FC<OfferProps> = ({ address, children }) => {
           <AddressField>{String(destAsset)}</AddressField>
 
           <Text textAlign="right">Total deposits</Text>
-          {totalDeposits ? <Text>{formatUnits(totalDeposits, Number(srcDecimals))}</Text> : <Spinner />}
+          <Text>{formatUnits(totalDeposits, Number(srcDecimals))}</Text>
         </Box>
       )}
 

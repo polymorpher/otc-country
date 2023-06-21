@@ -17,7 +17,7 @@ import { formatUnits, parseUnits } from 'viem';
 export interface AmountPickerProps {
   max: bigint;
   decimals: number;
-  onChange: (value: bigint) => void;
+  onChange?: (value: bigint) => void;
 }
 
 const AmountPicker: React.FC<AmountPickerProps> = ({ onChange, max, decimals }) => {
@@ -26,7 +26,7 @@ const AmountPicker: React.FC<AmountPickerProps> = ({ onChange, max, decimals }) 
   const maxVal = Number(formatUnits(max, decimals));
 
   useEffect(() => {
-    onChange(parseUnits(`${value}`, decimals));
+    onChange && onChange(parseUnits(`${value}`, decimals));
   }, [value, decimals, onChange]);
 
   return (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, AlertIcon, Box, Button, Text } from '@chakra-ui/react';
+import { Alert, AlertIcon, Box, Button, Spinner, Text } from '@chakra-ui/react';
 import { Address } from 'abitype';
 import { formatUnits } from 'viem';
 import { useAccount, useContractReads, usePublicClient } from 'wagmi';
@@ -136,7 +136,6 @@ const OfferAction: React.FC<OfferAction> = ({
     refetch: refetchDeposit,
     isRefetching: isDepositLoading,
   } = useContractReads({
-    enabled: false,
     contracts: [
       {
         ...offerContract(address),
@@ -187,6 +186,10 @@ const OfferAction: React.FC<OfferAction> = ({
     isDepositLoading ||
     isClaimingDepositorPayment ||
     isClaimingDomainOwnerPayment;
+
+  if (depositInfo === undefined) {
+    return <Spinner />;
+  }
 
   return (
     <Box>
