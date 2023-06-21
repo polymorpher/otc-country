@@ -53,9 +53,7 @@ const App = () => {
       ) : isRefetching ? null : offerAddress === zeroAddress ? (
         <NewOffer domain={domain} onCreate={refetch} />
       ) : offerAddress ? (
-        <Offer address={offerAddress as Address}>
-          {(context) => isConnected && <OfferAction address={offerAddress as Address} {...context} />}
-        </Offer>
+        <Offer address={offerAddress as Address} />
       ) : null}
       {error && (
         <Alert status="error">

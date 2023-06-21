@@ -1,5 +1,5 @@
 import { Address } from 'abitype';
-import { useContractRead, useContractReads } from 'wagmi';
+import { useAccount, useContractRead, useContractReads } from 'wagmi';
 import { erc20Contract, offerContract, otcContract } from '~/helpers/contracts';
 import { Status } from '~/helpers/types';
 
@@ -8,28 +8,12 @@ interface Config {
 }
 
 const useOffer = ({ address }: Config) => {
-  const {
-    data: status,
-    refetch: refetchStatus,
-    isLoading: isStatusLoading,
-  } = useContractRead({
-    ...offerContract(address),
-    functionName: 'status',
-  });
-
-  const {
-    data: totalDeposits,
-    refetch: refetchTotalDeposits,
-    isLoading: isTotalDepositsLoading,
-  } = useContractRead({
-    ...offerContract(address),
-    functionName: 'totalDeposits',
-  });
+  const { address: walletAddr } = useAccount();
 
   const {
     data: info,
     error,
-    isLoading: isInfoLoading,
+    isLoading: isLoadingInfo,
   } = useContractReads({
     contracts: [
       {
@@ -82,34 +66,91 @@ const useOffer = ({ address }: Config) => {
     functionName: 'decimals',
   });
 
+  const {
+    data: status,
+    refetch: refetchStatus,
+    isLoading: isLoadingStatus,
+  } = useContractRead({
+    ...offerContract(address),
+    functionName: 'status',
+  });
+
+  const {
+    data: totalDeposits,
+    refetch: refetchTotalDeposits,
+    isLoading: isLoadingTotalDeposits,
+  } = useContractRead({
+    ...offerContract(address),
+    functionName: 'totalDeposits',
+  });
+
+  const {
+    data: paymentBalanceForDomainOwner,
+    refetch: refetchPaymentBalanceForDomainOwner,
+    isLoading: isLoadingPaymentBalanceForDomainOwner,
+  } = useContractRead({
+    ...offerContract(address),
+    functionName: 'paymentBalanceForDomainOwner',
+  });
+
+  const {
+    data: paymentBalanceForDepositor,
+    refetch: refetchPaymentBalanceForDepositor,
+    isLoading: isLoadingPaymentBalanceForDepositor,
+  } = useContractRead({ ...offerContract(address), functionName: 'paymentBalanceForDepositor', args: [walletAddr] });
+
+  const {
+    data: deposits,
+    refetch: refetchDeposits,
+    isLoading: isLoadingDeposits,
+  } = useContractRead({ ...offerContract(address), functionName: 'deposits', args: [walletAddr] });
+
+  const {
+    data: lockWithdrawUntil,
+    refetch: refetchLockWithdrawUntil,
+    isLoading: isLoadingLockWithdrawUntil,
+  } = useContractRead({ ...offerContract(address), functionName: 'lockWithdrawUntil', args: [walletAddr] });
+
+  const {
+    data: balanceOf,
+    refetch: refetchBalanceOf,
+    isLoading: isLoadingBalanceOf,
+  } = useContractRead({ ...erc20Contract(srcAsset), functionName: 'balanceOf', args: [walletAddr] });
+
   return {
     data: {
-      creator: creator as Address | undefined,
-      domainOwner: domainOwner as Address | undefined,
-      commissionRate: commissionRate as bigint | undefined,
-      acceptAmount: acceptAmount as bigint | undefined,
-      srcAsset: srcAsset as Address | undefined,
-      destAsset: destAsset as Address | undefined,
-      commissionRateScale: commissionRateScale as bigint | undefined,
+      creator: creator as Address,
+      domainOwner: domainOwner as Address,
+      commissionRate: commissionRate as bigint,
+      acceptAmount: acceptAmount as bigint,
+      srcAsset: srcAsset as Address,
+      destAsset: destAsset as Address,
+      commissionRateScale: commissionRateScale as bigint,
       srcDecimals: srcDecimals === undefined ? undefined : Number(srcDecimals),
       destDecimals: destDecimals === undefined ? undefined : Number(destDecimals),
-      totalDeposits: totalDeposits as bigint | undefined,
-      status: status as Status | undefined,
+      totalDeposits: totalDeposits as bigint,
+      status: status as Status,
+      paymentBalanceForDepositor: paymentBalanceForDepositor as bigint,
+      paymentBalanceForDomainOwner: paymentBalanceForDomainOwner as bigint,
+      deposits: deposits as bigint,
+      lockWithdrawUntil: lockWithdrawUntil as bigint,
+      balanceOf: balanceOf as bigint,
     },
     refetch: {
       refetchStatus,
       refetchTotalDeposits,
+      refetchPaymentBalanceForDomainOwner,
+      refetchPaymentBalanceForDepositor,
+      refetchDeposits,
+      refetchLockWithdrawUntil,
+      refetchBalanceOf,
     },
     isLoading: {
-      isStatusLoading: isStatusLoading || status === undefined,
-      isTotalDepositsLoading: isTotalDepositsLoading || totalDeposits === undefined,
-      isLoading:
-        isInfoLoading ||
-        info === undefined ||
-        isStatusLoading ||
-        status === undefined ||
-        isTotalDepositsLoading ||
-        totalDeposits === undefined,
+      isLoadingStatus: isLoadingStatus || status === undefined,
+      isLoadingTotalDeposits: isLoadingTotalDeposits || totalDeposits === undefined,
+      isLoadingDeposits: isLoadingDeposits || deposits === undefined,
+      isLoadingLockWithdrawUntil: isLoadingLockWithdrawUntil || lockWithdrawUntil || undefined,
+      isLoading: isLoadingInfo || info === undefined || isLoadingStatus || status === undefined,
     },
     error,
   };

@@ -1,28 +1,26 @@
 import { useCallback } from 'react';
 import { Address } from 'abitype';
 import { TransactionReceipt } from 'viem';
-import { useContractReads } from 'wagmi';
+import { useAccount, useContractReads } from 'wagmi';
 import { erc20Contract, offerContract } from '~/helpers/contracts';
 import useContractWriteComplete from './useContractWriteComplete';
 
 interface Config {
   offerAddress: Address;
   destAsset: Address;
-  userAddress: Address;
+  acceptAmount: bigint;
   onSuccess: (data: TransactionReceipt) => void;
 }
 
-const useAccept = ({ userAddress, offerAddress, destAsset, onSuccess }: Config) => {
+const useAccept = ({ offerAddress, destAsset, acceptAmount, onSuccess }: Config) => {
+  const { address: userAddress } = useAccount();
+
   const { data: destAssetInfo } = useContractReads({
     contracts: [
       {
         ...erc20Contract(destAsset),
         functionName: 'balanceOf',
         args: [userAddress],
-      },
-      {
-        ...offerContract(offerAddress),
-        functionName: 'acceptAmount',
       },
       {
         ...erc20Contract(destAsset),
@@ -33,8 +31,7 @@ const useAccept = ({ userAddress, offerAddress, destAsset, onSuccess }: Config) 
   });
 
   const destBalance = destAssetInfo?.[0].result as bigint;
-  const acceptAmount = destAssetInfo?.[1].result as bigint;
-  const allowance = destAssetInfo?.[2].result as bigint;
+  const allowance = destAssetInfo?.[1].result as bigint;
 
   const { writeAsync: acceptOffer, isLoading: isAccepting } = useContractWriteComplete({
     ...offerContract(offerAddress),
