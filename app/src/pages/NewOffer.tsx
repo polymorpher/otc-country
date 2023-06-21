@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Controller, useForm, RegisterOptions } from 'react-hook-form';
 import {
   Alert,
@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react';
 import { readContract } from '@wagmi/core';
 import { Address } from 'abitype';
-import { formatEther, isAddress } from 'viem';
+import { formatEther, isAddress, parseUnits } from 'viem';
 import { useAccount, useContractRead } from 'wagmi';
 import AmountPicker from '~/components/AmountPicker';
 import chain from '~/helpers/chain';
@@ -34,7 +34,19 @@ const checkAssetAvailable = (asset: string) =>
     args: [asset],
   }).then((res) => !!res);
 
-const rules: Record<string, RegisterOptions> = {
+const defaultValues = {
+  domainOwner: '' as Address,
+  srcAsset: '' as Address,
+  destAsset: '' as Address,
+  depositAmount: '',
+  acceptAmount: '',
+  commissionRate: '',
+  lockWithdrawDuration: '',
+};
+
+type FormFields = typeof defaultValues;
+
+const rules: Record<keyof FormFields, RegisterOptions> = {
   domainOwner: {
     required: 'required',
     validate: {
@@ -97,32 +109,55 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     control,
     watch,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    defaultValues,
+  });
 
   const { address, isConnected } = useAccount();
 
   const { toastSuccess, toastError } = useToast();
 
-  const { balance, domainPrice, srcBalance, srcDecimals, isRefetchingDomainPrice, isCreatingOffer, createOffer } =
-    useNewOffer({
-      address,
-      srcAsset: watch('srcAsset') as Address,
-      domain,
-      chainId: chain.id,
-      onSuccess: (data) => {
-        toastSuccess({
-          title: 'Offer has been created',
-          txHash: data.transactionHash,
-        });
-      },
-      onSettled: (data, err) =>
-        err &&
-        toastError({
-          title: 'Failed to create the offer',
-          description: err.details,
-          txHash: data?.transactionHash,
-        }),
-    });
+  const {
+    balance,
+    domainPrice,
+    srcBalance,
+    srcDecimals,
+    destDecimals,
+    isRefetchingDomainPrice,
+    isCreatingOffer,
+    createOffer,
+  } = useNewOffer({
+    address,
+    srcAsset: watch('srcAsset') as Address,
+    destAsset: watch('destAsset') as Address,
+    domain,
+    chainId: chain.id,
+    onSuccess: (data) => {
+      toastSuccess({
+        title: 'Offer has been created',
+        txHash: data.transactionHash,
+      });
+    },
+    onSettled: (data, err) =>
+      err &&
+      toastError({
+        title: 'Failed to create the offer',
+        description: err.details,
+        txHash: data?.transactionHash,
+      }),
+  });
+
+  const handleOfferSubmit = useCallback(
+    (data: FormFields) =>
+      createOffer({
+        ...data,
+        depositAmount: BigInt(data.depositAmount),
+        acceptAmount: parseUnits(data.acceptAmount, destDecimals),
+        commissionRate: BigInt(data.commissionRate),
+        lockWithdrawDuration: BigInt(data.lockWithdrawDuration),
+      }).then(onCreate),
+    [createOffer, destDecimals, onCreate],
+  );
 
   if (!isConnected) {
     return (
@@ -149,7 +184,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
         </Alert>
       )}
 
-      <VStack onSubmit={handleSubmit((data) => createOffer(data).then(onCreate))} as="form" width="full">
+      <VStack onSubmit={handleSubmit(handleOfferSubmit)} as="form" width="full">
         <FormControl isInvalid={!!errors.domainOwner}>
           <FormLabel>Domain owner</FormLabel>
           <Input {...register('domainOwner', rules.domainOwner)} />

@@ -8,6 +8,7 @@ import useContractWriteComplete, { SettledHandler, SuccessHandler } from './useC
 interface Config {
   address: Address;
   srcAsset: Address;
+  destAsset: Address;
   chainId: number;
   domain: string;
   onSettled: SettledHandler;
@@ -24,7 +25,7 @@ interface OfferData {
   lockWithdrawDuration: bigint;
 }
 
-const useNewOffer = ({ address, srcAsset, domain, chainId, onSuccess, onSettled }: Config) => {
+const useNewOffer = ({ address, srcAsset, destAsset, domain, chainId, onSuccess, onSettled }: Config) => {
   const { data: balance } = useBalance({
     address,
     chainId,
@@ -57,10 +58,16 @@ const useNewOffer = ({ address, srcAsset, domain, chainId, onSuccess, onSettled 
     ...erc20Contract(srcAsset),
     functionName: 'allowance',
     args: [address, computedOfferAddress],
+    enabled: false,
   });
 
   const { data: srcDecimals } = useContractRead({
     ...erc20Contract(srcAsset),
+    functionName: 'decimals',
+  });
+
+  const { data: destDecimals } = useContractRead({
+    ...erc20Contract(destAsset),
     functionName: 'decimals',
   });
 
@@ -119,6 +126,7 @@ const useNewOffer = ({ address, srcAsset, domain, chainId, onSuccess, onSettled 
     balance: balance?.value as bigint,
     srcBalance: srcBalance as bigint,
     srcDecimals: srcDecimals as bigint,
+    destDecimals: destDecimals as bigint,
     domainPrice: domainPrice as bigint,
     isRefetchingDomainPrice,
     isCreatingOffer: isApproving || isCreatingOffer,
