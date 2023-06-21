@@ -57,30 +57,30 @@ const rules: Record<string, RegisterOptions> = {
   depositAmount: {
     required: 'required',
     validate: {
-      number: (v: string) => !isNaN(Number(v)) || 'not number',
+      number: (v: string) => !isNaN(Number(v)) || 'should be number',
+      notZero: (v: string) => Number(v) > 0 || 'should be not zero',
     },
-    min: { value: 0, message: 'should be above 0' },
   },
   acceptAmount: {
     required: 'required',
     validate: {
-      number: (v: string) => !isNaN(Number(v)) || 'not number',
+      number: (v: string) => !isNaN(Number(v)) || 'should be number',
+      notZero: (v: string) => Number(v) > 0 || 'should be not zero',
     },
-    min: { value: 0, message: 'should be above 0' },
   },
   commissionRate: {
     required: true,
     validate: {
-      number: (v: string) => !isNaN(Number(v)) || 'not number',
+      number: (v: string) => !isNaN(Number(v)) || 'should be number',
+      notZero: (v: string) => Number(v) > 0 || 'should be not zero',
     },
-    min: { value: 0, message: 'should be above 0' },
   },
   lockWithdrawDuration: {
     required: true,
     validate: {
-      number: (v: string) => !isNaN(Number(v)) || 'not number',
+      number: (v: string) => !isNaN(Number(v)) || 'should be number',
+      notZero: (v: string) => Number(v) > 0 || 'should be not zero',
     },
-    min: { value: 0, message: 'should be above 0' },
   },
 };
 
@@ -95,8 +95,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     handleSubmit,
     control,
     watch,
-    getValues,
-    formState: { errors, isDirty },
+    formState: { errors },
   } = useForm();
 
   const { address, isConnected } = useAccount();
@@ -104,12 +103,10 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
   const { balance, domainPrice, srcBalance, srcDecimals, isRefetchingDomainPrice, isCreatingOffer, createOffer } =
     useNewOffer({
       address,
-      srcAsset: getValues('srcAsset') as Address,
+      srcAsset: watch('srcAsset') as Address,
       domain,
       chainId: chain.id,
     });
-
-  const isInvalidSrcAsset = srcBalance === undefined || srcDecimals === undefined;
 
   if (!isConnected) {
     return (
@@ -140,42 +137,45 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
         <FormControl isInvalid={!!errors.domainOwner}>
           <FormLabel>Domain owner</FormLabel>
           <Input {...register('domainOwner', rules.domainOwner)} />
-          <FormErrorMessage>{errors.domainOwner?.message}</FormErrorMessage>
+          <FormErrorMessage>{errors.domainOwner?.message?.toString()}</FormErrorMessage>
         </FormControl>
 
-        <FormControl isInvalid={!!errors.srcAsset || (isDirty && isInvalidSrcAsset)}>
+        <FormControl isInvalid={!!errors.srcAsset}>
           <FormLabel>Source asset</FormLabel>
           <Input {...register('srcAsset', rules.srcAsset)} />
-          <FormErrorMessage>
-            {errors.srcAsset?.message ?? (isDirty && isInvalidSrcAsset && 'source asset is not ERC20')}
-          </FormErrorMessage>
+          <FormErrorMessage>{errors.srcAsset?.message?.toString()}</FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.destAsset}>
           <FormLabel>Destination asset</FormLabel>
           <Input {...register('destAsset', rules.destAsset)} />
 
-          <FormErrorMessage>{errors.destAsset?.message}</FormErrorMessage>
+          <FormErrorMessage>{errors.destAsset?.message?.toString()}</FormErrorMessage>
         </FormControl>
 
-        {!isInvalidSrcAsset && (
+        {srcBalance !== undefined && srcDecimals !== undefined && (
           <FormControl isInvalid={!!errors.depositAmount}>
             <FormLabel>Deposit amount</FormLabel>
             <Controller
               control={control}
               name="depositAmount"
+              rules={rules.depositAmount}
               render={({ field }) => (
-                <AmountPicker onChange={field.onChange} max={srcBalance} decimals={Number(srcDecimals)} />
+                <AmountPicker
+                  onChange={(value) => field.onChange(value.toString())}
+                  max={srcBalance}
+                  decimals={Number(srcDecimals)}
+                />
               )}
             />
-            <FormErrorMessage>{errors.depositAmount?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.depositAmount?.message?.toString()}</FormErrorMessage>
           </FormControl>
         )}
 
         <FormControl isInvalid={!!errors.acceptAmount}>
           <FormLabel>Accept amount</FormLabel>
           <Input {...register('acceptAmount', rules.acceptAmount)} />
-          <FormErrorMessage>{errors.acceptAmount?.message}</FormErrorMessage>
+          <FormErrorMessage>{errors.acceptAmount?.message?.toString()}</FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.commissionRate}>
@@ -184,21 +184,21 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
             {...register('commissionRate', {
               ...rules.commissionRate,
               max: {
-                value: commissionRateScale,
+                value: Number(commissionRateScale),
                 message: `should be less than ${commissionRateScale}`,
               },
             })}
           />
-          {!errors.commissionRate && commissionRateScale !== undefined && watch('commissionRate') !== undefined && (
+          {!errors.commissionRate && commissionRateScale !== undefined && !!watch('commissionRate') && (
             <FormHelperText>{(Number(watch('commissionRate')) * 100) / Number(commissionRateScale)}%</FormHelperText>
           )}
-          <FormErrorMessage>{errors.commissionRate?.message}</FormErrorMessage>
+          <FormErrorMessage>{errors.commissionRate?.message?.toString()}</FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.lockWithdrawDuration}>
           <FormLabel>Lock withdraw duration</FormLabel>
           <Input {...register('lockWithdrawDuration', rules.lockWithdrawDuration)} />
-          <FormErrorMessage>{errors.lockWithdrawDuration?.message}</FormErrorMessage>
+          <FormErrorMessage>{errors.lockWithdrawDuration?.message?.toString()}</FormErrorMessage>
         </FormControl>
         <Button type="submit" isLoading={isCreatingOffer} loadingText="Create">
           Create

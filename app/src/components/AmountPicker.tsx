@@ -32,7 +32,7 @@ const AmountPicker: React.FC<AmountPickerProps> = ({ onChange, max, decimals }) 
   return (
     <Flex>
       <NumberInput
-        maxW="100px"
+        maxW="10em"
         mr="2rem"
         min={0}
         max={maxVal}
@@ -58,7 +58,7 @@ const AmountPicker: React.FC<AmountPickerProps> = ({ onChange, max, decimals }) 
           bg="blue.500"
           color="white"
           mt="-6"
-          ml="-6"
+          transform="translateX(-50%)"
           px="1"
         >
           {((value * 100) / maxVal).toFixed(0)}%
