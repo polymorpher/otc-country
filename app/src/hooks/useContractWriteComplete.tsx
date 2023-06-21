@@ -8,6 +8,12 @@ type ContractWriteOptions = Parameters<typeof useContractWrite>[0];
 
 type WaitForTransactionOptions = Parameters<typeof useWaitForTransaction>[0];
 
+export type SuccessHandler = (data: TransactionReceipt) => void;
+
+export type SettledHandler = (data: TransactionReceipt | undefined, error: Record<string, string> | null) => void;
+
+export type ErrorHandler = (error: Record<string, string>) => void;
+
 const useContractWriteComplete = ({
   description,
   onSuccess,
@@ -16,9 +22,9 @@ const useContractWriteComplete = ({
   ...options
 }: Omit<ContractWriteOptions, 'onSuccess' | 'onError' | 'onSettled'> & {
   description: string;
-  onSuccess?: (data: TransactionReceipt) => void;
-  onError?: (error: Record<string, string>) => void;
-  onSettled?: (data: TransactionReceipt | undefined, error: Record<string, string> | null) => void;
+  onSuccess?: SuccessHandler;
+  onSettled?: SettledHandler;
+  onError?: ErrorHandler;
 }) => {
   const resolveRef = useRef<(value: WriteContractResult) => void>();
 

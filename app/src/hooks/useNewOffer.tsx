@@ -3,13 +3,15 @@ import { Address } from 'abitype';
 import { keccak256, toHex } from 'viem';
 import { useBalance, useContractRead } from 'wagmi';
 import { domainContract, erc20Contract, otcContract } from '~/helpers/contracts';
-import useContractWriteComplete from './useContractWriteComplete';
+import useContractWriteComplete, { SettledHandler, SuccessHandler } from './useContractWriteComplete';
 
 interface Config {
   address: Address;
   srcAsset: Address;
   chainId: number;
   domain: string;
+  onSettled: SettledHandler;
+  onSuccess: SuccessHandler;
 }
 
 interface OfferData {
@@ -22,7 +24,7 @@ interface OfferData {
   lockWithdrawDuration: bigint;
 }
 
-const useNewOffer = ({ address, srcAsset, domain, chainId }: Config) => {
+const useNewOffer = ({ address, srcAsset, domain, chainId, onSuccess, onSettled }: Config) => {
   const { data: balance } = useBalance({
     address,
     chainId,
@@ -51,7 +53,7 @@ const useNewOffer = ({ address, srcAsset, domain, chainId }: Config) => {
     args: [domain],
   });
 
-  const { data: allowance } = useContractRead({
+  const { data: allowance, refetch: refetchAllowance } = useContractRead({
     ...erc20Contract(srcAsset),
     functionName: 'allowance',
     args: [address, computedOfferAddress],
@@ -65,13 +67,16 @@ const useNewOffer = ({ address, srcAsset, domain, chainId }: Config) => {
   const { writeAsync: approveSrcAsset, isLoading: isApproving } = useContractWriteComplete({
     ...erc20Contract(srcAsset),
     functionName: 'approve',
-    description: 'Allowing deposition of source asset',
+    description: 'Approving deposition',
+    onSettled,
   });
 
   const { writeAsync: createOfferAsync, isLoading: isCreatingOffer } = useContractWriteComplete({
     ...otcContract,
     functionName: 'createOffer',
     description: 'Creating offer',
+    onSettled,
+    onSuccess,
   });
 
   const createOffer = useCallback(
@@ -84,6 +89,8 @@ const useNewOffer = ({ address, srcAsset, domain, chainId }: Config) => {
       commissionRate,
       lockWithdrawDuration,
     }: OfferData) => {
+      await refetchAllowance();
+
       if ((allowance as bigint) < depositAmount) {
         await approveSrcAsset?.({
           args: [computedOfferAddress, depositAmount],
@@ -105,7 +112,7 @@ const useNewOffer = ({ address, srcAsset, domain, chainId }: Config) => {
         value: domainPrice as bigint,
       });
     },
-    [allowance, approveSrcAsset, computedOfferAddress, createOfferAsync, domain, domainPrice],
+    [allowance, approveSrcAsset, computedOfferAddress, createOfferAsync, domain, domainPrice, refetchAllowance],
   );
 
   return {

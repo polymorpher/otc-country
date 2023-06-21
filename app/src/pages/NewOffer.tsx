@@ -20,6 +20,7 @@ import AmountPicker from '~/components/AmountPicker';
 import chain from '~/helpers/chain';
 import { otcContract } from '~/helpers/contracts';
 import useNewOffer from '~/hooks/useNewOffer';
+import useToast from '~/hooks/useToast';
 
 interface NewOfferProps {
   domain: string;
@@ -100,12 +101,27 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
 
   const { address, isConnected } = useAccount();
 
+  const { toastSuccess, toastError } = useToast();
+
   const { balance, domainPrice, srcBalance, srcDecimals, isRefetchingDomainPrice, isCreatingOffer, createOffer } =
     useNewOffer({
       address,
       srcAsset: watch('srcAsset') as Address,
       domain,
       chainId: chain.id,
+      onSuccess: (data) => {
+        toastSuccess({
+          title: 'Offer has been created',
+          txHash: data.transactionHash,
+        });
+      },
+      onSettled: (data, err) =>
+        err &&
+        toastError({
+          title: 'Failed to create the offer',
+          description: err.details,
+          txHash: data?.transactionHash,
+        }),
     });
 
   if (!isConnected) {
