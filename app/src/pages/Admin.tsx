@@ -33,7 +33,6 @@ const Admin: React.FC = () => {
     ...otcContract,
     functionName: 'assets',
     args: [asset],
-    enabled: false,
     onSuccess: setAssetRegistered,
   });
 

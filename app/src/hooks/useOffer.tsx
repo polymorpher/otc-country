@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Address } from 'abitype';
 import { useContractRead, useContractReads } from 'wagmi';
 import { erc20Contract, offerContract, otcContract } from '~/helpers/contracts';
@@ -9,14 +8,22 @@ interface Config {
 }
 
 const useOffer = ({ address }: Config) => {
-  const [status, setStatus] = useState<Status>();
-
-  const [totalDeposits, setTotalDeppsits] = useState<bigint>();
-
-  useContractRead({
+  const {
+    data: status,
+    refetch: refetchStatus,
+    isLoading: isStatusLoading,
+  } = useContractRead({
     ...offerContract(address),
     functionName: 'status',
-    onSuccess: setStatus,
+  });
+
+  const {
+    data: totalDeposits,
+    refetch: refetchTotalDeposits,
+    isLoading: isTotalDepositsLoading,
+  } = useContractRead({
+    ...offerContract(address),
+    functionName: 'totalDeposits',
   });
 
   const {
@@ -25,10 +32,6 @@ const useOffer = ({ address }: Config) => {
     isLoading: isInfoLoading,
   } = useContractReads({
     contracts: [
-      {
-        ...offerContract(address),
-        functionName: 'totalDeposits',
-      },
       {
         ...offerContract(address),
         functionName: 'creator',
@@ -59,45 +62,56 @@ const useOffer = ({ address }: Config) => {
         functionName: 'commissionRateScale',
       },
     ],
-    onSuccess: ([totalDeposits]) => setTotalDeppsits(totalDeposits.result as bigint),
   });
 
-  const { result: creator } = info?.[1] ?? {};
-  const { result: domainOwner } = info?.[2] ?? {};
-  const { result: commissionRate } = info?.[3] ?? {};
-  const { result: acceptAmount } = info?.[4] ?? {};
-  const { result: srcAsset } = info?.[5] ?? {};
-  const { result: destAsset } = info?.[6] ?? {};
-  const { result: commissionRateScale } = info?.[7] ?? {};
+  const { result: creator } = info?.[0] ?? {};
+  const { result: domainOwner } = info?.[1] ?? {};
+  const { result: commissionRate } = info?.[2] ?? {};
+  const { result: acceptAmount } = info?.[3] ?? {};
+  const { result: srcAsset } = info?.[4] ?? {};
+  const { result: destAsset } = info?.[5] ?? {};
+  const { result: commissionRateScale } = info?.[6] ?? {};
 
   const { data: srcDecimals } = useContractRead({
     ...erc20Contract(srcAsset as Address),
     functionName: 'decimals',
-    enabled: false,
   });
 
   const { data: destDecimals } = useContractRead({
     ...erc20Contract(destAsset as Address),
     functionName: 'decimals',
-    enabled: false,
   });
 
   return {
-    creator,
-    domainOwner,
-    commissionRate,
-    acceptAmount,
-    srcAsset,
-    destAsset,
-    commissionRateScale,
-    srcDecimals,
-    destDecimals,
-    totalDeposits,
-    status,
-    setStatus,
-    setTotalDeppsits,
+    data: {
+      creator: creator as Address | undefined,
+      domainOwner: domainOwner as Address | undefined,
+      commissionRate: commissionRate as bigint | undefined,
+      acceptAmount: acceptAmount as bigint | undefined,
+      srcAsset: srcAsset as Address | undefined,
+      destAsset: destAsset as Address | undefined,
+      commissionRateScale: commissionRateScale as bigint | undefined,
+      srcDecimals: srcDecimals === undefined ? undefined : Number(srcDecimals),
+      destDecimals: destDecimals === undefined ? undefined : Number(destDecimals),
+      totalDeposits: totalDeposits as bigint | undefined,
+      status: status as Status | undefined,
+    },
+    refetch: {
+      refetchStatus,
+      refetchTotalDeposits,
+    },
+    isLoading: {
+      isStatusLoading: isStatusLoading || status === undefined,
+      isTotalDepositsLoading: isTotalDepositsLoading || totalDeposits === undefined,
+      isLoading:
+        isInfoLoading ||
+        info === undefined ||
+        isStatusLoading ||
+        status === undefined ||
+        isTotalDepositsLoading ||
+        totalDeposits === undefined,
+    },
     error,
-    isLoading: isInfoLoading || info === undefined || totalDeposits === undefined || status === undefined,
   };
 };
 

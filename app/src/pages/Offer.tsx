@@ -30,21 +30,21 @@ const Offer: React.FC<OfferProps> = ({ address, children }) => {
   const { address: walletAddr } = useAccount();
 
   const {
-    creator,
-    domainOwner,
-    commissionRate,
-    acceptAmount,
-    srcAsset,
-    destAsset,
-    commissionRateScale,
-    srcDecimals,
-    destDecimals,
-    totalDeposits,
-    status,
-    setStatus,
-    setTotalDeppsits,
+    data: {
+      creator,
+      domainOwner,
+      commissionRate,
+      acceptAmount,
+      srcAsset,
+      destAsset,
+      commissionRateScale,
+      srcDecimals,
+      destDecimals,
+      totalDeposits,
+      status,
+    },
+    isLoading: { isLoading },
     error,
-    isLoading,
   } = useOffer({ address });
 
   return (
@@ -89,7 +89,7 @@ const Offer: React.FC<OfferProps> = ({ address, children }) => {
         </Box>
       )}
 
-      {!isLoading &&
+      {/* {!isLoading &&
         status !== undefined &&
         children({
           status,
@@ -102,7 +102,7 @@ const Offer: React.FC<OfferProps> = ({ address, children }) => {
           destAsset: destAsset as Address,
           srcDecimals: Number(srcDecimals),
           destDecimals: Number(destDecimals),
-        })}
+        })} */}
     </VStack>
   );
 };

@@ -58,7 +58,6 @@ const useNewOffer = ({ address, srcAsset, destAsset, domain, chainId, onSuccess,
     ...erc20Contract(srcAsset),
     functionName: 'allowance',
     args: [address, computedOfferAddress],
-    enabled: false,
   });
 
   const { data: srcDecimals } = useContractRead({
