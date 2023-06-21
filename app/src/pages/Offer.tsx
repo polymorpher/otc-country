@@ -3,6 +3,7 @@ import { Alert, AlertIcon, Box, Spinner, Text, VStack } from '@chakra-ui/react';
 import { Address } from 'abitype';
 import { formatUnits } from 'viem';
 import { useAccount, useContractRead, useContractReads } from 'wagmi';
+import AddressField from '~/components/AddressField';
 import OfferStatus from '~/components/OfferStatus';
 import { erc20Contract, offerContract, otcContract } from '~/helpers/contracts';
 import { Status } from '~/helpers/types';
@@ -43,10 +44,6 @@ const Offer: React.FC<OfferProps> = ({ address, children }) => {
     error,
     isLoading: isInfoLoading,
   } = useContractReads({
-    onSuccess: () => {
-      refetchSrcDecimals();
-      refetchDestDecimals();
-    },
     contracts: [
       {
         ...otcContract,
@@ -87,23 +84,25 @@ const Offer: React.FC<OfferProps> = ({ address, children }) => {
   const { result: srcAsset } = info?.[5] ?? {};
   const { result: destAsset } = info?.[6] ?? {};
 
-  const { data: srcDecimals, refetch: refetchSrcDecimals } = useContractRead({
+  const { data: srcDecimals } = useContractRead({
     ...erc20Contract(srcAsset as Address),
     functionName: 'decimals',
     enabled: false,
   });
 
-  const { data: destDecimals, refetch: refetchDestDecimals } = useContractRead({
+  const { data: destDecimals } = useContractRead({
     ...erc20Contract(destAsset as Address),
     functionName: 'decimals',
     enabled: false,
   });
 
   return (
-    <VStack>
+    <VStack width="full">
       {status !== undefined && <OfferStatus status={status} />}
 
-      <Text>Offer information</Text>
+      <Text fontSize="2xl" py="10">
+        Offer information
+      </Text>
 
       {isInfoLoading && <Spinner />}
 
@@ -114,30 +113,33 @@ const Offer: React.FC<OfferProps> = ({ address, children }) => {
         </Alert>
       )}
 
-      <Box display="grid" gridTemplateColumns="1fr 1fr 1fr 1fr" gridRowGap="2" gridColumnGap="2">
-        <Text textAlign="right">Creator</Text>
-        <Text>{creator === walletAddr ? 'You' : String(creator)}</Text>
+      {info && (
+        <Box display="grid" gridTemplateColumns="10em 1fr" gridRowGap="4" gridColumnGap="4">
+          <Text textAlign="right">Creator</Text>
+          <AddressField text={creator === walletAddr ? 'You' : undefined}>{String(creator)}</AddressField>
 
-        <Text textAlign="right">Domain owner</Text>
-        <Text>{String(domainOwner)}</Text>
+          <Text textAlign="right">Domain owner</Text>
+          <AddressField>{String(domainOwner)}</AddressField>
 
-        <Text textAlign="right">Commission rate</Text>
-        <Text>{(Number(commissionRate) * 100) / Number(commissionRateScale)}</Text>
+          <Text textAlign="right">Commission rate</Text>
+          <Text>{(Number(commissionRate) * 100) / Number(commissionRateScale)}%</Text>
 
-        <Text textAlign="right">Accept amount</Text>
-        <Text>{formatUnits(acceptAmount as bigint, Number(destDecimals))}</Text>
+          <Text textAlign="right">Accept amount</Text>
+          <Text>{formatUnits(acceptAmount as bigint, Number(destDecimals))}</Text>
 
-        <Text textAlign="right">Source asset</Text>
-        <Text>{String(srcAsset)}</Text>
+          <Text textAlign="right">Source asset</Text>
+          <AddressField>{String(srcAsset)}</AddressField>
 
-        <Text textAlign="right">Destination asset</Text>
-        <Text>{String(destAsset)}</Text>
+          <Text textAlign="right">Destination asset</Text>
+          <AddressField>{String(destAsset)}</AddressField>
 
-        <Text textAlign="right">Total deposits</Text>
-        {totalDeposits ? <Text>{formatUnits(totalDeposits, Number(srcDecimals))}</Text> : <Spinner />}
-      </Box>
+          <Text textAlign="right">Total deposits</Text>
+          {totalDeposits ? <Text>{formatUnits(totalDeposits, Number(srcDecimals))}</Text> : <Spinner />}
+        </Box>
+      )}
 
-      {status !== undefined &&
+      {info &&
+        status !== undefined &&
         children({
           status,
           onStatusUpdate: setStatus,

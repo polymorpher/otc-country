@@ -1,8 +1,8 @@
 import React from 'react';
-import { Button, Box, Text, Alert, AlertIcon, HStack, Tooltip, Spacer } from '@chakra-ui/react';
+import { Button, Box, Text, Alert, AlertIcon, HStack, Spacer } from '@chakra-ui/react';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { shortenAddress } from '~/helpers/address';
 import { connector } from '~/main';
+import AddressField from './AddressField';
 
 const MetamskConnector = () => {
   const { address, isConnected } = useAccount();
@@ -15,9 +15,7 @@ const MetamskConnector = () => {
     return (
       <HStack padding="4" border="1px solid gray" borderRadius="lg" width="full">
         <Box>
-          <Tooltip label={address}>
-            <Text>{shortenAddress(address)}</Text>
-          </Tooltip>
+          <AddressField shorten>{address}</AddressField>
           <Text color="gray.500">Connected to {connector.name}</Text>
         </Box>
         <Spacer />

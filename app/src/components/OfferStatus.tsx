@@ -16,7 +16,7 @@ const OfferStatus: React.FC<OfferStatusProps> = ({ status }) => {
         <Alert status="info">
           <AlertIcon />
           The offer is open.
-          {!isConnected && 'Please connect your wallet to proceed.'}
+          {!isConnected && ' Please connect your wallet to proceed.'}
         </Alert>
       );
 
@@ -25,7 +25,7 @@ const OfferStatus: React.FC<OfferStatusProps> = ({ status }) => {
         <Alert status="success">
           <AlertIcon />
           The offer is accepted.
-          {isConnected ? 'Please claim your payment.' : 'Please connect your wallet to claim your payment.'}
+          {isConnected ? ' Please claim your payment.' : ' Please connect your wallet to claim your payment.'}
         </Alert>
       );
 
