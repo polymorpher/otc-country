@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Alert, AlertIcon, Box, Spinner, Text, VStack } from '@chakra-ui/react';
 import { Address } from 'abitype';
 import { formatUnits } from 'viem';
-import { useAccount, useContractRead, useContractReads } from 'wagmi';
+import { useAccount } from 'wagmi';
 import AddressField from '~/components/AddressField';
 import OfferStatus from '~/components/OfferStatus';
-import { erc20Contract, offerContract, otcContract } from '~/helpers/contracts';
 import { Status } from '~/helpers/types';
+import useOffer from '~/hooks/useOffer';
 
 export interface OfferContext {
   status: Status;
@@ -29,78 +29,23 @@ interface OfferProps {
 const Offer: React.FC<OfferProps> = ({ address, children }) => {
   const { address: walletAddr } = useAccount();
 
-  const [status, setStatus] = useState<Status>();
-
-  const [totalDeposits, setTotalDeppsits] = useState<bigint>();
-
-  const { isLoading: isStatusLoading } = useContractRead({
-    ...offerContract(address),
-    functionName: 'status',
-    onSuccess: setStatus,
-  });
-
   const {
-    data: info,
+    creator,
+    domainOwner,
+    commissionRate,
+    acceptAmount,
+    srcAsset,
+    destAsset,
+    commissionRateScale,
+    srcDecimals,
+    destDecimals,
+    totalDeposits,
+    status,
+    setStatus,
+    setTotalDeppsits,
     error,
-    isLoading: isInfoLoading,
-  } = useContractReads({
-    contracts: [
-      {
-        ...offerContract(address),
-        functionName: 'totalDeposits',
-      },
-      {
-        ...offerContract(address),
-        functionName: 'creator',
-      },
-      {
-        ...offerContract(address),
-        functionName: 'domainOwner',
-      },
-      {
-        ...offerContract(address),
-        functionName: 'commissionRate',
-      },
-      {
-        ...offerContract(address),
-        functionName: 'acceptAmount',
-      },
-      {
-        ...offerContract(address),
-        functionName: 'srcAsset',
-      },
-      {
-        ...offerContract(address),
-        functionName: 'destAsset',
-      },
-
-      {
-        ...otcContract,
-        functionName: 'commissionRateScale',
-      },
-    ],
-    onSuccess: ([totalDeposits]) => setTotalDeppsits(totalDeposits.result as bigint),
-  });
-
-  const { result: creator } = info?.[1] ?? {};
-  const { result: domainOwner } = info?.[2] ?? {};
-  const { result: commissionRate } = info?.[3] ?? {};
-  const { result: acceptAmount } = info?.[4] ?? {};
-  const { result: srcAsset } = info?.[5] ?? {};
-  const { result: destAsset } = info?.[6] ?? {};
-  const { result: commissionRateScale } = info?.[7] ?? {};
-
-  const { data: srcDecimals } = useContractRead({
-    ...erc20Contract(srcAsset as Address),
-    functionName: 'decimals',
-    enabled: false,
-  });
-
-  const { data: destDecimals } = useContractRead({
-    ...erc20Contract(destAsset as Address),
-    functionName: 'decimals',
-    enabled: false,
-  });
+    isLoading,
+  } = useOffer({ address });
 
   return (
     <VStack width="full">
@@ -110,7 +55,7 @@ const Offer: React.FC<OfferProps> = ({ address, children }) => {
         Offer information
       </Text>
 
-      {(isInfoLoading || totalDeposits === undefined) && <Spinner />}
+      {isLoading && <Spinner />}
 
       {error && (
         <Alert status="error">
@@ -119,7 +64,7 @@ const Offer: React.FC<OfferProps> = ({ address, children }) => {
         </Alert>
       )}
 
-      {info && totalDeposits !== undefined && (
+      {!isLoading && (
         <Box display="grid" gridTemplateColumns="10em 1fr" gridRowGap="4" gridColumnGap="4">
           <Text textAlign="right">Creator</Text>
           <AddressField text={creator === walletAddr ? 'You' : undefined}>{String(creator)}</AddressField>
@@ -144,13 +89,13 @@ const Offer: React.FC<OfferProps> = ({ address, children }) => {
         </Box>
       )}
 
-      {info &&
+      {!isLoading &&
         status !== undefined &&
         children({
           status,
           onStatusUpdate: setStatus,
           onTotalDepositUpdate: setTotalDeppsits,
-          loading: isInfoLoading || isStatusLoading,
+          loading: isLoading,
           creator: creator as Address,
           domainOwner: domainOwner as Address,
           srcAsset: srcAsset as Address,

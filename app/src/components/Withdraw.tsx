@@ -10,23 +10,28 @@ interface WithdrawProps {
   onClick?: VoidFunction;
 }
 
-const Withdraw: React.FC<WithdrawProps> = ({ lockWithdrawUntil, timestamp, disabled, isWithdrawing, onClick }) => (
-  <Box>
-    {lockWithdrawUntil > timestamp && (
-      <>
-        <Text textAlign="right">Withdraw locked left</Text>
-        <Text>{formatSeconds(lockWithdrawUntil - timestamp)}</Text>
-      </>
-    )}
-    <Button
-      onClick={onClick}
-      isDisabled={disabled || Number(lockWithdrawUntil) > timestamp}
-      isLoading={isWithdrawing}
-      loadingText="Withdraw"
-    >
-      Withdraw
-    </Button>
-  </Box>
+const Withdraw = React.forwardRef<HTMLButtonElement, WithdrawProps>(
+  ({ lockWithdrawUntil, timestamp, disabled, isWithdrawing, onClick }, ref) => (
+    <Box>
+      {lockWithdrawUntil > timestamp && (
+        <>
+          <Text textAlign="right">Withdraw locked left</Text>
+          <Text>{formatSeconds(lockWithdrawUntil - timestamp)}</Text>
+        </>
+      )}
+      <Button
+        ref={ref}
+        onClick={onClick}
+        isDisabled={disabled || Number(lockWithdrawUntil) > timestamp}
+        isLoading={isWithdrawing}
+        loadingText="Withdraw"
+      >
+        Withdraw
+      </Button>
+    </Box>
+  ),
 );
+
+Withdraw.displayName = 'Withdraw';
 
 export default Withdraw;

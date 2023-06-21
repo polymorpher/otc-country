@@ -50,7 +50,7 @@ const AmountPopover: React.FC<AmountPopover> = ({ max, decimals, onOkay, childre
                   <Button variant="outline" onClick={onClose}>
                     Cancel
                   </Button>
-                  <Button colorScheme="blue" onClick={handleOkayClick(onClose)}>
+                  <Button colorScheme="blue" onClick={handleOkayClick(onClose)} isDisabled={value === 0n}>
                     Okay
                   </Button>
                 </ButtonGroup>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, AlertIcon, Box, Button, Spinner, Text } from '@chakra-ui/react';
+import { Alert, AlertIcon, Button, Spinner, Text, VStack } from '@chakra-ui/react';
 import { Address } from 'abitype';
 import { formatUnits } from 'viem';
 import { useAccount, useContractReads, usePublicClient } from 'wagmi';
@@ -192,7 +192,7 @@ const OfferAction: React.FC<OfferAction> = ({
   }
 
   return (
-    <Box>
+    <VStack width="full">
       {deposit === 0n && <Text>You can deposit your funds or accept the offer</Text>}
       <Text textAlign="right">Deposit</Text>
       <Text>{formatUnits(deposit, srcDecimals)}</Text>
@@ -263,19 +263,26 @@ const OfferAction: React.FC<OfferAction> = ({
                 isDisabled={working || destBalance < acceptAmount}
                 isLoading={isAccepting}
                 loadingText="Accept"
+                colorScheme="green"
               >
                 Accept
               </Button>
             </>
           )}
           {creator === walletAddr && (
-            <Button onClick={() => closeOffer?.()} isDisabled={working} isLoading={isClosing} loadingText="Close">
+            <Button
+              onClick={() => closeOffer?.()}
+              isDisabled={working}
+              isLoading={isClosing}
+              loadingText="Close"
+              colorScheme="red"
+            >
               Close
             </Button>
           )}
         </>
       )}
-    </Box>
+    </VStack>
   );
 };
 
