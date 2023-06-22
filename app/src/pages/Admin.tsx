@@ -84,7 +84,7 @@ const Admin: React.FC = () => {
 
   return (
     <VStack width="full">
-      <Text fontSize="3xl" my="10">
+      <Text fontSize="2xl" my="5">
         Manage assets here
       </Text>
 

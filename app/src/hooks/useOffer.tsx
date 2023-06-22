@@ -134,16 +134,14 @@ const useOffer = ({ address }: Config) => {
       refetchBalanceOf,
     },
     isLoading: {
-      isLoadingStatus: isLoadingStatus || status === undefined,
-      isLoadingTotalDeposits: isLoadingTotalDeposits || totalDeposits === undefined,
-      isLoadingDeposits: isLoadingDeposits || deposits === undefined,
-      isLoadingLockWithdrawUntil: isLoadingLockWithdrawUntil || lockWithdrawUntil === undefined,
-      isLoading: isLoadingInfo || info === undefined || isLoadingStatus || status === undefined,
-      isLoadingPaymentBalanceForDomainOwner:
-        isLoadingPaymentBalanceForDomainOwner || paymentBalanceForDomainOwner === undefined,
-      isLoadingPaymentBalanceForDepositor:
-        isLoadingPaymentBalanceForDepositor || paymentBalanceForDepositor === undefined,
-      isLoadingBalanceOf: isLoadingBalanceOf || balanceOf === undefined,
+      isLoading: isLoadingInfo || isLoadingStatus,
+      isLoadingStatus,
+      isLoadingTotalDeposits,
+      isLoadingDeposits,
+      isLoadingLockWithdrawUntil,
+      isLoadingPaymentBalanceForDomainOwner,
+      isLoadingPaymentBalanceForDepositor,
+      isLoadingBalanceOf,
     },
     error,
   };

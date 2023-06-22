@@ -245,9 +245,10 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
 
       {!isLoading && walletAddr !== undefined && (
         <VStack width="full">
-          {deposits === 0n && <Text>You can deposit your funds or accept the offer</Text>}
+          {deposits === 0n && <Text my="5">You can deposit your funds or accept the offer</Text>}
           {status !== Status.Accepted ? (
             deposits > 0 &&
+            timestamp !== undefined &&
             !isLoadingLockWithdrawUntil && (
               <AmountPopover
                 max={deposits}
@@ -287,7 +288,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
           {status === Status.Open && (
             <>
               <AmountPopover
-                max={Number(srcBalance)}
+                max={srcBalance}
                 decimals={Number(srcDecimals)}
                 onOkay={(amount) =>
                   depositFund?.({
@@ -301,11 +302,11 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
               </AmountPopover>
               {deposits === 0n && (
                 <>
-                  {destBalance >= acceptAmount && (
+                  {destBalance < acceptAmount && (
                     <Alert status="warning">
                       <AlertIcon />
-                      You have ${formatUnits(acceptAmount, Number(destDecimals))} of destination asset, which is not
-                      sufficient to accept the offer.
+                      Your balance of destination asset is {formatUnits(destBalance, Number(destDecimals))}, which is
+                      not sufficient to accept the offer.
                     </Alert>
                   )}
                   <Button
