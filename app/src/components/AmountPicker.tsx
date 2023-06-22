@@ -13,6 +13,7 @@ import {
   SliderTrack,
 } from '@chakra-ui/react';
 import { formatUnits, parseUnits } from 'viem';
+import { round } from '~/helpers/mantisa';
 
 export interface AmountPickerProps {
   max: bigint;
@@ -50,7 +51,7 @@ const AmountPicker: React.FC<AmountPickerProps> = ({ onChange, max, decimals }) 
         flex="1"
         focusThumbOnChange={false}
         value={(value * 100) / maxVal}
-        onChange={(value) => setValue(Number(((maxVal * value) / 100).toFixed(3)))}
+        onChange={(value) => setValue(round((maxVal * value) / 100))}
       >
         <SliderMark
           value={(value * 100) / maxVal}
@@ -61,7 +62,7 @@ const AmountPicker: React.FC<AmountPickerProps> = ({ onChange, max, decimals }) 
           transform="translateX(-50%)"
           px="1"
         >
-          {((value * 100) / maxVal).toFixed(0)}%
+          {maxVal === 0 ? 0 : Math.round((value * 100) / maxVal)}%
         </SliderMark>
         <SliderTrack>
           <SliderFilledTrack />

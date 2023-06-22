@@ -59,6 +59,7 @@ const useOffer = ({ address }: Config) => {
   const {
     data: status,
     refetch: refetchStatus,
+    isRefetching: isRefetchingStatus,
     isLoading: isLoadingStatus,
   } = useContractRead({
     ...offerContract(address),
@@ -68,6 +69,7 @@ const useOffer = ({ address }: Config) => {
   const {
     data: totalDeposits,
     refetch: refetchTotalDeposits,
+    isRefetching: isRefetchingTotalDeposits,
     isLoading: isLoadingTotalDeposits,
   } = useContractRead({
     ...offerContract(address),
@@ -77,6 +79,7 @@ const useOffer = ({ address }: Config) => {
   const {
     data: paymentBalanceForDomainOwner,
     refetch: refetchPaymentBalanceForDomainOwner,
+    isRefetching: isRefetchingPaymentBalanceForDomainOwner,
     isLoading: isLoadingPaymentBalanceForDomainOwner,
   } = useContractRead({
     ...offerContract(address),
@@ -86,24 +89,28 @@ const useOffer = ({ address }: Config) => {
   const {
     data: paymentBalanceForDepositor,
     refetch: refetchPaymentBalanceForDepositor,
+    isRefetching: isRefetchingPaymentBalanceForDepositor,
     isLoading: isLoadingPaymentBalanceForDepositor,
   } = useContractRead({ ...offerContract(address), functionName: 'paymentBalanceForDepositor', args: [walletAddr] });
 
   const {
     data: deposits,
     refetch: refetchDeposits,
+    isRefetching: isRefetchingDeposits,
     isLoading: isLoadingDeposits,
   } = useContractRead({ ...offerContract(address), functionName: 'deposits', args: [walletAddr] });
 
   const {
     data: lockWithdrawUntil,
     refetch: refetchLockWithdrawUntil,
+    isRefetching: isRefetchingLockWithdrawUntil,
     isLoading: isLoadingLockWithdrawUntil,
   } = useContractRead({ ...offerContract(address), functionName: 'lockWithdrawUntil', args: [walletAddr] });
 
   const {
     data: balanceOf,
     refetch: refetchBalanceOf,
+    isRefetching: isRefetchingBalanceOf,
     isLoading: isLoadingBalanceOf,
   } = useContractRead({ ...erc20Contract(srcAsset), functionName: 'balanceOf', args: [walletAddr] });
 
@@ -135,13 +142,15 @@ const useOffer = ({ address }: Config) => {
     },
     isLoading: {
       isLoading: isLoadingInfo || isLoadingStatus,
-      isLoadingStatus,
-      isLoadingTotalDeposits,
-      isLoadingDeposits,
-      isLoadingLockWithdrawUntil,
-      isLoadingPaymentBalanceForDomainOwner,
-      isLoadingPaymentBalanceForDepositor,
-      isLoadingBalanceOf,
+      isLoadingStatus: isLoadingStatus || isRefetchingStatus,
+      isLoadingTotalDeposits: isLoadingTotalDeposits || isRefetchingTotalDeposits,
+      isLoadingDeposits: isLoadingDeposits || isRefetchingDeposits,
+      isLoadingLockWithdrawUntil: isLoadingLockWithdrawUntil || isRefetchingLockWithdrawUntil,
+      isLoadingPaymentBalanceForDomainOwner:
+        isLoadingPaymentBalanceForDomainOwner || isRefetchingPaymentBalanceForDomainOwner,
+      isLoadingPaymentBalanceForDepositor:
+        isLoadingPaymentBalanceForDepositor || isRefetchingPaymentBalanceForDepositor,
+      isLoadingBalanceOf: isLoadingBalanceOf || isRefetchingBalanceOf,
     },
     error,
   };

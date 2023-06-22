@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Button, Text } from '@chakra-ui/react';
 import { formatUnits } from 'viem';
+import { round } from '~/helpers/mantisa';
 
 interface ClaimPaymentProps {
   balance: bigint;
@@ -13,7 +14,7 @@ interface ClaimPaymentProps {
 const ClaimPayment: React.FC<ClaimPaymentProps> = ({ balance, decimals, onClick, isClaiming, disabled }) => (
   <Box>
     <Text textAlign="right">Payment balance</Text>
-    <Text>{formatUnits(balance, decimals)}</Text>
+    <Text>{round(formatUnits(balance, decimals))}</Text>
     {balance > 0n && (
       <Button isDisabled={disabled} isLoading={isClaiming} loadingText="Claim payment" onClick={onClick}>
         Claim payment

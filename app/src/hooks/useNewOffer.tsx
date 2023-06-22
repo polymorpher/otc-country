@@ -1,12 +1,11 @@
 import { useCallback } from 'react';
 import { Address } from 'abitype';
 import { keccak256, toHex } from 'viem';
-import { useBalance, useContractRead } from 'wagmi';
+import { useAccount, useBalance, useContractRead } from 'wagmi';
 import { domainContract, erc20Contract, otcContract } from '~/helpers/contracts';
 import useContractWriteComplete, { SettledHandler, SuccessHandler } from './useContractWriteComplete';
 
 interface Config {
-  address: Address;
   srcAsset: Address;
   destAsset: Address;
   chainId: number;
@@ -25,7 +24,9 @@ interface OfferData {
   lockWithdrawDuration: bigint;
 }
 
-const useNewOffer = ({ address, srcAsset, destAsset, domain, chainId, onSuccess, onSettled }: Config) => {
+const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettled }: Config) => {
+  const { address } = useAccount();
+
   const { data: balance } = useBalance({
     address,
     chainId,
@@ -36,7 +37,7 @@ const useNewOffer = ({ address, srcAsset, destAsset, domain, chainId, onSuccess,
     functionName: 'domainContract',
   });
 
-  const { data: domainPrice, isRefetching: isRefetchingDomainPrice } = useContractRead({
+  const { data: domainPrice } = useContractRead({
     ...domainContract(domainContractAddress as Address),
     functionName: 'getPrice',
     args: [domain],
@@ -127,7 +128,6 @@ const useNewOffer = ({ address, srcAsset, destAsset, domain, chainId, onSuccess,
     srcDecimals: srcDecimals as bigint,
     destDecimals: destDecimals as bigint,
     domainPrice: domainPrice as bigint,
-    isRefetchingDomainPrice,
     isCreatingOffer: isApproving || isCreatingOffer,
     createOffer,
   };

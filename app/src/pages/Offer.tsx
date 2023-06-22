@@ -10,10 +10,12 @@ import OfferStatus from '~/components/OfferStatus';
 import RemoteField from '~/components/RemoteField';
 import Withdraw from '~/components/Withdraw';
 import { erc20Contract, offerContract } from '~/helpers/contracts';
+import { round } from '~/helpers/mantisa';
 import { Status } from '~/helpers/types';
 import useAccept from '~/hooks/useAccept';
 import useBlockTimestamp from '~/hooks/useBlockTimestamp';
 import useContractWriteComplete from '~/hooks/useContractWriteComplete';
+import useDeposit from '~/hooks/useDeposit';
 import useOffer from '~/hooks/useOffer';
 import useToast from '~/hooks/useToast';
 
@@ -87,11 +89,11 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
     functionName: 'close',
     description: 'Closing offer',
     onSuccess: (data) => {
-      refetchStatus(),
-        toastSuccess({
-          title: 'Offer has been closed',
-          txHash: data.transactionHash,
-        });
+      refetchStatus();
+      toastSuccess({
+        title: 'Offer has been closed',
+        txHash: data.transactionHash,
+      });
     },
   });
 
@@ -128,17 +130,23 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
     refetchTotalDeposits,
   ]);
 
-  const { write: depositFund, isLoading: isDepositing } = useContractWriteComplete({
-    ...offerContract(address),
-    functionName: 'deposit',
-    description: 'Depositing',
+  const { depositFund, isDepositing } = useDeposit({
+    offerAddress: address,
+    srcAsset,
     onSuccess: (data) => {
       refetch();
       toastSuccess({
-        title: 'Deposit successful',
+        title: 'Deposit succeeded',
         txHash: data.transactionHash,
       });
     },
+    onSettled: (data, err) =>
+      err &&
+      toastError({
+        title: 'Failed to deposit',
+        description: err.details,
+        txHash: data?.transactionHash,
+      }),
   });
 
   const { write: withdraw, isLoading: isWithdrawing } = useContractWriteComplete({
@@ -148,7 +156,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
     onSuccess: (data) => {
       refetch();
       toastSuccess({
-        title: 'Withdraw successful',
+        title: 'Withdraw succeeded',
         txHash: data.transactionHash,
       });
     },
@@ -162,7 +170,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
       refetchPaymentBalanceForDepositor();
       toastSuccess({ title: 'Payment has been claimed', txHash: data.transactionHash });
     },
-    onError: (error) => toastError({ title: 'Failed to withdraw the payment', description: error.message }),
+    onError: (error) => toastError({ title: 'Failed to withdraw the payment', description: error.details }),
     args: [],
   });
 
@@ -174,7 +182,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
       refetchPaymentBalanceForDomainOwner();
       toastSuccess({ title: 'Payment has been withdrawn', txHash: data.transactionHash });
     },
-    onError: (error) => toastError({ title: 'Failed to withdraw the payment', description: error.message }),
+    onError: (error) => toastError({ title: 'Failed to withdraw the payment', description: error.details }),
     args: [],
   });
 
@@ -201,7 +209,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
       {error && (
         <Alert status="error">
           <AlertIcon />
-          {error.message}
+          {error.details}
         </Alert>
       )}
 
@@ -218,7 +226,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
             <Text>{(commissionRate * 100) / commissionRateScale}%</Text>
 
             <Text textAlign="right">Accept amount</Text>
-            <Text>{formatUnits(acceptAmount as bigint, Number(destDecimals))}</Text>
+            <Text>{round(formatUnits(acceptAmount as bigint, Number(destDecimals)))}</Text>
 
             <Text textAlign="right">Source asset</Text>
             <AddressField>{String(srcAsset)}</AddressField>
@@ -230,14 +238,14 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
 
         <Text textAlign="right">Total deposits</Text>
         <RemoteField loading={isLoadingTotalDeposits}>
-          <Text>{formatUnits(totalDeposits, Number(srcDecimals))}</Text>
+          <Text>{round(formatUnits(totalDeposits, Number(srcDecimals)))}</Text>
         </RemoteField>
 
         {walletAddr !== undefined && (
           <>
             <Text textAlign="right">Deposit</Text>
             <RemoteField loading={isLoadingDeposits}>
-              <Text>{formatUnits(deposits, Number(srcDecimals))}</Text>
+              <Text>{round(formatUnits(deposits, Number(srcDecimals)))}</Text>
             </RemoteField>
           </>
         )}
@@ -287,15 +295,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
 
           {status === Status.Open && (
             <>
-              <AmountPopover
-                max={srcBalance}
-                decimals={Number(srcDecimals)}
-                onOkay={(amount) =>
-                  depositFund?.({
-                    args: [amount],
-                  })
-                }
-              >
+              <AmountPopover max={srcBalance} decimals={Number(srcDecimals)} onOkay={(amount) => depositFund(amount)}>
                 <Button isDisabled={isUserActionDoing} isLoading={isDepositing} loadingText="Deposit">
                   Deposit
                 </Button>
@@ -305,8 +305,8 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
                   {destBalance < acceptAmount && (
                     <Alert status="warning">
                       <AlertIcon />
-                      Your balance of destination asset is {formatUnits(destBalance, Number(destDecimals))}, which is
-                      not sufficient to accept the offer.
+                      Your balance of destination asset is {round(formatUnits(destBalance, Number(destDecimals)))},
+                      which is not sufficient to accept the offer.
                     </Alert>
                   )}
                   <Button

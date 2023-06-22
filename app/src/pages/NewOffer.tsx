@@ -113,21 +113,11 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     defaultValues,
   });
 
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
 
   const { toastSuccess, toastError } = useToast();
 
-  const {
-    balance,
-    domainPrice,
-    srcBalance,
-    srcDecimals,
-    destDecimals,
-    isRefetchingDomainPrice,
-    isCreatingOffer,
-    createOffer,
-  } = useNewOffer({
-    address,
+  const { balance, domainPrice, srcBalance, srcDecimals, destDecimals, isCreatingOffer, createOffer } = useNewOffer({
     srcAsset: watch('srcAsset') as Address,
     destAsset: watch('destAsset') as Address,
     domain,
@@ -174,7 +164,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
         Please create a new offer with the following information.
       </Text>
 
-      {!isRefetchingDomainPrice && domainPrice !== undefined && (
+      {domainPrice !== undefined && (
         <Alert status={balance > domainPrice ? 'info' : 'warning'}>
           <AlertIcon />
           It costs {formatEther(domainPrice as bigint)} ETH to buy that domain.
