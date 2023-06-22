@@ -8,7 +8,6 @@ import { otcContract } from '~/helpers/contracts';
 import Admin from '~/pages/Admin';
 import NewOffer from '~/pages/NewOffer';
 import Offer from '~/pages/Offer';
-import OfferAction from './pages/OfferAction';
 
 const App = () => {
   const { address, isConnected } = useAccount();

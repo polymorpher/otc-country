@@ -2,14 +2,14 @@ import React, { useCallback } from 'react';
 import { Alert, AlertIcon, Box, Button, Spinner, Text, VStack } from '@chakra-ui/react';
 import { Address } from 'abitype';
 import { formatUnits } from 'viem';
-import { useAccount } from 'wagmi';
+import { useAccount, useContractRead } from 'wagmi';
 import AddressField from '~/components/AddressField';
 import AmountPopover from '~/components/AmountPopover';
 import ClaimPayment from '~/components/ClaimPayment';
 import OfferStatus from '~/components/OfferStatus';
 import RemoteField from '~/components/RemoteField';
 import Withdraw from '~/components/Withdraw';
-import { offerContract } from '~/helpers/contracts';
+import { erc20Contract, offerContract } from '~/helpers/contracts';
 import { Status } from '~/helpers/types';
 import useAccept from '~/hooks/useAccept';
 import useBlockTimestamp from '~/hooks/useBlockTimestamp';
@@ -33,8 +33,6 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
       srcAsset,
       destAsset,
       commissionRateScale,
-      srcDecimals,
-      destDecimals,
       totalDeposits,
       status,
       deposits,
@@ -42,7 +40,16 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
       paymentBalanceForDepositor,
       paymentBalanceForDomainOwner,
     },
-    isLoading: { isLoading, isLoadingDeposits, isLoadingTotalDeposits, isLoadingStatus },
+    isLoading: {
+      isLoading,
+      isLoadingDeposits,
+      isLoadingTotalDeposits,
+      isLoadingStatus,
+      isLoadingBalanceOf,
+      isLoadingLockWithdrawUntil,
+      isLoadingPaymentBalanceForDepositor,
+      isLoadingPaymentBalanceForDomainOwner,
+    },
     refetch: {
       refetchStatus,
       refetchTotalDeposits,
@@ -58,6 +65,22 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
   const timestamp = useBlockTimestamp();
 
   const { toastSuccess, toastError } = useToast();
+
+  const { data: srcDecimals } = useContractRead({
+    ...erc20Contract(srcAsset as Address),
+    functionName: 'decimals',
+  });
+
+  const { data: srcBalance } = useContractRead({
+    ...erc20Contract(srcAsset as Address),
+    functionName: 'balanceOf',
+    args: [walletAddr],
+  });
+
+  const { data: destDecimals } = useContractRead({
+    ...erc20Contract(destAsset as Address),
+    functionName: 'decimals',
+  });
 
   const { write: closeOffer, isLoading: isClosing } = useContractWriteComplete({
     ...offerContract(address),
@@ -155,6 +178,16 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
     args: [],
   });
 
+  const isUserActionDoing =
+    isWithdrawing ||
+    isDepositing ||
+    isLoadingBalanceOf ||
+    isLoadingLockWithdrawUntil ||
+    isClaimingDepositorPayment ||
+    isClaimingDomainOwnerPayment ||
+    isLoadingPaymentBalanceForDepositor ||
+    isLoadingPaymentBalanceForDomainOwner;
+
   return (
     <VStack width="full">
       {!isLoadingStatus && <OfferStatus status={status} />}
@@ -182,7 +215,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
             <AddressField>{String(domainOwner)}</AddressField>
 
             <Text textAlign="right">Commission rate</Text>
-            <Text>{(Number(commissionRate) * 100) / Number(commissionRateScale)}%</Text>
+            <Text>{(commissionRate * 100) / commissionRateScale}%</Text>
 
             <Text textAlign="right">Accept amount</Text>
             <Text>{formatUnits(acceptAmount as bigint, Number(destDecimals))}</Text>
@@ -218,7 +251,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
             !isLoadingLockWithdrawUntil && (
               <AmountPopover
                 max={deposits}
-                decimals={destDecimals}
+                decimals={Number(destDecimals)}
                 onOkay={(amount) =>
                   withdraw?.({
                     args: [amount, walletAddr],
@@ -226,9 +259,9 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
                 }
               >
                 <Withdraw
-                  lockWithdrawUntil={Number(lockWithdrawUntil)}
+                  lockWithdrawUntil={lockWithdrawUntil}
                   timestamp={timestamp}
-                  disabled={working}
+                  disabled={isUserActionDoing}
                   isWithdrawing={isWithdrawing}
                 />
               </AmountPopover>
@@ -236,37 +269,37 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
           ) : walletAddr === domainOwner ? (
             <ClaimPayment
               balance={paymentBalanceForDomainOwner}
-              decimals={destDecimals}
+              decimals={Number(destDecimals)}
               onClick={() => claimDomainOwnerPayment?.({ args: [walletAddr] })}
               isClaiming={isClaimingDomainOwnerPayment}
-              disabled={working}
+              disabled={isUserActionDoing}
             />
           ) : (
             <ClaimPayment
               balance={paymentBalanceForDepositor}
-              decimals={destDecimals}
+              decimals={Number(destDecimals)}
               onClick={() => claimDepositorPayment?.({ args: [walletAddr] })}
               isClaiming={isClaimingDepositorPayment}
-              disabled={working}
+              disabled={isUserActionDoing}
             />
           )}
 
           {status === Status.Open && (
             <>
               <AmountPopover
-                max={srcBalance}
-                decimals={srcDecimals}
+                max={Number(srcBalance)}
+                decimals={Number(srcDecimals)}
                 onOkay={(amount) =>
                   depositFund?.({
                     args: [amount],
                   })
                 }
               >
-                <Button isDisabled={working} isLoading={isDepositing} loadingText="Deposit">
+                <Button isDisabled={isUserActionDoing} isLoading={isDepositing} loadingText="Deposit">
                   Deposit
                 </Button>
               </AmountPopover>
-              {deposit === 0n && (
+              {deposits === 0n && (
                 <>
                   {destBalance >= acceptAmount && (
                     <Alert status="warning">
@@ -277,7 +310,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
                   )}
                   <Button
                     onClick={onAccept}
-                    isDisabled={working || destBalance < acceptAmount}
+                    isDisabled={isUserActionDoing || destBalance < acceptAmount}
                     isLoading={isAccepting}
                     loadingText="Accept"
                     colorScheme="green"
@@ -289,7 +322,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
               {creator === walletAddr && (
                 <Button
                   onClick={() => closeOffer?.()}
-                  isDisabled={working}
+                  isDisabled={isUserActionDoing}
                   isLoading={isClosing}
                   loadingText="Close"
                   colorScheme="red"

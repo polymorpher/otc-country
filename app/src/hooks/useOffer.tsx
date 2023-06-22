@@ -56,16 +56,6 @@ const useOffer = ({ address }: Config) => {
   const { result: destAsset } = info?.[5] ?? {};
   const { result: commissionRateScale } = info?.[6] ?? {};
 
-  const { data: srcDecimals } = useContractRead({
-    ...erc20Contract(srcAsset as Address),
-    functionName: 'decimals',
-  });
-
-  const { data: destDecimals } = useContractRead({
-    ...erc20Contract(destAsset as Address),
-    functionName: 'decimals',
-  });
-
   const {
     data: status,
     refetch: refetchStatus,
@@ -121,19 +111,17 @@ const useOffer = ({ address }: Config) => {
     data: {
       creator: creator as Address,
       domainOwner: domainOwner as Address,
-      commissionRate: commissionRate as bigint,
       acceptAmount: acceptAmount as bigint,
       srcAsset: srcAsset as Address,
       destAsset: destAsset as Address,
-      commissionRateScale: commissionRateScale as bigint,
-      srcDecimals: srcDecimals === undefined ? undefined : Number(srcDecimals),
-      destDecimals: destDecimals === undefined ? undefined : Number(destDecimals),
+      commissionRate: Number(commissionRate),
+      commissionRateScale: Number(commissionRateScale),
+      lockWithdrawUntil: Number(lockWithdrawUntil),
       totalDeposits: totalDeposits as bigint,
       status: status as Status,
       paymentBalanceForDepositor: paymentBalanceForDepositor as bigint,
       paymentBalanceForDomainOwner: paymentBalanceForDomainOwner as bigint,
       deposits: deposits as bigint,
-      lockWithdrawUntil: lockWithdrawUntil as bigint,
       balanceOf: balanceOf as bigint,
     },
     refetch: {
@@ -149,8 +137,13 @@ const useOffer = ({ address }: Config) => {
       isLoadingStatus: isLoadingStatus || status === undefined,
       isLoadingTotalDeposits: isLoadingTotalDeposits || totalDeposits === undefined,
       isLoadingDeposits: isLoadingDeposits || deposits === undefined,
-      isLoadingLockWithdrawUntil: isLoadingLockWithdrawUntil || lockWithdrawUntil || undefined,
+      isLoadingLockWithdrawUntil: isLoadingLockWithdrawUntil || lockWithdrawUntil === undefined,
       isLoading: isLoadingInfo || info === undefined || isLoadingStatus || status === undefined,
+      isLoadingPaymentBalanceForDomainOwner:
+        isLoadingPaymentBalanceForDomainOwner || paymentBalanceForDomainOwner === undefined,
+      isLoadingPaymentBalanceForDepositor:
+        isLoadingPaymentBalanceForDepositor || paymentBalanceForDepositor === undefined,
+      isLoadingBalanceOf: isLoadingBalanceOf || balanceOf === undefined,
     },
     error,
   };
