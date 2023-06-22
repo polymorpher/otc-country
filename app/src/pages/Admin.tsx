@@ -29,7 +29,7 @@ const Admin: React.FC = () => {
 
   const handleDebouncedChange = useMemo(() => debounce((e) => setAsset(e.target.value), debounceTimeout), []);
 
-  const { refetch, isRefetching: isChecking } = useContractRead({
+  const { refetch, isFetching: isChecking } = useContractRead({
     ...otcContract,
     functionName: 'assets',
     args: [asset],

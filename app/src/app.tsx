@@ -18,7 +18,7 @@ const App = () => {
     data: offerAddress,
     refetch,
     error,
-    isRefetching,
+    isFetching,
   } = useContractRead({
     ...otcContract,
     functionName: 'offerAddress',
@@ -43,21 +43,21 @@ const App = () => {
 
   return (
     <VStack width="full">
-      <DomainInput onChange={setDomain} loading={isRefetching} />
+      <DomainInput onChange={setDomain} loading={!error && isFetching} />
       {!domain ? (
         <Alert status="warning">
           <AlertIcon />
           Please enter domain name
         </Alert>
-      ) : isRefetching ? null : offerAddress === zeroAddress ? (
+      ) : isFetching ? null : offerAddress === zeroAddress ? (
         <NewOffer domain={domain} onCreate={refetch} />
       ) : offerAddress ? (
         <Offer address={offerAddress as Address} />
       ) : null}
       {error && (
-        <Alert status="error">
+        <Alert status="error" wordBreak="break-word">
           <AlertIcon />
-          {error.message}
+          {error.details}
         </Alert>
       )}
     </VStack>
