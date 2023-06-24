@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Text } from '@chakra-ui/react';
+import { Button, Text, VStack } from '@chakra-ui/react';
 import { formatSeconds } from '~/helpers/time';
 
 interface WithdrawProps {
@@ -12,12 +12,9 @@ interface WithdrawProps {
 
 const Withdraw = React.forwardRef<HTMLButtonElement, WithdrawProps>(
   ({ lockWithdrawUntil, timestamp, disabled, isWithdrawing, onClick }, ref) => (
-    <Box>
+    <VStack textAlign="center">
       {lockWithdrawUntil > timestamp && (
-        <>
-          <Text textAlign="right">Withdraw locked left</Text>
-          <Text>{formatSeconds(lockWithdrawUntil - timestamp)}</Text>
-        </>
+        <Text textAlign="right">Withdraw locked left: {formatSeconds(lockWithdrawUntil - timestamp)}</Text>
       )}
       <Button
         ref={ref}
@@ -28,7 +25,7 @@ const Withdraw = React.forwardRef<HTMLButtonElement, WithdrawProps>(
       >
         Withdraw
       </Button>
-    </Box>
+    </VStack>
   ),
 );
 

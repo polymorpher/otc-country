@@ -38,7 +38,7 @@ const useAccept = ({ offerAddress, destAsset, acceptAmount, onSuccess, onSettled
   const { writeAsync: approveDestAsset, isLoading: isApproving } = useContractWriteComplete({
     ...erc20Contract(destAsset),
     functionName: 'approve',
-    description: 'Allowing the offer to handle destination asset',
+    description: 'Approving accept',
     onSettled,
   });
 
@@ -49,8 +49,8 @@ const useAccept = ({ offerAddress, destAsset, acceptAmount, onSuccess, onSettled
       });
     }
 
-    await acceptOffer?.();
-  }, [acceptAmount, acceptOffer, allowance, approveDestAsset, offerAddress]);
+    await acceptOffer?.({ args: [userAddress] });
+  }, [acceptAmount, acceptOffer, allowance, approveDestAsset, offerAddress, userAddress]);
 
   return {
     destBalance,

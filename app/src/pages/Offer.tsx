@@ -222,6 +222,9 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
       <Box display="grid" gridTemplateColumns="10em 1fr" gridRowGap="4" gridColumnGap="4">
         {!isLoading && (
           <>
+            <Text textAlign="right">Contract address</Text>
+            <AddressField>{address}</AddressField>
+
             <Text textAlign="right">Creator</Text>
             <AddressField text={creator === walletAddr ? 'You' : undefined}>{String(creator)}</AddressField>
 
@@ -254,8 +257,10 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
       </Box>
 
       {!isLoading && walletAddr !== undefined && (
-        <VStack width="full">
-          {deposits === 0n && <Text my="5">You can deposit your funds or accept the offer</Text>}
+        <VStack width="full" pt="10">
+          {status === Status.Open && deposits === 0n && (
+            <Text my="5">You can deposit your funds or accept the offer</Text>
+          )}
           {status !== Status.Accepted ? (
             deposits > 0 &&
             timestamp !== undefined &&
@@ -285,7 +290,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
               isClaiming={isClaimingDomainOwnerPayment}
               disabled={isUserActionDoing}
             />
-          ) : (
+          ) : deposits > 0 ? (
             <ClaimPayment
               balance={paymentBalanceForDepositor}
               decimals={Number(destDecimals)}
@@ -293,6 +298,8 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
               isClaiming={isClaimingDepositorPayment}
               disabled={isUserActionDoing}
             />
+          ) : (
+            <Text>You have no deposits</Text>
           )}
 
           {status === Status.Open && srcBalance !== undefined && (
