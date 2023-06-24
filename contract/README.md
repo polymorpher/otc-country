@@ -1,15 +1,27 @@
 [![Coverage Status](https://coveralls.io/repos/github/polymorpher/otc-country/badge.svg?branch=otc-contract)](https://coveralls.io/github/polymorpher/otc-country?branch=otc-contract)
 
-# Sample Hardhat Project
+## commands
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+``` shell
 
-Try running some of the following tasks:
+# compile
+yarn compile
 
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
+# test
+yarn test
+
+# test with coverage
+yarn coverage
+
+# prettify
+yarn prettify
+
+# deploy on mainnet
+yarn deploy
+yarn verify
+
+# deploy on sepolia testnet
+yarn deploy:sepolia
+yarn verify --network sepolia
+
 ```
