@@ -21,6 +21,7 @@ yarn deploy
 yarn verify
 
 # deploy on sepolia testnet
+# this will deploy mock contracts as well
 yarn deploy:sepolia
 yarn verify --network sepolia
 
