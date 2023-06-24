@@ -193,6 +193,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
   });
 
   const isUserActionDoing =
+    isAccepting ||
     isWithdrawing ||
     isDepositing ||
     isLoadingBalanceOf ||
