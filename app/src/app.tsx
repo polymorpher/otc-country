@@ -32,7 +32,7 @@ const App = () => {
     }
 
     setError(undefined);
-    setOfferAddress(undefined)
+    setOfferAddress(undefined);
     setIsFetching(true);
 
     readContract({
