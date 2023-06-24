@@ -230,7 +230,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
             <AddressField text={creator === walletAddr ? 'You' : undefined}>{String(creator)}</AddressField>
 
             <Text textAlign="right">Domain owner</Text>
-            <AddressField>{String(domainOwner)}</AddressField>
+            <AddressField text={domainOwner === walletAddr ? 'You' : undefined}>{String(domainOwner)}</AddressField>
 
             <Text textAlign="right">Commission rate</Text>
             <Text>{(commissionRate * 100) / commissionRateScale}%</Text>
@@ -251,7 +251,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
 
         {walletAddr !== undefined && (
           <>
-            <Text textAlign="right">Deposit</Text>
+            <Text textAlign="right">Your deposit</Text>
             {isLoadingDeposits ? <Spinner /> : <Text>{round(formatUnits(deposits, Number(srcDecimals)))}</Text>}
           </>
         )}
