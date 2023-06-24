@@ -50,11 +50,11 @@ const AmountPicker: React.FC<AmountPickerProps> = ({ onChange, max, decimals }) 
       <Slider
         flex="1"
         focusThumbOnChange={false}
-        value={(value * 100) / maxVal}
+        value={maxVal === 0 ? 0 : (value * 100) / maxVal}
         onChange={(value) => setValue(round((maxVal * value) / 100))}
       >
         <SliderMark
-          value={(value * 100) / maxVal}
+          value={maxVal === 0 ? 0 : (value * 100) / maxVal}
           textAlign="center"
           bg="blue.500"
           color="white"

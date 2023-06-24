@@ -148,8 +148,7 @@ const useOffer = ({ address }: Config) => {
       isLoadingLockWithdrawUntil: isLoadingLockWithdrawUntil || isFetchingLockWithdrawUntil,
       isLoadingPaymentBalanceForDomainOwner:
         isLoadingPaymentBalanceForDomainOwner || isFetchingPaymentBalanceForDomainOwner,
-      isLoadingPaymentBalanceForDepositor:
-        isLoadingPaymentBalanceForDepositor || isFetchingPaymentBalanceForDepositor,
+      isLoadingPaymentBalanceForDepositor: isLoadingPaymentBalanceForDepositor || isFetchingPaymentBalanceForDepositor,
       isLoadingBalanceOf: isLoadingBalanceOf || isFetchingBalanceOf,
     },
     error,

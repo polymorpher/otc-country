@@ -32,6 +32,7 @@ const useDeposit = ({ offerAddress, srcAsset, onSuccess, onSettled }: Config) =>
     functionName: 'deposit',
     description: 'Depositing',
     onSuccess,
+    onSettled,
   });
 
   const depositFund = useCallback(

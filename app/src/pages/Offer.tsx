@@ -7,7 +7,6 @@ import AddressField from '~/components/AddressField';
 import AmountPopover from '~/components/AmountPopover';
 import ClaimPayment from '~/components/ClaimPayment';
 import OfferStatus from '~/components/OfferStatus';
-import RemoteField from '~/components/RemoteField';
 import Withdraw from '~/components/Withdraw';
 import { erc20Contract, offerContract } from '~/helpers/contracts';
 import { round } from '~/helpers/mantisa';
@@ -105,6 +104,13 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
     offerAddress: address,
     acceptAmount,
     destAsset,
+    onSettled: (data, err) =>
+      err &&
+      toastError({
+        title: 'Failed to deposit',
+        description: err.details,
+        txHash: data?.transactionHash,
+      }),
     onSuccess: (data) => {
       refetchStatus();
       toastSuccess({
@@ -237,16 +243,12 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
         )}
 
         <Text textAlign="right">Total deposits</Text>
-        <RemoteField loading={isLoadingTotalDeposits}>
-          <Text>{round(formatUnits(totalDeposits, Number(srcDecimals)))}</Text>
-        </RemoteField>
+        {isLoadingTotalDeposits ? <Spinner /> : <Text>{round(formatUnits(totalDeposits, Number(srcDecimals)))}</Text>}
 
         {walletAddr !== undefined && (
           <>
             <Text textAlign="right">Deposit</Text>
-            <RemoteField loading={isLoadingDeposits}>
-              <Text>{round(formatUnits(deposits, Number(srcDecimals)))}</Text>
-            </RemoteField>
+            {isLoadingDeposits ? <Spinner /> : <Text>{round(formatUnits(deposits, Number(srcDecimals)))}</Text>}
           </>
         )}
       </Box>
@@ -293,7 +295,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
             />
           )}
 
-          {status === Status.Open && (
+          {status === Status.Open && srcBalance !== undefined && (
             <>
               <AmountPopover max={srcBalance} decimals={Number(srcDecimals)} onOkay={(amount) => depositFund(amount)}>
                 <Button isDisabled={isUserActionDoing} isLoading={isDepositing} loadingText="Deposit">
