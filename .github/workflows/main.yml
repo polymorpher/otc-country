@@ -1,0 +1,25 @@
+name: CI
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push or pull request events but only for the dev branch
+  push:
+    branches: [dev, main, master]
+    paths: ["**.js", "**.ts", "**.sol"]
+  pull_request:
+    branches: [dev, main, master]
+    paths: ["**.js", "**.ts", "**.sol"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - name: Tests
+        working-directory: ./contract
+        run: |
+          npm install --no-lockfile
+          npm run coverage
