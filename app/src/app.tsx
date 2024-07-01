@@ -19,7 +19,7 @@ const App = () => {
 
   const [offerAddress, setOfferAddress] = useState<Address>();
 
-  const [error, setError] = useState<Error>();
+  const [error, setError] = useState<any>();
 
   const { data: ownerAddress } = useContractRead({
     ...otcContract,

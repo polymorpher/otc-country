@@ -1,6 +1,5 @@
 import React from 'react';
-import { Link, Text, Tooltip } from '@chakra-ui/react';
-import { TextProps } from '@chakra-ui/react';
+import { Link, Text, Tooltip , TextProps } from '@chakra-ui/react';
 import { host } from '~/helpers/chain';
 
 interface AddressFieldProps extends TextProps {
