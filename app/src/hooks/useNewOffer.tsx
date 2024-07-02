@@ -1,90 +1,100 @@
-import { useCallback } from 'react';
-import { Address } from 'abitype';
-import { keccak256, toHex } from 'viem';
-import { useAccount, useBalance, useContractRead } from 'wagmi';
-import { domainContract, erc20Contract, otcContract } from '~/helpers/contracts';
-import useContractWriteComplete, { SettledHandler, SuccessHandler } from './useContractWriteComplete';
+import { useCallback } from 'react'
+import { type Address } from 'abitype'
+import { keccak256, toHex } from 'viem'
+import { useAccount, useBalance, useContractRead } from 'wagmi'
+import { domainContract, erc20Contract, otcContract } from '~/helpers/contracts'
+import useContractWriteComplete, { type SettledHandler, type SuccessHandler } from './useContractWriteComplete'
 
 interface Config {
-  srcAsset: Address;
-  destAsset: Address;
-  chainId: number;
-  domain: string;
-  onSettled: SettledHandler;
-  onSuccess: SuccessHandler;
+  srcAsset: Address
+  destAsset: Address
+  chainId: number
+  domain: string
+  onSettled: SettledHandler
+  onSuccess: SuccessHandler
 }
 
 interface OfferData {
-  domainOwner: Address;
-  srcAsset: Address;
-  destAsset: Address;
-  depositAmount: bigint;
-  acceptAmount: bigint;
-  commissionRate: bigint;
-  lockWithdrawDuration: bigint;
+  domainOwner: Address
+  srcAsset: Address
+  destAsset: Address
+  depositAmount: bigint
+  acceptAmount: bigint
+  commissionRate: bigint
+  lockWithdrawDuration: bigint
 }
 
-const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettled }: Config) => {
-  const { address } = useAccount();
+export interface UseNewOfferType {
+  balance: bigint
+  srcBalance: bigint
+  srcDecimals: bigint
+  destDecimals: bigint
+  domainPrice: bigint
+  isCreatingOffer: boolean
+  createOffer: (d: OfferData) => any
+}
+
+const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettled }: Config): UseNewOfferType => {
+  const { address } = useAccount()
 
   const { data: balance } = useBalance({
     address,
-    chainId,
-  });
+    chainId
+  })
 
   const { data: domainContractAddress } = useContractRead({
     ...otcContract,
-    functionName: 'domainContract',
-  });
+    functionName: 'domainContract'
+  })
 
   const { data: domainPrice } = useContractRead({
     ...domainContract(domainContractAddress as Address),
     functionName: 'getPrice',
-    args: [domain],
-  });
+    args: [domain]
+  })
 
   const { data: srcBalance } = useContractRead({
     ...erc20Contract(srcAsset),
     functionName: 'balanceOf',
-    args: [address],
-  });
+    args: [address]
+  })
 
   const { data: computedOfferAddress } = useContractRead({
     ...otcContract,
     functionName: 'computedOfferAddress',
-    args: [domain],
-  });
+    args: [domain]
+  })
 
   const { data: allowance, refetch: refetchAllowance } = useContractRead({
     ...erc20Contract(srcAsset),
     functionName: 'allowance',
-    args: [address, computedOfferAddress],
-  });
+    args: [address, computedOfferAddress]
+  })
 
   const { data: srcDecimals } = useContractRead({
     ...erc20Contract(srcAsset),
-    functionName: 'decimals',
-  });
+    functionName: 'decimals'
+  })
 
   const { data: destDecimals } = useContractRead({
     ...erc20Contract(destAsset),
-    functionName: 'decimals',
-  });
+    functionName: 'decimals'
+  })
 
   const { writeAsync: approveSrcAsset, isLoading: isApproving } = useContractWriteComplete({
     ...erc20Contract(srcAsset),
     functionName: 'approve',
     description: 'Approving deposition',
-    onSettled,
-  });
+    onSettled
+  })
 
   const { writeAsync: createOfferAsync, isLoading: isCreatingOffer } = useContractWriteComplete({
     ...otcContract,
     functionName: 'createOffer',
     description: 'Creating offer',
     onSettled,
-    onSuccess,
-  });
+    onSuccess
+  })
 
   const createOffer = useCallback(
     async ({
@@ -94,17 +104,15 @@ const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettle
       depositAmount,
       acceptAmount,
       commissionRate,
-      lockWithdrawDuration,
+      lockWithdrawDuration
     }: OfferData) => {
-      await refetchAllowance();
+      await refetchAllowance()
 
       if ((allowance as bigint) < depositAmount) {
-        await approveSrcAsset?.({
-          args: [computedOfferAddress, depositAmount],
-        });
+        await approveSrcAsset?.({ args: [computedOfferAddress, depositAmount] })
       }
 
-      return createOfferAsync?.({
+      return await createOfferAsync?.({
         args: [
           domain,
           keccak256(toHex(Math.random().toString())),
@@ -114,13 +122,13 @@ const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettle
           depositAmount,
           acceptAmount,
           commissionRate,
-          lockWithdrawDuration,
+          lockWithdrawDuration
         ],
-        value: domainPrice as bigint,
-      });
+        value: domainPrice as bigint
+      })
     },
-    [allowance, approveSrcAsset, computedOfferAddress, createOfferAsync, domain, domainPrice, refetchAllowance],
-  );
+    [allowance, approveSrcAsset, computedOfferAddress, createOfferAsync, domain, domainPrice, refetchAllowance]
+  )
 
   return {
     balance: balance?.value as bigint,
@@ -129,8 +137,8 @@ const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettle
     destDecimals: destDecimals as bigint,
     domainPrice: domainPrice as bigint,
     isCreatingOffer: isApproving || isCreatingOffer,
-    createOffer,
-  };
-};
+    createOffer
+  }
+}
 
-export default useNewOffer;
+export default useNewOffer

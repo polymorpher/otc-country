@@ -1,43 +1,48 @@
-import React from 'react';
-import { useToast as useChakraToast, UseToastOptions } from '@chakra-ui/react';
-import TxHashLink from '~/components/TxHashLink';
+import React from 'react'
+import { useToast as useChakraToast, type UseToastOptions } from '@chakra-ui/react'
+import TxHashLink from '~/components/TxHashLink'
 
 type ToastOptions = UseToastOptions & {
-  txHash?: string;
-};
+  txHash?: string
+}
 
 const ToastBody: React.FC<ToastOptions> = ({ description, txHash }) => (
   <>
     {description}
     {txHash && <TxHashLink hash={txHash} />}
   </>
-);
+)
 
-const useToast = () => {
-  const toast = useChakraToast();
+export interface UseToastType {
+  toastSuccess: (config: ToastOptions) => any
+  toastError: (config: ToastOptions) => any
+}
 
-  const toastSuccess = (config: ToastOptions) =>
+const useToast = (): UseToastType => {
+  const toast = useChakraToast()
+
+  const toastSuccess = (config: ToastOptions): any =>
     toast({
       status: 'success',
       duration: 3000,
       isClosable: true,
       description: <ToastBody {...config} />,
-      ...config,
-    });
+      ...config
+    })
 
-  const toastError = (config: ToastOptions) =>
+  const toastError = (config: ToastOptions): any =>
     toast({
       status: 'error',
       duration: 10000,
       isClosable: true,
       description: <ToastBody {...config} />,
-      ...config,
-    });
+      ...config
+    })
 
   return {
     toastSuccess,
-    toastError,
-  };
-};
+    toastError
+  }
+}
 
-export default useToast;
+export default useToast

@@ -1,20 +1,20 @@
-import { useState, useEffect } from 'react';
-import { usePublicClient } from 'wagmi';
+import { useState, useEffect } from 'react'
+import { usePublicClient } from 'wagmi'
 
 const useBlockTimestamp = (): number | undefined => {
-  const [timestamp, setTimestamp] = useState<number>();
+  const [timestamp, setTimestamp] = useState<number>()
 
-  const client = usePublicClient();
+  const client = usePublicClient()
 
   useEffect(() => {
-    client.getBlock().then((block) => setTimestamp(Number(block.timestamp)));
+    client.getBlock().then((block) => { setTimestamp(Number(block.timestamp)) }).catch(console.error)
 
-    const timer = setInterval(() => setTimestamp((prev) => (prev !== undefined ? prev + 1 : undefined)), 1000);
+    const timer = setInterval(() => { setTimestamp((prev) => (prev !== undefined ? prev + 1 : undefined)) }, 1000)
 
-    return () => clearInterval(timer);
-  }, [client]);
+    return () => { clearInterval(timer) }
+  }, [client])
 
-  return timestamp;
-};
+  return timestamp
+}
 
-export default useBlockTimestamp;
+export default useBlockTimestamp
