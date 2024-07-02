@@ -1,6 +1,6 @@
 module.exports = async ({ getNamedAccounts, deployments, ...other }) => {
-  const { deploy } = deployments;
-  const { deployer } = await getNamedAccounts();
+  const { deploy } = deployments
+  const { deployer } = await getNamedAccounts()
 
   const offerFactory = await deployments.get('OfferFactory')
 
@@ -8,14 +8,14 @@ module.exports = async ({ getNamedAccounts, deployments, ...other }) => {
     address: process.env.DOMAIN_CONTRACT
   }
 
-  if (process.env.DEPLOY_MAINNET === "0") {
+  if (process.env.DEPLOY_MAINNET === '0') {
     domainContract = await deployments.get('DomainContract')
   }
   await deploy('OTC', {
     from: deployer,
     args: [domainContract.address, offerFactory.address],
-    log: true,
-  });
-};
+    log: true
+  })
+}
 
-module.exports.tags = ['OTC'];
+module.exports.tags = ['OTC']
