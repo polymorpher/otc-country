@@ -14,6 +14,7 @@ import MetamskConnector from './components/MetamaskConnector';
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [chain],
+  // [alchemyProvider({ apiKey: CONFIG.alchemyApiKey }), publicProvider()],
   [alchemyProvider({ apiKey: CONFIG.alchemyApiKey }), publicProvider()],
 );
 
