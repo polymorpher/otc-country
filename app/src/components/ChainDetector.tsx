@@ -1,17 +1,17 @@
-import React from 'react';
-import { Button, Alert, AlertIcon, Spacer } from '@chakra-ui/react';
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi';
-import chain from '~/helpers/chain';
+import React from 'react'
+import { Button, Alert, AlertIcon, Spacer } from '@chakra-ui/react'
+import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
+import chain from '~/helpers/chain'
 
-const ChainDetector = () => {
-  const { isConnected } = useAccount();
+const ChainDetector = (): React.JSX.Element | null => {
+  const { isConnected } = useAccount()
 
-  const { isLoading, switchNetwork } = useSwitchNetwork({ chainId: chain.id });
+  const { isLoading, switchNetwork } = useSwitchNetwork({ chainId: chain.id })
 
-  const { chain: currentChain } = useNetwork();
+  const { chain: currentChain } = useNetwork()
 
   if (!isConnected || currentChain?.id === chain.id) {
-    return null;
+    return null
   }
 
   return (
@@ -25,7 +25,7 @@ const ChainDetector = () => {
         Switch
       </Button>
     </Alert>
-  );
-};
+  )
+}
 
-export default ChainDetector;
+export default ChainDetector

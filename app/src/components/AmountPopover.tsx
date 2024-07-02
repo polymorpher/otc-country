@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react'
 import {
   Button,
   ButtonGroup,
@@ -10,25 +10,25 @@ import {
   PopoverFooter,
   PopoverHeader,
   PopoverTrigger,
-  Portal,
-} from '@chakra-ui/react';
-import AmountPicker, { AmountPickerProps } from './AmountPicker';
+  Portal
+} from '@chakra-ui/react'
+import AmountPicker, { type AmountPickerProps } from './AmountPicker'
 
-interface AmountPopover extends AmountPickerProps {
-  children: JSX.Element;
-  onOkay: (value: bigint) => void;
+interface AmountPopoverProps extends AmountPickerProps {
+  children: JSX.Element
+  onOkay: (value: bigint) => void
 }
 
-const AmountPopover: React.FC<AmountPopover> = ({ max, decimals, onOkay, children }) => {
-  const [value, setValue] = useState(0n);
+const AmountPopover: React.FC<AmountPopoverProps> = ({ max, decimals, onOkay, children }) => {
+  const [value, setValue] = useState(0n)
 
   const handleOkayClick = useCallback(
     (onClose: VoidFunction) => () => {
-      onClose();
-      onOkay(value);
+      onClose()
+      onOkay(value)
     },
-    [onOkay, value],
-  );
+    [onOkay, value]
+  )
 
   return (
     <Popover>
@@ -60,7 +60,7 @@ const AmountPopover: React.FC<AmountPopover> = ({ max, decimals, onOkay, childre
         </>
       )}
     </Popover>
-  );
-};
+  )
+}
 
-export default AmountPopover;
+export default AmountPopover

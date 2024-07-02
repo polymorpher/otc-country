@@ -1,14 +1,14 @@
-import React from 'react';
-import { Alert, AlertIcon } from '@chakra-ui/react';
-import { useAccount } from 'wagmi';
-import { Status } from '~/helpers/types';
+import React from 'react'
+import { Alert, AlertIcon } from '@chakra-ui/react'
+import { useAccount } from 'wagmi'
+import { Status } from '~/helpers/types'
 
 interface OfferStatusProps {
-  status: Status;
+  status: Status
 }
 
 const OfferStatus: React.FC<OfferStatusProps> = ({ status }) => {
-  const { isConnected } = useAccount();
+  const { isConnected } = useAccount()
 
   switch (status) {
     case Status.Open:
@@ -18,7 +18,7 @@ const OfferStatus: React.FC<OfferStatusProps> = ({ status }) => {
           The offer is open.
           {!isConnected && ' Please connect your wallet to proceed.'}
         </Alert>
-      );
+      )
 
     case Status.Accepted:
       return (
@@ -29,7 +29,7 @@ const OfferStatus: React.FC<OfferStatusProps> = ({ status }) => {
             ? ' Please claim your payment.'
             : ' Please connect your wallet to claim your payment if you depositted any.'}
         </Alert>
-      );
+      )
 
     case Status.Closed:
       return (
@@ -40,8 +40,8 @@ const OfferStatus: React.FC<OfferStatusProps> = ({ status }) => {
             ? 'Please withdraw your funds if you depositted any.'
             : 'Please connect your wallet to withdraw your funds if you depositted any.'}
         </Alert>
-      );
+      )
   }
-};
+}
 
-export default OfferStatus;
+export default OfferStatus

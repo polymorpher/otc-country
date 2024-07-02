@@ -1,13 +1,13 @@
-import React from 'react';
-import { Button, Text, VStack } from '@chakra-ui/react';
-import { formatSeconds } from '~/helpers/time';
+import React from 'react'
+import { Button, Text, VStack } from '@chakra-ui/react'
+import { formatSeconds } from '~/helpers/time'
 
 interface WithdrawProps {
-  lockWithdrawUntil: number;
-  timestamp: number;
-  disabled: boolean;
-  isWithdrawing: boolean;
-  onClick?: VoidFunction;
+  lockWithdrawUntil: number
+  timestamp: number
+  disabled: boolean
+  isWithdrawing: boolean
+  onClick?: VoidFunction
 }
 
 const Withdraw = React.forwardRef<HTMLButtonElement, WithdrawProps>(
@@ -26,9 +26,9 @@ const Withdraw = React.forwardRef<HTMLButtonElement, WithdrawProps>(
         Withdraw
       </Button>
     </VStack>
-  ),
-);
+  )
+)
 
-Withdraw.displayName = 'Withdraw';
+Withdraw.displayName = 'Withdraw'
 
-export default Withdraw;
+export default Withdraw

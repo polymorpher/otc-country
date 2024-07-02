@@ -1,14 +1,14 @@
-import React from 'react';
-import { Button, Text, VStack } from '@chakra-ui/react';
-import { formatUnits } from 'viem';
-import { round } from '~/helpers/mantisa';
+import React from 'react'
+import { Button, Text, VStack } from '@chakra-ui/react'
+import { formatUnits } from 'viem'
+import { round } from '~/helpers/mantisa'
 
 interface ClaimPaymentProps {
-  balance: bigint;
-  decimals: number;
-  onClick: VoidFunction;
-  isClaiming: boolean;
-  disabled: boolean;
+  balance: bigint
+  decimals: number
+  onClick: VoidFunction
+  isClaiming: boolean
+  disabled: boolean
 }
 
 const ClaimPayment: React.FC<ClaimPaymentProps> = ({ balance, decimals, onClick, isClaiming, disabled }) => (
@@ -20,6 +20,6 @@ const ClaimPayment: React.FC<ClaimPaymentProps> = ({ balance, decimals, onClick,
       </Button>
     )}
   </VStack>
-);
+)
 
-export default ClaimPayment;
+export default ClaimPayment

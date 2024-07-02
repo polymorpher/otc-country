@@ -1,15 +1,15 @@
-import React from 'react';
-import { Button, Box, Text, Alert, AlertIcon, HStack, Spacer } from '@chakra-ui/react';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { connector } from '~/main';
-import AddressField from './AddressField';
+import React from 'react'
+import { Button, Box, Text, Alert, AlertIcon, HStack, Spacer } from '@chakra-ui/react'
+import { useAccount, useConnect, useDisconnect } from 'wagmi'
+import { connector } from '~/main'
+import AddressField from './AddressField'
 
 const MetamskConnector = () => {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useAccount()
 
-  const { connect, isLoading, error, pendingConnector } = useConnect();
+  const { connect, isLoading, error, pendingConnector } = useConnect()
 
-  const { disconnect } = useDisconnect();
+  const { disconnect } = useDisconnect()
 
   if (isConnected && address) {
     return (
@@ -19,16 +19,16 @@ const MetamskConnector = () => {
           <Text color="gray.500">Connected to {connector.name}</Text>
         </Box>
         <Spacer />
-        <Button onClick={() => disconnect()}>Disconnect</Button>
+        <Button onClick={() => { disconnect() }}>Disconnect</Button>
       </HStack>
-    );
+    )
   }
 
   return (
     <Box>
       <Button
         disabled={!connector.ready}
-        onClick={() => connect({ connector })}
+        onClick={() => { connect({ connector }) }}
         isLoading={isLoading && connector.id === pendingConnector?.id}
         loadingText={connector.name}
       >
@@ -42,7 +42,7 @@ const MetamskConnector = () => {
         </Alert>
       )}
     </Box>
-  );
-};
+  )
+}
 
-export default MetamskConnector;
+export default MetamskConnector

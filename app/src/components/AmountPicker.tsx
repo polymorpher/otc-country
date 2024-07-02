@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'
 import {
   Flex,
   NumberDecrementStepper,
@@ -10,25 +10,25 @@ import {
   SliderFilledTrack,
   SliderMark,
   SliderThumb,
-  SliderTrack,
-} from '@chakra-ui/react';
-import { formatUnits, parseUnits } from 'viem';
-import { round } from '~/helpers/mantisa';
+  SliderTrack
+} from '@chakra-ui/react'
+import { formatUnits, parseUnits } from 'viem'
+import { round } from '~/helpers/mantisa'
 
 export interface AmountPickerProps {
-  max: bigint;
-  decimals: number;
-  onChange?: (value: bigint) => void;
+  max: bigint
+  decimals: number
+  onChange?: (value: bigint) => void
 }
 
 const AmountPicker: React.FC<AmountPickerProps> = ({ onChange, max, decimals }) => {
-  const [value, setValue] = useState(0);
+  const [value, setValue] = useState(0)
 
-  const maxVal = Number(formatUnits(max, decimals));
+  const maxVal = Number(formatUnits(max, decimals))
 
   useEffect(() => {
-    onChange && onChange(parseUnits(`${value}`, decimals));
-  }, [value, decimals, onChange]);
+    onChange && onChange(parseUnits(`${value}`, decimals))
+  }, [value, decimals, onChange])
 
   return (
     <Flex>
@@ -38,7 +38,7 @@ const AmountPicker: React.FC<AmountPickerProps> = ({ onChange, max, decimals }) 
         min={0}
         max={maxVal}
         value={value}
-        onChange={(value) => setValue(Number(value))}
+        onChange={(value) => { setValue(Number(value)) }}
       >
         <NumberInputField />
         <NumberInputStepper>
@@ -51,7 +51,7 @@ const AmountPicker: React.FC<AmountPickerProps> = ({ onChange, max, decimals }) 
         flex="1"
         focusThumbOnChange={false}
         value={maxVal === 0 ? 0 : (value * 100) / maxVal}
-        onChange={(value) => setValue(round((maxVal * value) / 100))}
+        onChange={(value) => { setValue(round((maxVal * value) / 100)) }}
       >
         <SliderMark
           value={maxVal === 0 ? 0 : (value * 100) / maxVal}
@@ -70,7 +70,7 @@ const AmountPicker: React.FC<AmountPickerProps> = ({ onChange, max, decimals }) 
         <SliderThumb />
       </Slider>
     </Flex>
-  );
-};
+  )
+}
 
-export default AmountPicker;
+export default AmountPicker

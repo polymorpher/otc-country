@@ -1,15 +1,15 @@
-import React, { useMemo } from 'react';
-import { Input, InputGroup, InputRightAddon, InputRightElement, Spinner } from '@chakra-ui/react';
-import debounce from 'lodash/debounce';
-import { debounceTimeout } from '~/helpers/config';
+import React, { useMemo } from 'react'
+import { Input, InputGroup, InputRightAddon, InputRightElement, Spinner } from '@chakra-ui/react'
+import debounce from 'lodash/debounce'
+import { debounceTimeout } from '~/helpers/config'
 
 interface DomainInputProps {
-  onChange: (value: string) => void;
-  loading: boolean;
+  onChange: (value: string) => void
+  loading: boolean
 }
 
 const DomainInput: React.FC<DomainInputProps> = ({ onChange, loading }) => {
-  const handleDebouncedChange = useMemo(() => debounce((e) => onChange(e.target.value), debounceTimeout), [onChange]);
+  const handleDebouncedChange = useMemo(() => debounce((e) => { onChange(e.target.value) }, debounceTimeout), [onChange])
 
   return (
     <InputGroup>
@@ -21,7 +21,7 @@ const DomainInput: React.FC<DomainInputProps> = ({ onChange, loading }) => {
       )}
       <InputRightAddon>.country.com</InputRightAddon>
     </InputGroup>
-  );
-};
+  )
+}
 
-export default DomainInput;
+export default DomainInput

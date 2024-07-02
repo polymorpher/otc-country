@@ -1,23 +1,23 @@
-import React, { useCallback, useContext, useRef } from 'react';
-import { CloseButton, HStack, Spinner, Text, ToastId, useToast, VStack } from '@chakra-ui/react';
-import TxHashLink from '~/components/TxHashLink';
+import React, { useCallback, useContext, useRef } from 'react'
+import { CloseButton, HStack, Spinner, Text, type ToastId, useToast, VStack } from '@chakra-ui/react'
+import TxHashLink from '~/components/TxHashLink'
 
 interface TxToastDataBase {
-  hash: string;
+  hash: string
 }
 
 interface PendingTransactionsContextValue {
-  initiateNewTx: (data: TxToastDataBase & { title?: string; description?: string }) => void;
-  completeTx: (data: TxToastDataBase) => void;
+  initiateNewTx: (data: TxToastDataBase & { title?: string, description?: string }) => void
+  completeTx: (data: TxToastDataBase) => void
 }
 
 const PendingTransactionsContext = React.createContext<PendingTransactionsContextValue>({
   initiateNewTx: () => false,
-  completeTx: () => false,
-});
+  completeTx: () => false
+})
 
 interface PendingTransactionsProviderProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 const PendingTransactionsProvider: React.FC<PendingTransactionsProviderProps> = ({ children }) => {
@@ -35,10 +35,10 @@ const PendingTransactionsProvider: React.FC<PendingTransactionsProviderProps> = 
         </VStack>
         <CloseButton position="absolute" right="2" top="2" size="sm" onClick={onClose} />
       </HStack>
-    ),
-  });
+    )
+  })
 
-  const toastIdRef = useRef<Record<string, ToastId>>({});
+  const toastIdRef = useRef<Record<string, ToastId>>({})
 
   const initiateNewTx: PendingTransactionsContextValue['initiateNewTx'] = useCallback(
     ({ hash, description, title }) => {
@@ -52,25 +52,25 @@ const PendingTransactionsProvider: React.FC<PendingTransactionsProviderProps> = 
               {description && <Text>{description}</Text>}
               <TxHashLink hash={hash} />
             </>
-          ),
-        }),
-      };
+          )
+        })
+      }
     },
-    [toast],
-  );
+    [toast]
+  )
 
   return (
     <PendingTransactionsContext.Provider
       value={{
         initiateNewTx,
-        completeTx: ({ hash }) => toast.close(toastIdRef.current[hash]),
+        completeTx: ({ hash }) => { toast.close(toastIdRef.current[hash]) }
       }}
     >
       {children}
     </PendingTransactionsContext.Provider>
-  );
-};
+  )
+}
 
-export const usePendingTransactions = () => useContext(PendingTransactionsContext);
+export const usePendingTransactions = () => useContext(PendingTransactionsContext)
 
-export default PendingTransactionsProvider;
+export default PendingTransactionsProvider
