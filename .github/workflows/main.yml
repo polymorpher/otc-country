@@ -24,5 +24,5 @@ jobs:
       - name: Tests
         working-directory: ./contract
         run: |
-          npm install --no-lockfile
-          npm run coverage
+          yarn install --immutable
+          yarn run coverage
