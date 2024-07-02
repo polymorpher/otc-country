@@ -1,10 +1,19 @@
-import { mainnet, sepolia } from '@wagmi/core';
-import * as CONFIG from './config';
+import { harmonyOne, localhost } from '@wagmi/core/chains'
+import * as CONFIG from './config'
+import { type Chain } from '@wagmi/core'
 
-const chain = CONFIG.prod ? mainnet : sepolia;
+const harmonyChain: Chain = {
+  ...harmonyOne,
+  rpcUrls: {
+    public: { http: ['https://rpc.ankr.com/harmony'] },
+    default: { http: ['https://rpc.ankr.com/harmony'] }
+  }
+}
 
-export const host = chain === mainnet ? 'etherscan.io' : 'sepolia.etherscan.io';
+const chain = CONFIG.prod ? harmonyChain : localhost
 
-export const hashLink = (hash: string) => `https://${host}/tx/${hash}`;
+export const host = 'explorer.harmony.one'
 
-export default chain;
+export const hashLink = (hash: string): string => `https://${host}/tx/${hash}`
+
+export default chain
