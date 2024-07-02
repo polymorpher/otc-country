@@ -1,3 +1,5 @@
+/* eslint no-unused-vars:0 */
+
 export namespace Otc {
   export enum ErrorType {
     ZeroAddress,

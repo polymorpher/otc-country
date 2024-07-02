@@ -1,19 +1,19 @@
-import createOfferFixture from "./createOffer";
+import createOfferFixture from './createOffer'
 
 const acceptFixture = async () => {
-  const data = await createOfferFixture();
+  const data = await createOfferFixture()
   const {
     offer,
-    accounts: [depositor, acceptor, ...accounts],
-  } = data;
+    accounts: [depositor, acceptor, ...accounts]
+  } = data
 
-  const [receiver] = accounts;
+  const [receiver] = accounts
 
-  const depositAmount = 200;
+  const depositAmount = 200n
 
-  await offer.connect(depositor).deposit(depositAmount);
+  await offer.connect(depositor).deposit(depositAmount)
 
-  await offer.connect(acceptor).accept(receiver.address);
+  await offer.connect(acceptor).accept(receiver.address)
 
   return {
     ...data,
@@ -21,8 +21,8 @@ const acceptFixture = async () => {
     accounts,
     offer,
     acceptor,
-    depositor,
-  };
-};
+    depositor
+  }
+}
 
-export default acceptFixture;
+export default acceptFixture
