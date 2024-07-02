@@ -14,7 +14,7 @@ describe('OTC', () => {
 
       const offerFactory = await OfferFactory.deploy()
       await expect(
-        OTC.deploy(ethers.ZeroAddress, offerFactory.address)
+        OTC.deploy(ethers.ZeroAddress, await offerFactory.getAddress())
       )
         .to.be.revertedWithCustomError(OTC, 'OTCError')
         .withArgs(Otc.ErrorType.ZeroAddress)
@@ -26,7 +26,7 @@ describe('OTC', () => {
 
       const domainContract = await DomainContract.deploy()
       await expect(
-        OTC.deploy(domainContract.address, ethers.ZeroAddress)
+        OTC.deploy(await domainContract.getAddress(), ethers.ZeroAddress)
       )
         .to.be.revertedWithCustomError(OTC, 'OTCError')
         .withArgs(Otc.ErrorType.ZeroAddress)
