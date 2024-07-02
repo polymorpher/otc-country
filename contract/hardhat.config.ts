@@ -1,18 +1,22 @@
-import { HardhatUserConfig } from "hardhat/config";
-import dotenv from "dotenv";
-import "@nomicfoundation/hardhat-toolbox";
-import "solidity-coverage";
-import "hardhat-deploy";
+import { HardhatUserConfig } from 'hardhat/config'
+import dotenv from 'dotenv'
+import '@nomicfoundation/hardhat-toolbox'
+import 'solidity-coverage'
+import 'hardhat-deploy'
 
 dotenv.config()
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.18",
+  solidity: '0.8.18',
   namedAccounts: {
     deployer: 0
   },
   networks: {
     hardhat: {
+    },
+    harmony: {
+      url: 'https://api.harmony.one',
+      accounts: [process.env.PRIVATE_KEY!]
     },
     mainnet: {
       url: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_KEY_MAINNET}`,
@@ -38,6 +42,6 @@ const config: HardhatUserConfig = {
       apiKey: process.env.ETHERSCAN_KEY
     }
   }
-};
+}
 
-export default config;
+export default config
