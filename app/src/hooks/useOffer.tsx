@@ -43,7 +43,7 @@ export interface UseOfferType {
     isLoadingPaymentBalanceForDepositor: boolean
     isLoadingBalanceOf: boolean
   }
-  error: Error | null
+  error: Error | any | null
 }
 
 const useOffer = ({ address }: Config): UseOfferType => {

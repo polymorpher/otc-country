@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   Button,
   FormControl,
@@ -10,77 +10,77 @@ import {
   InputRightElement,
   Spinner,
   Text,
-  VStack,
-} from '@chakra-ui/react';
-import debounce from 'lodash/debounce';
-import { isAddress } from 'viem';
-import { useContractRead } from 'wagmi';
-import { debounceTimeout } from '~/helpers/config';
-import { otcContract } from '~/helpers/contracts';
-import useContractWriteComplete from '~/hooks/useContractWriteComplete';
-import useToast from '~/hooks/useToast';
+  VStack
+} from '@chakra-ui/react'
+import debounce from 'lodash/debounce'
+import { isAddress } from 'viem'
+import { useContractRead } from 'wagmi'
+import { debounceTimeout } from '~/helpers/config'
+import { otcContract } from '~/helpers/contracts'
+import useContractWriteComplete from '~/hooks/useContractWriteComplete'
+import useToast from '~/hooks/useToast'
 
 const Admin: React.FC = () => {
-  const [asset, setAsset] = useState<string>();
+  const [asset, setAsset] = useState<string>()
 
-  const [assetRegistered, setAssetRegistered] = useState<boolean>();
+  const [assetRegistered, setAssetRegistered] = useState<boolean>()
 
-  const { toastSuccess, toastError } = useToast();
+  const { toastSuccess, toastError } = useToast()
 
-  const handleDebouncedChange = useMemo(() => debounce((e) => setAsset(e.target.value), debounceTimeout), []);
+  const handleDebouncedChange = useMemo(() => debounce((e) => { setAsset(e.target.value) }, debounceTimeout), [])
 
   const { refetch, isFetching: isChecking } = useContractRead({
     ...otcContract,
     functionName: 'assets',
     args: [asset],
-    onSuccess: setAssetRegistered,
-  });
+    onSuccess: setAssetRegistered
+  })
 
   const { write: addAsset, isLoading: isAdding } = useContractWriteComplete({
     ...otcContract,
     functionName: 'addAsset',
     description: 'Adding asset',
     onSuccess: (data) => {
-      setAssetRegistered(true);
+      setAssetRegistered(true)
       toastSuccess({
         title: 'Asset has been added',
-        txHash: data.transactionHash,
-      });
+        txHash: data.transactionHash
+      })
     },
     onSettled: (data, err) =>
       err &&
       toastError({
         title: 'Failed to add the asset',
         description: err.details,
-        txHash: data?.transactionHash,
-      }),
-  });
+        txHash: data?.transactionHash
+      })
+  })
 
   const { write: removeAsset, isLoading: isRemoving } = useContractWriteComplete({
     ...otcContract,
     functionName: 'removeAsset',
     description: 'Removing asset',
     onSuccess: (data) => {
-      setAssetRegistered(false);
+      setAssetRegistered(false)
       toastSuccess({
         title: 'Asset has been removed',
-        txHash: data.transactionHash,
-      });
+        txHash: data.transactionHash
+      })
     },
     onSettled: (data, err) =>
       err &&
       toastError({
         title: 'Failed to removed the asset',
         description: err.details,
-        txHash: data?.transactionHash,
-      }),
-  });
+        txHash: data?.transactionHash
+      })
+  })
 
   useEffect(() => {
     if (asset && isAddress(asset)) {
-      refetch();
+      refetch().catch(console.error)
     }
-  }, [asset, refetch]);
+  }, [asset, refetch])
 
   return (
     <VStack width="full">
@@ -103,8 +103,8 @@ const Admin: React.FC = () => {
             {!isAddress(asset)
               ? 'incorrect value'
               : assetRegistered
-              ? 'The asset is registered'
-              : 'The asset is not registered'}
+                ? 'The asset is registered'
+                : 'The asset is not registered'}
           </FormHelperText>
         )}
       </FormControl>
@@ -117,9 +117,7 @@ const Admin: React.FC = () => {
           onClick={() =>
             asset &&
             isAddress(asset) &&
-            addAsset?.({
-              args: [asset],
-            })
+            addAsset?.({ args: [asset] })
           }
         >
           Add
@@ -131,16 +129,14 @@ const Admin: React.FC = () => {
           onClick={() =>
             asset &&
             isAddress(asset) &&
-            removeAsset?.({
-              args: [asset],
-            })
+            removeAsset?.({ args: [asset] })
           }
         >
           Remove
         </Button>
       </HStack>
     </VStack>
-  );
-};
+  )
+}
 
-export default Admin;
+export default Admin

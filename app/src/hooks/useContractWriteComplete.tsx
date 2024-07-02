@@ -16,7 +16,7 @@ export type ErrorHandler = (error: any) => void
 
 export interface UseContractWriteComplete {
   isLoading: boolean
-  write?: (args: any) => any
+  write?: (args?: any) => any
   writeAsync: (args: any) => Promise<any>
   [x: string | number | symbol]: unknown
 }

@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { Controller, useForm, RegisterOptions } from 'react-hook-form';
+import React, { useCallback } from 'react'
+import { Controller, useForm, type RegisterOptions } from 'react-hook-form'
 import {
   Alert,
   AlertIcon,
@@ -10,29 +10,29 @@ import {
   FormLabel,
   Input,
   Text,
-  VStack,
-} from '@chakra-ui/react';
-import { readContract } from '@wagmi/core';
-import { Address } from 'abitype';
-import { formatEther, isAddress, parseUnits } from 'viem';
-import { useAccount, useContractRead } from 'wagmi';
-import AmountPicker from '~/components/AmountPicker';
-import chain from '~/helpers/chain';
-import { otcContract } from '~/helpers/contracts';
-import useNewOffer from '~/hooks/useNewOffer';
-import useToast from '~/hooks/useToast';
+  VStack
+} from '@chakra-ui/react'
+import { readContract } from '@wagmi/core'
+import { type Address } from 'abitype'
+import { formatEther, isAddress, parseUnits } from 'viem'
+import { useAccount, useContractRead } from 'wagmi'
+import AmountPicker from '~/components/AmountPicker'
+import chain from '~/helpers/chain'
+import { otcContract } from '~/helpers/contracts'
+import useNewOffer from '~/hooks/useNewOffer'
+import useToast from '~/hooks/useToast'
 
 interface NewOfferProps {
-  domain: string;
-  onCreate: () => void;
+  domain: string
+  onCreate: () => void
 }
 
-const checkAssetAvailable = (asset: string) =>
-  readContract({
+const checkAssetAvailable = async (asset: string) =>
+  await readContract({
     ...otcContract,
     functionName: 'assets',
-    args: [asset],
-  }).then((res) => !!res);
+    args: [asset]
+  }).then((res) => !!res)
 
 const defaultValues = {
   domainOwner: '' as Address,
@@ -41,113 +41,109 @@ const defaultValues = {
   depositAmount: '',
   acceptAmount: '',
   commissionRate: '',
-  lockWithdrawDuration: '',
-};
+  lockWithdrawDuration: ''
+}
 
-type FormFields = typeof defaultValues;
+type FormFields = typeof defaultValues
 
 const rules: Record<keyof FormFields, RegisterOptions> = {
   domainOwner: {
     required: 'required',
-    validate: {
-      address: (v: string) => isAddress(v) || 'not address format',
-    },
+    validate: { address: (v: string) => isAddress(v) || 'not address format' }
   },
   srcAsset: {
     required: 'required',
     validate: {
       address: (v: string) => isAddress(v) || 'not address format',
-      available: async (v: string) => (await checkAssetAvailable(v)) || 'not available',
-    },
+      available: async (v: string) => (await checkAssetAvailable(v)) || 'not available'
+    }
   },
   destAsset: {
     required: 'required',
     validate: {
       address: (v: string) => isAddress(v) || 'not address format',
-      available: async (v: string) => (await checkAssetAvailable(v)) || 'not available',
-    },
+      available: async (v: string) => (await checkAssetAvailable(v)) || 'not available'
+    }
   },
   depositAmount: {
     required: 'required',
     validate: {
       number: (v: string) => !isNaN(Number(v)) || 'should be number',
-      notZero: (v: string) => Number(v) > 0 || 'should be not zero',
-    },
+      notZero: (v: string) => Number(v) > 0 || 'should be not zero'
+    }
   },
   acceptAmount: {
     required: 'required',
     validate: {
       number: (v: string) => !isNaN(Number(v)) || 'should be number',
-      notZero: (v: string) => Number(v) > 0 || 'should be not zero',
-    },
+      notZero: (v: string) => Number(v) > 0 || 'should be not zero'
+    }
   },
   commissionRate: {
     required: true,
     validate: {
       number: (v: string) => !isNaN(Number(v)) || 'should be number',
-      notZero: (v: string) => Number(v) > 0 || 'should be not zero',
-    },
+      notZero: (v: string) => Number(v) > 0 || 'should be not zero'
+    }
   },
   lockWithdrawDuration: {
     required: true,
     validate: {
       number: (v: string) => !isNaN(Number(v)) || 'should be number',
-      notZero: (v: string) => Number(v) > 0 || 'should be not zero',
-    },
-  },
-};
+      notZero: (v: string) => Number(v) > 0 || 'should be not zero'
+    }
+  }
+}
 
 const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
   const { data: commissionRateScale } = useContractRead({
     ...otcContract,
-    functionName: 'commissionRateScale',
-  });
+    functionName: 'commissionRateScale'
+  })
 
   const {
     register,
     handleSubmit,
     control,
     watch,
-    formState: { errors },
-  } = useForm({
-    defaultValues,
-  });
+    formState: { errors }
+  } = useForm({ defaultValues })
 
-  const { isConnected } = useAccount();
+  const { isConnected } = useAccount()
 
-  const { toastSuccess, toastError } = useToast();
+  const { toastSuccess, toastError } = useToast()
 
   const { balance, domainPrice, srcBalance, srcDecimals, destDecimals, isCreatingOffer, createOffer } = useNewOffer({
-    srcAsset: watch('srcAsset') as Address,
-    destAsset: watch('destAsset') as Address,
+    srcAsset: watch('srcAsset'),
+    destAsset: watch('destAsset'),
     domain,
     chainId: chain.id,
     onSuccess: (data) => {
       toastSuccess({
         title: 'Offer has been created',
-        txHash: data.transactionHash,
-      });
+        txHash: data.transactionHash
+      })
     },
     onSettled: (data, err) =>
       err &&
       toastError({
         title: 'Failed to create the offer',
         description: err.details,
-        txHash: data?.transactionHash,
-      }),
-  });
+        txHash: data?.transactionHash
+      })
+  })
 
   const handleOfferSubmit = useCallback(
     (data: FormFields) =>
       createOffer({
         ...data,
         depositAmount: BigInt(data.depositAmount),
-        acceptAmount: parseUnits(data.acceptAmount, destDecimals),
+        acceptAmount: parseUnits(data.acceptAmount, Number(destDecimals)),
         commissionRate: BigInt(data.commissionRate),
-        lockWithdrawDuration: BigInt(data.lockWithdrawDuration),
+        lockWithdrawDuration: BigInt(data.lockWithdrawDuration)
       }).then(onCreate),
-    [createOffer, destDecimals, onCreate],
-  );
+    [createOffer, destDecimals, onCreate]
+  )
 
   if (!isConnected) {
     return (
@@ -155,7 +151,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
         <AlertIcon />
         Offer is available from the given domain. Please connect your wallet to proceed.
       </Alert>
-    );
+    )
   }
 
   return (
@@ -167,7 +163,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
       {domainPrice !== undefined && (
         <Alert status={balance > domainPrice ? 'info' : 'warning'}>
           <AlertIcon />
-          It costs {formatEther(domainPrice as bigint)} ETH to buy that domain.
+          It costs {formatEther(domainPrice)} ETH to buy that domain.
           {balance > domainPrice
             ? 'You will spend that amount of ETH to create an offer for the domain name.'
             : 'Your ETH balance is not sufficient now.'}
@@ -203,7 +199,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
               rules={rules.depositAmount}
               render={({ field }) => (
                 <AmountPicker
-                  onChange={(value) => field.onChange(value.toString())}
+                  onChange={(value) => { field.onChange(value.toString()) }}
                   max={srcBalance}
                   decimals={Number(srcDecimals)}
                 />
@@ -226,8 +222,8 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
               ...rules.commissionRate,
               max: {
                 value: Number(commissionRateScale),
-                message: `should be less than ${commissionRateScale}`,
-              },
+                message: `should be less than ${commissionRateScale}`
+              }
             })}
           />
           {!errors.commissionRate && commissionRateScale !== undefined && !!watch('commissionRate') && (
@@ -246,7 +242,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
         </Button>
       </VStack>
     </VStack>
-  );
-};
+  )
+}
 
-export default NewOffer;
+export default NewOffer
