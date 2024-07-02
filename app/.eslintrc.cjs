@@ -1,36 +1,71 @@
 module.exports = {
+  env: {
+    browser: true,
+    node: false,
+    es2020: true,
+  },
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    ecmaVersion: 2020,
+    sourceType: 'module',
+    project: './tsconfig.json',
+    tsconfigRootDir: __dirname,
+    createDefaultProgram: true
+  },
   extends: [
-    // By extending from a plugin config, we can get recommended rules without having to add them manually.
+    'standard-with-typescript',
     'eslint:recommended',
     'plugin:react/recommended',
-    'plugin:import/recommended',
-    'plugin:jsx-a11y/recommended',
     'plugin:@typescript-eslint/recommended',
-    'plugin:react-hooks/recommended',
-    // This disables the formatting rules in ESLint that Prettier is going to be responsible for handling.
-    // Make sure it's always the last config, so it gets the chance to override other configs.
-    'eslint-config-prettier',
   ],
+  plugins: ['compat', 'react', 'react-hooks'],
   settings: {
     react: {
       // Tells eslint-plugin-react to automatically detect the version of React to use.
       version: 'detect',
     },
-    // Tells eslint how to resolve imports
-    'import/resolver': {
-      typescript: {},
-      node: {
-        paths: ['src'],
-        extensions: ['.js', '.jsx', '.ts', '.tsx'],
-      },
-      alias: {
-        map: [
-          ['~', 'src'],
-        ],
-      },
-    },
+    'import/parsers': { '@typescript-eslint/parser': ['.ts', '.tsx'] },
+    // // Tells eslint how to resolve imports
+    // 'import/resolver': {
+    //   typescript: {},
+    //   node: {
+    //     paths: ['src'],
+    //     extensions: ['.js', '.jsx', '.ts', '.tsx'],
+    //   },
+    //   alias: {
+    //     map: [
+    //       ['~', 'src'],
+    //     ],
+    //   },
+    // },
   },
   rules: {
-    // Add your own rules here to override ones from the extended configs.
+    'no-await-in-loop': 0,
+    'no-underscore-dangle': 0,
+    'import/prefer-default-export': 0,
+    'import/no-extraneous-dependencies': 1,
+    'comma-dangle': 0,
+    'no-console': 0,
+    'no-mixed-operators': 0,
+    'new-cap': 0,
+    'max-len': 0,
+    'promise/always-return': 'off',
+    'import/no-cycle': 'off',
+    'no-shadow': 'off',
+    '@typescript-eslint/no-shadow': 'off',
+    'import/extensions': 'off',
+    'object-curly-newline': ['error', { multiline: true }],
+    '@typescript-eslint/restrict-template-expressions': 0,
+    '@typescript-eslint/no-misused-promises': 0,
+    'react/jsx-indent': ['error', 2],
+    '@typescript-eslint/strict-boolean-expressions': 0,
+    'react/prop-types': [0],
+    'react/button-has-type': 'off',
+    'react/jsx-props-no-spreading': [0],
+    'react/jsx-filename-extension': [2, { extensions: ['.js', '.jsx', '.ts', '.tsx'] }],
+    'react/function-component-definition': [2, { namedComponents: 'arrow-function' }],
+    'react-hooks/rules-of-hooks': 'error', // Checks rules of Hooks
+    'react-hooks/exhaustive-deps': 'error', // Checks effect dependencies
+    '@typescript-eslint/no-explicit-any': 0,
   },
 };
