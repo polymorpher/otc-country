@@ -13,13 +13,13 @@ const DomainInput: React.FC<DomainInputProps> = ({ onChange, loading }) => {
 
   return (
     <InputGroup>
-      <Input placeholder="3rd level domain" onChange={handleDebouncedChange} />
+      <Input placeholder="my-offer" onChange={handleDebouncedChange} />
       {loading && (
         <InputRightElement right="7.7em">
           <Spinner />
         </InputRightElement>
       )}
-      <InputRightAddon>.country.com</InputRightAddon>
+      <InputRightAddon>.country</InputRightAddon>
     </InputGroup>
   )
 }

@@ -10,7 +10,8 @@ const harmonyChain: Chain = {
   }
 }
 
-const chain = CONFIG.prod ? harmonyChain : localhost
+// const chain = CONFIG.prod ? harmonyChain : localhost
+const chain = harmonyChain
 
 export const host = 'explorer.harmony.one'
 
