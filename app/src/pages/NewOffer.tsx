@@ -163,10 +163,10 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
       {domainPrice !== undefined && (
         <Alert status={balance > domainPrice ? 'info' : 'warning'}>
           <AlertIcon />
-          It costs {formatEther(domainPrice)} ETH to buy that domain.
+          Domain cost: {formatEther(domainPrice)} ONE <br/>
           {balance > domainPrice
-            ? 'You will spend that amount of ETH to create an offer for the domain name.'
-            : 'Your ETH balance is not sufficient now.'}
+            ? 'You will own the domain. Your offer will be hosted there'
+            : 'You have insufficient fund'}
         </Alert>
       )}
 
