@@ -4,10 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npm run prettier && vite",
+    "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview",
-    "prettier": "prettier -w src"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@chakra-ui/react": "^2.5.1",
@@ -15,13 +14,11 @@
     "@emotion/styled": "^11.10.6",
     "@hookform/resolvers": "^3.1.1",
     "@wagmi/core": "^1.2.0",
-    "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "eslint-plugin-react": "^7.32.2",
     "framer-motion": "^10.3.2",
     "lodash": "^4.17.21",
-    "prettier": "^2.8.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.43.7",
@@ -31,7 +28,6 @@
     "yup": "^1.2.0"
   },
   "devDependencies": {
-    "@trivago/prettier-plugin-sort-imports": "^4.1.1",
     "@types/lodash": "^4.14.195",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
