@@ -27,7 +27,7 @@ interface NewOfferProps {
   onCreate: () => void
 }
 
-const checkAssetAvailable = async (asset: string) =>
+const checkAssetAvailable = async (asset: string): Promise<boolean> =>
   await readContract({
     ...otcContract,
     functionName: 'assets',

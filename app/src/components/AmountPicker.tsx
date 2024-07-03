@@ -27,7 +27,7 @@ const AmountPicker: React.FC<AmountPickerProps> = ({ onChange, max, decimals }) 
   const maxVal = Number(formatUnits(max, decimals))
 
   useEffect(() => {
-    onChange && onChange(parseUnits(`${value}`, decimals))
+    onChange?.(parseUnits(`${value}`, decimals))
   }, [value, decimals, onChange])
 
   return (

@@ -4,7 +4,7 @@ import { useAccount, useConnect, useDisconnect } from 'wagmi'
 import { connector } from '~/main'
 import AddressField from './AddressField'
 
-const MetamskConnector = () => {
+const MetamskConnector = (): React.JSX.Element => {
   const { address, isConnected } = useAccount()
 
   const { connect, isLoading, error, pendingConnector } = useConnect()

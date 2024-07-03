@@ -71,6 +71,6 @@ const PendingTransactionsProvider: React.FC<PendingTransactionsProviderProps> = 
   )
 }
 
-export const usePendingTransactions = () => useContext(PendingTransactionsContext)
+export const usePendingTransactions = (): any => useContext(PendingTransactionsContext)
 
 export default PendingTransactionsProvider

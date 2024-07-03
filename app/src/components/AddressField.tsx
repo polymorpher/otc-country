@@ -8,7 +8,7 @@ interface AddressFieldProps extends TextProps {
   shorten?: number | boolean
 }
 
-const shortenAddress = (address: string, length = 20) =>
+const shortenAddress = (address: string, length = 20): string =>
   address.slice(0, 2 + Math.floor((length - 5) / 2)).concat('...', address.slice(-Math.floor((length - 5) / 2)))
 
 const AddressField: React.FC<AddressFieldProps> = ({ text, children, shorten }) => (
