@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react'
 import { readContract } from '@wagmi/core'
 import { type Address } from 'abitype'
-import { formatEther, isAddress, parseUnits } from 'viem'
+import { formatEther, formatUnits, isAddress, parseUnits } from 'viem'
 import { useAccount, useContractRead } from 'wagmi'
 import AmountPicker from '~/components/AmountPicker'
 import AssetSelect from '~/components/AssetSelect'
@@ -22,6 +22,8 @@ import chain from '~/helpers/chain'
 import { otcContract } from '~/helpers/contracts'
 import useNewOffer from '~/hooks/useNewOffer'
 import useToast from '~/hooks/useToast'
+import useTokenRate from '~/hooks/useTokenRate'
+import { fmtNum } from '~/helpers/intl'
 
 interface NewOfferProps {
   domain: string
@@ -152,6 +154,10 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     [createOffer, destDecimals, onCreate]
   )
 
+  const rate = useTokenRate(watch('srcAsset'))
+
+  const depositAmountInBase = Number(formatUnits(BigInt(watch('depositAmount')), Number(srcDecimals)))
+
   if (!isConnected) {
     return (
       <Alert status="info">
@@ -231,6 +237,9 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
                 />
               )}
             />
+            <FormHelperText color="green">
+              ${fmtNum(depositAmountInBase * rate)}
+            </FormHelperText>
             <FormErrorMessage>{errors.depositAmount?.message?.toString()}</FormErrorMessage>
           </FormControl>
         )}

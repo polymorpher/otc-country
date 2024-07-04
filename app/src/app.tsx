@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Alert, AlertIcon, Spinner, Text, VStack } from '@chakra-ui/react'
+import { Alert, AlertIcon, Text, VStack } from '@chakra-ui/react'
 import { readContract } from '@wagmi/core'
 import { type Address } from 'abitype'
 import { zeroAddress } from 'viem'
