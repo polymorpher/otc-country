@@ -17,6 +17,7 @@ import { type Address } from 'abitype'
 import { formatEther, isAddress, parseUnits } from 'viem'
 import { useAccount, useContractRead } from 'wagmi'
 import AmountPicker from '~/components/AmountPicker'
+import AssetSelect from '~/components/AssetSelect'
 import chain from '~/helpers/chain'
 import { otcContract } from '~/helpers/contracts'
 import useNewOffer from '~/hooks/useNewOffer'
@@ -62,6 +63,7 @@ const rules: Record<keyof FormFields, RegisterOptions> = {
     required: 'required',
     validate: {
       address: (v: string) => isAddress(v) || 'not address format',
+      sameAsSrc: (v: string, values) => values.srcAsset !== v || 'should not be the same as source asset',
       available: async (v: string) => (await checkAssetAvailable(v)) || 'not available'
     }
   },
@@ -101,15 +103,20 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     functionName: 'commissionRateScale'
   })
 
+  const { isConnected, address } = useAccount()
+
   const {
     register,
     handleSubmit,
     control,
     watch,
     formState: { errors }
-  } = useForm({ defaultValues })
-
-  const { isConnected, address } = useAccount()
+  } = useForm({
+    defaultValues: {
+      ...defaultValues,
+      domainOwner: address
+    }
+  })
 
   const { toastSuccess, toastError } = useToast()
 
@@ -179,14 +186,33 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
 
         <FormControl isInvalid={!!errors.srcAsset}>
           <FormLabel>Source asset</FormLabel>
-          <Input {...register('srcAsset', rules.srcAsset)} />
+          <Controller
+            control={control}
+            name="srcAsset"
+            rules={rules.srcAsset}
+            render={({ field: { onChange, value } }) => (
+              <AssetSelect
+                value={value}
+                onChange={onChange}
+              />
+            )}
+          />
           <FormErrorMessage>{errors.srcAsset?.message?.toString()}</FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.destAsset}>
           <FormLabel>Destination asset</FormLabel>
-          <Input {...register('destAsset', rules.destAsset)} />
-
+          <Controller
+            control={control}
+            name="destAsset"
+            rules={rules.destAsset}
+            render={({ field: { onChange, value } }) => (
+              <AssetSelect
+                value={value}
+                onChange={onChange}
+              />
+            )}
+          />
           <FormErrorMessage>{errors.destAsset?.message?.toString()}</FormErrorMessage>
         </FormControl>
 
