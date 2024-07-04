@@ -14,6 +14,14 @@ contract DomainContract is IDC {
 
     function commit(bytes32 commitment) external override {}
 
+    /**
+     * should be view, not pure, to be the same abi as
+     * https://github.com/polymorpher/dot-country/blob/main/contracts/contracts/DC.sol#L101
+     */
+    function available(string memory name) public view returns (bool) {
+        return bytes(name).length > 3;
+    }
+
     function getPrice(
         string calldata /* name */
     ) external pure override returns (uint256 price) {
