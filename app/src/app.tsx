@@ -72,7 +72,6 @@ const App = (): React.JSX.Element => {
         <AlertIcon />
         Please select the domain name you want to purchase
       </Alert> }
-      {isFetching && <Spinner/>}
       {!isFetching && offerAddress && offerAddress !== zeroAddress &&
       <VStack>
         <Alert status="error">

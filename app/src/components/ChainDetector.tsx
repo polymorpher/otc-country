@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Alert, AlertIcon, Spacer, Drawer, DrawerOverlay, DrawerContent, DrawerHeader, DrawerBody, VStack } from '@chakra-ui/react'
+import { Button, Alert, AlertIcon, Drawer, DrawerOverlay, DrawerContent, DrawerHeader, DrawerBody, VStack } from '@chakra-ui/react'
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import chain from '~/helpers/chain'
 
