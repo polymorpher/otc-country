@@ -1,4 +1,4 @@
-import { HStack, Box } from '@chakra-ui/react'
+import { HStack } from '@chakra-ui/react'
 import React from 'react'
 import Select, { components, type OptionProps, type SingleValueProps } from 'react-select'
 import { abbreviateAddress } from '~/helpers/address'
