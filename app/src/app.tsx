@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Alert, AlertIcon, VStack } from '@chakra-ui/react'
+import { Alert, AlertIcon, Spinner, Text, VStack } from '@chakra-ui/react'
 import { readContract } from '@wagmi/core'
 import { type Address } from 'abitype'
 import { zeroAddress } from 'viem'
@@ -9,11 +9,12 @@ import { otcContract } from '~/helpers/contracts'
 import Admin from '~/pages/Admin'
 import NewOffer from '~/pages/NewOffer'
 import Offer from '~/pages/Offer'
+import { newName } from '~/helpers/names'
 
 const App = (): React.JSX.Element => {
   const { address, isConnected } = useAccount()
 
-  const [domain, setDomain] = useState<string>()
+  const [domain, setDomain] = useState<string>(newName())
 
   const [isFetching, setIsFetching] = useState<boolean>(false)
 
@@ -51,6 +52,7 @@ const App = (): React.JSX.Element => {
 
   const handleDomainChange = useCallback(
     (value: string) => {
+      console.log(value)
       setDomain(value)
       refetch(value)
     },
@@ -63,25 +65,28 @@ const App = (): React.JSX.Element => {
 
   return (
     <VStack width="full">
-      <DomainInput onChange={handleDomainChange} loading={!error && isFetching} />
-      {!domain
-        ? (
-          <Alert status="warning">
-            <AlertIcon />
-            Please enter domain name
-          </Alert>
-          )
-        : isFetching
-          ? null
-          : offerAddress === zeroAddress
-            ? (
-              <NewOffer domain={domain} onCreate={() => { refetch(domain) }} />
-              )
-            : offerAddress
-              ? (
-                <Offer address={offerAddress } />
-                )
-              : null}
+      <Text fontSize={24} m={8}>Create a new offer</Text>
+      <DomainInput value={domain} onChange={handleDomainChange} loading={!error && isFetching} />
+      <Text>Buy a new domain, or use an existing one</Text>
+      {!domain && <Alert status="warning">
+        <AlertIcon />
+        Please select the domain name you want to purchase
+      </Alert> }
+      {isFetching && <Spinner/>}
+      {!isFetching && offerAddress && offerAddress !== zeroAddress &&
+      <VStack>
+        <Alert status="error">
+          <AlertIcon />
+          There is already an offer at this domain
+        </Alert>
+
+        <Offer address={offerAddress } />
+      </VStack>
+      }
+      {!isFetching && offerAddress &&
+      <NewOffer domain={domain} onCreate={() => { refetch(domain) }} />
+      }
+
       {error && (
         <Alert status="error" wordBreak="break-word">
           <AlertIcon />

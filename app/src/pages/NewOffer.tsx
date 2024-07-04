@@ -109,7 +109,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     formState: { errors }
   } = useForm({ defaultValues })
 
-  const { isConnected } = useAccount()
+  const { isConnected, address } = useAccount()
 
   const { toastSuccess, toastError } = useToast()
 
@@ -149,7 +149,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     return (
       <Alert status="info">
         <AlertIcon />
-        Offer is available from the given domain. Please connect your wallet to proceed.
+        Please connect your wallet to proceed.
       </Alert>
     )
   }
@@ -157,7 +157,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
   return (
     <VStack>
       <Text fontSize="2xl" my="10">
-        Please create a new offer with the following information.
+        Choose an available domain for your offer
       </Text>
 
       {domainPrice !== undefined && (
@@ -170,10 +170,10 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
         </Alert>
       )}
 
-      <VStack onSubmit={handleSubmit(handleOfferSubmit)} as="form" width="full">
+      <VStack mt={16} onSubmit={handleSubmit(handleOfferSubmit)} as="form" width="full">
         <FormControl isInvalid={!!errors.domainOwner}>
           <FormLabel>Domain owner</FormLabel>
-          <Input {...register('domainOwner', rules.domainOwner)} />
+          <Input value={address} disabled {...register('domainOwner', rules.domainOwner)} />
           <FormErrorMessage>{errors.domainOwner?.message?.toString()}</FormErrorMessage>
         </FormControl>
 

@@ -32,7 +32,7 @@ const MetamskConnector = (): React.JSX.Element => {
         isLoading={isLoading && connector.id === pendingConnector?.id}
         loadingText={connector.name}
       >
-        {connector.name}
+        CONNECT WALLET: {connector.name}
         {!connector.ready && ' (unsupported)'}
       </Button>
       {error && (
