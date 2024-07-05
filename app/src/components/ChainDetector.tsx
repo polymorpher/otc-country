@@ -15,7 +15,7 @@ const ChainDetector = (): React.JSX.Element | null => {
       <DrawerOverlay />
       <DrawerContent>
         <DrawerHeader borderBottomWidth='1px'>
-          Your metamask is on a wrong chain
+          Wallet connected to unsupported network
         </DrawerHeader>
         <DrawerBody>
           <Alert status="warning" flexDir="column" as={VStack}>

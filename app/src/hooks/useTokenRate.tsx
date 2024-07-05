@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { PriceServiceConnection } from '@pythnetwork/price-service-client'
-import { assets } from '~/components/AssetSelect'
+import { ASSETS, DEPEGGED } from '~/helpers/assets'
 
 const useTokenRate = (address: string): number => {
   const [rate, setRate] = useState(0)
 
-  const value = assets.find(item => item.value === address)?.rate
+  const value = DEPEGGED.concat(ASSETS).find(item => item.value === address)?.rate
 
   const fixedRate = typeof value === 'number'
 

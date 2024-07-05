@@ -24,6 +24,7 @@ import useNewOffer from '~/hooks/useNewOffer'
 import useToast from '~/hooks/useToast'
 import useTokenRate from '~/hooks/useTokenRate'
 import { fmtNum } from '~/helpers/intl'
+import { ASSETS, DEPEGGED } from '~/helpers/assets'
 
 interface NewOfferProps {
   domain: string
@@ -200,6 +201,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
               <AssetSelect
                 value={value}
                 onChange={onChange}
+                list={DEPEGGED.concat(ASSETS)}
               />
             )}
           />
@@ -216,6 +218,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
               <AssetSelect
                 value={value}
                 onChange={onChange}
+                list={ASSETS}
               />
             )}
           />
