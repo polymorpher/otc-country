@@ -1,9 +1,7 @@
 import React from 'react'
-import { FormHelperText, HStack, Image, Tooltip } from '@chakra-ui/react'
+import { HStack, Image, Tooltip } from '@chakra-ui/react'
 import Select, { components, type OptionProps, type SingleValueProps } from 'react-select'
 import { abbreviateAddress } from '~/helpers/address'
-import { fmtNum } from '~/helpers/intl'
-import useTokenRate from '~/hooks/useTokenRate'
 import { type Asset } from '~/helpers/assets'
 
 interface Item {
