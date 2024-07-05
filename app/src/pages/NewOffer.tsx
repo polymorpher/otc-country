@@ -10,6 +10,8 @@ import {
   FormLabel,
   HStack,
   Input,
+  InputGroup,
+  InputRightAddon,
   Slider,
   SliderFilledTrack,
   SliderMark,
@@ -184,7 +186,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
         </Alert>
       )}
 
-      <VStack mt={16} onSubmit={handleSubmit(handleOfferSubmit)} as="form" width="full">
+      <VStack mt={16} onSubmit={handleSubmit(handleOfferSubmit)} as="form" width="full" spacing={12}>
         <FormControl isInvalid={!!errors.domainOwner}>
           <FormLabel>Domain owner</FormLabel>
           <Input value={address} disabled {...register('domainOwner', rules.domainOwner)} />
@@ -270,6 +272,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
                 key={key}
                 colorScheme='teal'
                 variant={commissionRate === value ? 'solid' : 'outline'}
+                opacity={commissionRate === value ? 1 : 0.5}
                 width={24}
                 onClick={() => {
                   setValue('commissionRate', value)
@@ -279,21 +282,24 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
                 {value}%
               </Button>
             ))}
-            <Input
-              type="number"
-              step="any"
-              {...register('commissionRate', {
-                ...rules.commissionRate,
-                max: {
-                  value: 1,
-                  message: 'should be less than 1'
-                },
-                min: {
-                  value: 0.1,
-                  message: 'should be greater than 0.1'
-                }
-              })}
-            />
+            <InputGroup opacity={[0.1, 0.5, 1].includes(commissionRate) ? 0.5 : 1}>
+              <Input
+                type="number"
+                step="any"
+                {...register('commissionRate', {
+                  ...rules.commissionRate,
+                  max: {
+                    value: 1,
+                    message: 'should be less than 1'
+                  },
+                  min: {
+                    value: 0.1,
+                    message: 'should be greater than 0.1'
+                  }
+                })}
+              />
+              <InputRightAddon>%</InputRightAddon>
+            </InputGroup>
           </HStack>
           <FormErrorMessage>
             {errors.commissionRate?.message?.toString()}
@@ -313,31 +319,20 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
                 my={8}
                 onChange={(value) => { field.onChange(value) }}
               >
-                <SliderMark value={6} mt={2} ml={-6} w={12}>
+                <SliderMark value={6} mt={2} w={12}>
                   6 hr
                 </SliderMark>
-                <SliderMark value={24} mt={2} ml={-6} w={12}>
-                  a day
+                <SliderMark value={24 * 7} mt={2} ml={-12} w={24}>
+                  a week
                 </SliderMark>
-                {[2, 3, 4, 5, 6, 7].map(d => (
-                  <SliderMark
-                    value={24 * d}
-                    mt={2}
-                    ml={-8}
-                    w={16}
-                    key={d}
-                  >
-                    {d} days
-                  </SliderMark>
-                ))}
                 <SliderMark
                   value={watch('lockWithdrawDuration')}
                   textAlign='center'
                   bg='blue.500'
                   color='white'
                   mt='-10'
-                  ml='-12'
-                  w='24'
+                  w='36'
+                  transform='translateX(-50%)'
                 >
                   {fmrHr(watch('lockWithdrawDuration'))}
                 </SliderMark>
@@ -351,7 +346,11 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
 
           <FormErrorMessage>{errors.lockWithdrawDuration?.message?.toString()}</FormErrorMessage>
         </FormControl>
-        <Button type="submit" isLoading={isCreatingOffer} loadingText="Create">
+        <Alert status='info'>
+          <AlertIcon />
+          Tips: You can retract the offer at any time after it is created. Other people can join your offer by depositing asset there. The domain owner earns commission if the offer is accepted by someone (who has to deposit).
+        </Alert>
+        <Button type="submit" isLoading={isCreatingOffer} loadingText="Create" size='lg'>
           Create
         </Button>
       </VStack>

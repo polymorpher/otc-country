@@ -1,4 +1,4 @@
-const formatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 9 })
+const formatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 })
 
 export const fmtNum = (value: number): string => formatter.format(value)
 
