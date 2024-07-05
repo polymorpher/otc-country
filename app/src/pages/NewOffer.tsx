@@ -161,6 +161,8 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
 
   const commissionRate = Number(watch('commissionRate'))
 
+  const exchangeRate = Number(watch('acceptAmount')) * destRate / (depositAmountInBase * srcRate)
+
   if (!isConnected) {
     return (
       <Alert status="info">
@@ -262,6 +264,13 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
             ${fmtNum(Number(watch('acceptAmount')) * destRate)}
           </FormHelperText>
           <FormErrorMessage>{errors.acceptAmount?.message?.toString()}</FormErrorMessage>
+        </FormControl>
+
+        <FormControl isInvalid={!!errors.acceptAmount}>
+          <FormLabel>Exchange Rate</FormLabel>
+          <FormHelperText color="green">
+            % {fmtNum(100 * exchangeRate)}
+          </FormHelperText>
         </FormControl>
 
         <FormControl isInvalid={!!errors.commissionRate}>
