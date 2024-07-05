@@ -18,7 +18,7 @@ const ChainDetector = (): React.JSX.Element | null => {
           Wallet connected to unsupported network
         </DrawerHeader>
         <DrawerBody>
-          <Alert status="warning" flexDir="column" as={VStack}>
+          <Alert status="warning" flexDir="column" as={VStack} textAlign="center">
             <AlertIcon boxSize="24" />
             <div>Please switch to {chain.name} to continue</div>
             <Button colorScheme="yellow" onClick={() => switchNetwork?.()} isLoading={isLoading} loadingText="Switch">

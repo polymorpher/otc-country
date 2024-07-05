@@ -40,8 +40,8 @@ const checkAssetAvailable = async (asset: string): Promise<boolean> =>
 
 const defaultValues = {
   domainOwner: '' as Address,
-  srcAsset: '' as Address,
-  destAsset: '' as Address,
+  srcAsset: DEPEGGED[0].value,
+  destAsset: ASSETS[0].value,
   depositAmount: '',
   acceptAmount: '',
   commissionRate: '',
@@ -155,7 +155,9 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     [createOffer, destDecimals, onCreate]
   )
 
-  const rate = useTokenRate(watch('srcAsset'))
+  const srcRate = useTokenRate(watch('srcAsset'))
+
+  const destRate = useTokenRate(watch('destAsset'))
 
   const depositAmountInBase = Number(formatUnits(BigInt(watch('depositAmount')), Number(srcDecimals)))
 
@@ -205,6 +207,9 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
               />
             )}
           />
+          <FormHelperText color="green">
+            ${fmtNum(srcRate)}
+          </FormHelperText>
           <FormErrorMessage>{errors.srcAsset?.message?.toString()}</FormErrorMessage>
         </FormControl>
 
@@ -222,6 +227,9 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
               />
             )}
           />
+          <FormHelperText color="green">
+            ${fmtNum(destRate)}
+          </FormHelperText>
           <FormErrorMessage>{errors.destAsset?.message?.toString()}</FormErrorMessage>
         </FormControl>
 
@@ -241,7 +249,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
               )}
             />
             <FormHelperText color="green">
-              ${fmtNum(depositAmountInBase * rate)}
+              ${fmtNum(depositAmountInBase * srcRate)}
             </FormHelperText>
             <FormErrorMessage>{errors.depositAmount?.message?.toString()}</FormErrorMessage>
           </FormControl>
@@ -250,6 +258,9 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
         <FormControl isInvalid={!!errors.acceptAmount}>
           <FormLabel>Accept amount</FormLabel>
           <Input {...register('acceptAmount', rules.acceptAmount)} />
+          <FormHelperText color="green">
+            ${fmtNum(Number(watch('acceptAmount')) * destRate)}
+          </FormHelperText>
           <FormErrorMessage>{errors.acceptAmount?.message?.toString()}</FormErrorMessage>
         </FormControl>
 

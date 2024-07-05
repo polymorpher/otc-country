@@ -54,26 +54,16 @@ interface AssetSelectProps {
   list: Asset[]
 }
 
-const AssetSelect: React.FC<AssetSelectProps> = ({ value, onChange, list }) => {
-  const val = list.find(item => item.value === value) ?? list[0]
-  const rate = useTokenRate(val.value)
-
-  return (
-    <>
-      <Select
-        value={val}
-        options={list}
-        onChange={value => { onChange(value.value) }}
-        components={{
-          Option,
-          SingleValue
-        }}
-      />
-      <FormHelperText color="green">
-        ${fmtNum(rate)}
-      </FormHelperText>
-    </>
-  )
-}
+const AssetSelect: React.FC<AssetSelectProps> = ({ value, onChange, list }) => (
+  <Select
+    value={list.find(item => item.value === value) ?? list[0]}
+    options={list}
+    onChange={value => { onChange(value.value) }}
+    components={{
+      Option,
+      SingleValue
+    }}
+  />
+)
 
 export default AssetSelect

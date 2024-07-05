@@ -1,5 +1,7 @@
+import { type Address } from 'viem'
+
 export interface Asset {
-  value: string
+  value: Address
   label: string
   rate: number | string
   icon?: string
