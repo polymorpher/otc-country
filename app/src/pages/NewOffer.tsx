@@ -8,19 +8,31 @@ import {
   FormErrorMessage,
   FormHelperText,
   FormLabel,
+  HStack,
   Input,
+  InputGroup,
+  InputRightAddon,
+  Slider,
+  SliderFilledTrack,
+  SliderMark,
+  SliderThumb,
+  SliderTrack,
   Text,
   VStack
 } from '@chakra-ui/react'
 import { readContract } from '@wagmi/core'
 import { type Address } from 'abitype'
-import { formatEther, isAddress, parseUnits } from 'viem'
-import { useAccount, useContractRead } from 'wagmi'
+import { formatEther, formatUnits, isAddress, parseUnits } from 'viem'
+import { useAccount } from 'wagmi'
 import AmountPicker from '~/components/AmountPicker'
+import AssetSelect from '~/components/AssetSelect'
 import chain from '~/helpers/chain'
 import { otcContract } from '~/helpers/contracts'
 import useNewOffer from '~/hooks/useNewOffer'
 import useToast from '~/hooks/useToast'
+import useTokenRate from '~/hooks/useTokenRate'
+import { ASSETS, DEPEGGED } from '~/helpers/assets'
+import { fmrHr, fmtNum } from '~/helpers/format'
 
 interface NewOfferProps {
   domain: string
@@ -36,12 +48,12 @@ const checkAssetAvailable = async (asset: string): Promise<boolean> =>
 
 const defaultValues = {
   domainOwner: '' as Address,
-  srcAsset: '' as Address,
-  destAsset: '' as Address,
+  srcAsset: DEPEGGED[0].value,
+  destAsset: ASSETS[0].value,
   depositAmount: '',
   acceptAmount: '',
-  commissionRate: '',
-  lockWithdrawDuration: ''
+  commissionRate: 0.5,
+  lockWithdrawDuration: 6
 }
 
 type FormFields = typeof defaultValues
@@ -62,6 +74,7 @@ const rules: Record<keyof FormFields, RegisterOptions> = {
     required: 'required',
     validate: {
       address: (v: string) => isAddress(v) || 'not address format',
+      sameAsSrc: (v: string, values) => values.srcAsset !== v || 'should not be the same as source asset',
       available: async (v: string) => (await checkAssetAvailable(v)) || 'not available'
     }
   },
@@ -85,31 +98,26 @@ const rules: Record<keyof FormFields, RegisterOptions> = {
       number: (v: string) => !isNaN(Number(v)) || 'should be number',
       notZero: (v: string) => Number(v) > 0 || 'should be not zero'
     }
-  },
-  lockWithdrawDuration: {
-    required: true,
-    validate: {
-      number: (v: string) => !isNaN(Number(v)) || 'should be number',
-      notZero: (v: string) => Number(v) > 0 || 'should be not zero'
-    }
   }
 }
 
 const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
-  const { data: commissionRateScale } = useContractRead({
-    ...otcContract,
-    functionName: 'commissionRateScale'
-  })
+  const { isConnected, address } = useAccount()
 
   const {
     register,
     handleSubmit,
     control,
     watch,
+    setValue,
+    setFocus,
     formState: { errors }
-  } = useForm({ defaultValues })
-
-  const { isConnected, address } = useAccount()
+  } = useForm({
+    defaultValues: {
+      ...defaultValues,
+      domainOwner: address
+    }
+  })
 
   const { toastSuccess, toastError } = useToast()
 
@@ -139,11 +147,21 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
         ...data,
         depositAmount: BigInt(data.depositAmount),
         acceptAmount: parseUnits(data.acceptAmount, Number(destDecimals)),
-        commissionRate: BigInt(data.commissionRate),
-        lockWithdrawDuration: BigInt(data.lockWithdrawDuration)
+        commissionRate: BigInt(Math.round(data.commissionRate * 1000)),
+        lockWithdrawDuration: BigInt(data.lockWithdrawDuration * 3600)
       }).then(onCreate),
     [createOffer, destDecimals, onCreate]
   )
+
+  const srcRate = useTokenRate(watch('srcAsset'))
+
+  const destRate = useTokenRate(watch('destAsset'))
+
+  const depositAmountInBase = Number(formatUnits(BigInt(watch('depositAmount')), Number(srcDecimals)))
+
+  const commissionRate = Number(watch('commissionRate'))
+
+  const exchangeRate = Number(watch('acceptAmount')) * destRate / (depositAmountInBase * srcRate)
 
   if (!isConnected) {
     return (
@@ -170,23 +188,50 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
         </Alert>
       )}
 
-      <VStack mt={16} onSubmit={handleSubmit(handleOfferSubmit)} as="form" width="full">
+      <VStack mt={16} onSubmit={handleSubmit(handleOfferSubmit)} as="form" width="full" spacing={12}>
         <FormControl isInvalid={!!errors.domainOwner}>
           <FormLabel>Domain owner</FormLabel>
-          <Input value={address} disabled {...register('domainOwner', rules.domainOwner)} />
+          <Input value={`${address} (YOU)`} disabled {...register('domainOwner', rules.domainOwner)} />
           <FormErrorMessage>{errors.domainOwner?.message?.toString()}</FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.srcAsset}>
           <FormLabel>Source asset</FormLabel>
-          <Input {...register('srcAsset', rules.srcAsset)} />
+          <Controller
+            control={control}
+            name="srcAsset"
+            rules={rules.srcAsset}
+            render={({ field: { onChange, value } }) => (
+              <AssetSelect
+                value={value}
+                onChange={onChange}
+                list={DEPEGGED.concat(ASSETS)}
+              />
+            )}
+          />
+          <FormHelperText color="green">
+            ${fmtNum(srcRate)}
+          </FormHelperText>
           <FormErrorMessage>{errors.srcAsset?.message?.toString()}</FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.destAsset}>
           <FormLabel>Destination asset</FormLabel>
-          <Input {...register('destAsset', rules.destAsset)} />
-
+          <Controller
+            control={control}
+            name="destAsset"
+            rules={rules.destAsset}
+            render={({ field: { onChange, value } }) => (
+              <AssetSelect
+                value={value}
+                onChange={onChange}
+                list={ASSETS}
+              />
+            )}
+          />
+          <FormHelperText color="green">
+            ${fmtNum(destRate)}
+          </FormHelperText>
           <FormErrorMessage>{errors.destAsset?.message?.toString()}</FormErrorMessage>
         </FormControl>
 
@@ -205,6 +250,17 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
                 />
               )}
             />
+            {BigInt(watch('depositAmount')) > srcBalance
+              ? (
+                <FormHelperText color="red">
+                  Exceed the current balance
+                </FormHelperText>
+                )
+              : (
+                <FormHelperText color="green">
+                  ${fmtNum(depositAmountInBase * srcRate)}
+                </FormHelperText>
+                )}
             <FormErrorMessage>{errors.depositAmount?.message?.toString()}</FormErrorMessage>
           </FormControl>
         )}
@@ -212,32 +268,106 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
         <FormControl isInvalid={!!errors.acceptAmount}>
           <FormLabel>Accept amount</FormLabel>
           <Input {...register('acceptAmount', rules.acceptAmount)} />
+          <FormHelperText color="green">
+            ${fmtNum(Number(watch('acceptAmount')) * destRate)}
+          </FormHelperText>
           <FormErrorMessage>{errors.acceptAmount?.message?.toString()}</FormErrorMessage>
+        </FormControl>
+
+        <FormControl isInvalid={!!errors.acceptAmount}>
+          <FormLabel>Exchange Rate</FormLabel>
+          <FormHelperText color="green">
+            % {fmtNum(100 * exchangeRate)}
+          </FormHelperText>
         </FormControl>
 
         <FormControl isInvalid={!!errors.commissionRate}>
           <FormLabel>Commission rate</FormLabel>
-          <Input
-            {...register('commissionRate', {
-              ...rules.commissionRate,
-              max: {
-                value: Number(commissionRateScale),
-                message: `should be less than ${commissionRateScale}`
-              }
-            })}
-          />
-          {!errors.commissionRate && commissionRateScale !== undefined && !!watch('commissionRate') && (
-            <FormHelperText>{(Number(watch('commissionRate')) * 100) / Number(commissionRateScale)}%</FormHelperText>
-          )}
-          <FormErrorMessage>{errors.commissionRate?.message?.toString()}</FormErrorMessage>
+          <HStack align='center'>
+            {[0.1, 0.5, 1].map((value, key) => (
+              <Button
+                key={key}
+                colorScheme='teal'
+                variant={commissionRate === value ? 'solid' : 'outline'}
+                opacity={commissionRate === value ? 1 : 0.5}
+                width={24}
+                onClick={() => {
+                  setValue('commissionRate', value)
+                  setFocus('commissionRate')
+                }}
+              >
+                {value}%
+              </Button>
+            ))}
+            <InputGroup opacity={[0.1, 0.5, 1].includes(commissionRate) ? 0.5 : 1}>
+              <Input
+                type="number"
+                step="any"
+                {...register('commissionRate', {
+                  ...rules.commissionRate,
+                  max: {
+                    value: 1,
+                    message: 'should be less than 1'
+                  },
+                  min: {
+                    value: 0.1,
+                    message: 'should be greater than 0.1'
+                  }
+                })}
+              />
+              <InputRightAddon>%</InputRightAddon>
+            </InputGroup>
+          </HStack>
+          <FormErrorMessage>
+            {errors.commissionRate?.message?.toString()}
+          </FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.lockWithdrawDuration}>
           <FormLabel>Lock withdraw duration</FormLabel>
-          <Input {...register('lockWithdrawDuration', rules.lockWithdrawDuration)} />
+          <Controller
+            control={control}
+            name="lockWithdrawDuration"
+            render={({ field }) => (
+              <Slider
+                min={6}
+                max={24 * 7}
+                value={field.value}
+                my={8}
+                onChange={(value) => { field.onChange(value) }}
+              >
+                <SliderMark value={6} mt={2} w={12}>
+                  6 hr
+                </SliderMark>
+                <SliderMark value={24 * 7} mt={2} ml={-12} w={24}>
+                  a week
+                </SliderMark>
+                <SliderMark
+                  value={watch('lockWithdrawDuration')}
+                  textAlign='center'
+                  bg='blue.500'
+                  color='white'
+                  mt='-10'
+                  w='36'
+                  transform='translateX(-50%)'
+                >
+                  {fmrHr(watch('lockWithdrawDuration'))}
+                </SliderMark>
+                <SliderTrack>
+                  <SliderFilledTrack />
+                </SliderTrack>
+                <SliderThumb />
+              </Slider>
+            )}
+          />
+
           <FormErrorMessage>{errors.lockWithdrawDuration?.message?.toString()}</FormErrorMessage>
         </FormControl>
-        <Button type="submit" isLoading={isCreatingOffer} loadingText="Create">
+        <Alert status='info'>
+          <AlertIcon />
+          Tips: You can retract the offer at any time after it is created. Other people can join your offer by depositing asset there. The domain owner earns commission if the offer is accepted by someone (who has to deposit).
+        </Alert>
+        <Button type="submit" isLoading={isCreatingOffer} loadingText="Create" size='lg'>
           Create
         </Button>
       </VStack>

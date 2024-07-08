@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Alert, AlertIcon, Spacer } from '@chakra-ui/react'
+import { Button, Alert, AlertIcon, Drawer, DrawerOverlay, DrawerContent, DrawerHeader, DrawerBody, VStack } from '@chakra-ui/react'
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import chain from '~/helpers/chain'
 
@@ -10,21 +10,24 @@ const ChainDetector = (): React.JSX.Element | null => {
 
   const { chain: currentChain } = useNetwork()
 
-  if (!isConnected || currentChain?.id === chain.id) {
-    return null
-  }
-
   return (
-    <Alert status="warning">
-      <AlertIcon />
-      Your metamask is on a wrong chain.
-      <br />
-      Please switch to {chain.name} to continue.
-      <Spacer />
-      <Button colorScheme="yellow" onClick={() => switchNetwork?.()} isLoading={isLoading} loadingText="Switch">
-        Switch
-      </Button>
-    </Alert>
+    <Drawer placement="bottom" isOpen={isConnected && currentChain?.id !== chain.id} onClose={() => true}>
+      <DrawerOverlay />
+      <DrawerContent>
+        <DrawerHeader borderBottomWidth='1px'>
+          Wallet connected to unsupported network
+        </DrawerHeader>
+        <DrawerBody>
+          <Alert status="warning" flexDir="column" as={VStack} textAlign="center">
+            <AlertIcon boxSize="24" />
+            <div>Please switch to {chain.name} to continue</div>
+            <Button colorScheme="yellow" onClick={() => switchNetwork?.()} isLoading={isLoading} loadingText="Switch">
+              Switch
+            </Button>
+          </Alert>
+        </DrawerBody>
+      </DrawerContent>
+    </Drawer>
   )
 }
 

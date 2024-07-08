@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import { Alert, AlertIcon, Spinner, Text, VStack } from '@chakra-ui/react'
+import { Alert, AlertIcon, Text, VStack } from '@chakra-ui/react'
 import { readContract } from '@wagmi/core'
 import { type Address } from 'abitype'
 import { zeroAddress } from 'viem'
@@ -104,7 +104,6 @@ const App = (): React.JSX.Element => {
         <AlertIcon />
         Please select the domain name you want to purchase
       </Alert> }
-      {isFetching && <Spinner/>}
       {!isFetching && offerAddress && offerAddress !== zeroAddress &&
       <VStack>
         <Alert status="error">

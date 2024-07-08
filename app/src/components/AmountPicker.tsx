@@ -14,6 +14,7 @@ import {
 } from '@chakra-ui/react'
 import { formatUnits, parseUnits } from 'viem'
 import { round } from '~/helpers/mantisa'
+import { fmtNum } from '~/helpers/format'
 
 export interface AmountPickerProps {
   max: bigint
@@ -54,9 +55,9 @@ const AmountPicker: React.FC<AmountPickerProps> = ({ onChange, max, decimals }) 
         onChange={(value) => { setValue(round((maxVal * value) / 100)) }}
       >
         <SliderMark
-          value={maxVal === 0 ? 0 : (value * 100) / maxVal}
+          value={maxVal === 0 ? 0 : Math.min((value * 100) / maxVal, 100)}
           textAlign="center"
-          bg="blue.500"
+          bg={value <= maxVal ? 'blue.500' : 'red.500'}
           color="white"
           mt="-6"
           transform="translateX(-50%)"
@@ -64,8 +65,16 @@ const AmountPicker: React.FC<AmountPickerProps> = ({ onChange, max, decimals }) 
         >
           {maxVal === 0 ? 0 : Math.round((value * 100) / maxVal)}%
         </SliderMark>
+        <SliderMark
+          value={100}
+          textAlign='center'
+          mt='8'
+          transform='translateX(-50%)'
+        >
+          {fmtNum(maxVal)}
+        </SliderMark>
         <SliderTrack>
-          <SliderFilledTrack />
+          <SliderFilledTrack bg={value <= maxVal ? 'blue.500' : 'red.500'} />
         </SliderTrack>
         <SliderThumb />
       </Slider>

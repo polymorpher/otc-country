@@ -1,5 +1,4 @@
-import { harmonyOne, localhost } from '@wagmi/core/chains'
-import * as CONFIG from './config'
+import { harmonyOne } from '@wagmi/core/chains'
 import { type Chain } from '@wagmi/core'
 
 const harmonyChain: Chain = {
