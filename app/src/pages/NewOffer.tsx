@@ -191,7 +191,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
       <VStack mt={16} onSubmit={handleSubmit(handleOfferSubmit)} as="form" width="full" spacing={12}>
         <FormControl isInvalid={!!errors.domainOwner}>
           <FormLabel>Domain owner</FormLabel>
-          <Input value={address} disabled {...register('domainOwner', rules.domainOwner)} />
+          <Input value={`${address} (YOU)`} disabled {...register('domainOwner', rules.domainOwner)} />
           <FormErrorMessage>{errors.domainOwner?.message?.toString()}</FormErrorMessage>
         </FormControl>
 
@@ -250,9 +250,17 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
                 />
               )}
             />
-            <FormHelperText color="green">
-              ${fmtNum(depositAmountInBase * srcRate)}
-            </FormHelperText>
+            {BigInt(watch('depositAmount')) > srcBalance
+              ? (
+                <FormHelperText color="red">
+                  Exceed the current balance
+                </FormHelperText>
+                )
+              : (
+                <FormHelperText color="green">
+                  ${fmtNum(depositAmountInBase * srcRate)}
+                </FormHelperText>
+                )}
             <FormErrorMessage>{errors.depositAmount?.message?.toString()}</FormErrorMessage>
           </FormControl>
         )}
