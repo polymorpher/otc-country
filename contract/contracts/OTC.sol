@@ -74,6 +74,17 @@ contract OTC is AccessControl, Pausable {
 
     receive() external payable {}
 
+    modifier onlyUser() {
+        if (
+            !hasRole(DEFAULT_ADMIN_ROLE, msg.sender) &&
+            !hasRole(OPERATOR_ROLE, msg.sender)
+        ) {
+            revert OTCError(ErrorType.Unauthorized);
+        }
+
+        _;
+    }
+
     /**
      * @notice constructor
      * @param domainContract_ domain contract address
@@ -113,14 +124,7 @@ contract OTC is AccessControl, Pausable {
      * @notice Pause or unpause the contract
      * @param pause_ true or false
      */
-    function pause(bool pause_) external {
-        if (
-            !hasRole(DEFAULT_ADMIN_ROLE, msg.sender) &&
-            !hasRole(OPERATOR_ROLE, msg.sender)
-        ) {
-            revert OTCError(ErrorType.Unauthorized);
-        }
-
+    function pause(bool pause_) external onlyUser {
         if (pause_) {
             _pause();
         } else {
@@ -154,9 +158,7 @@ contract OTC is AccessControl, Pausable {
      * @notice Add asset
      * @param asset address of asset to add
      */
-    function addAsset(
-        address asset
-    ) external whenNotPaused onlyRole(DEFAULT_ADMIN_ROLE) {
+    function addAsset(address asset) external whenNotPaused onlyUser {
         if (assets[asset]) {
             revert OTCError(ErrorType.AssetAlreadyAdded);
         }
@@ -170,9 +172,7 @@ contract OTC is AccessControl, Pausable {
      * @notice Remove asset
      * @param asset address of asset to remove
      */
-    function removeAsset(
-        address asset
-    ) external whenNotPaused onlyRole(DEFAULT_ADMIN_ROLE) {
+    function removeAsset(address asset) external whenNotPaused onlyUser {
         if (!assets[asset]) {
             revert OTCError(ErrorType.AssetAlreadyRemoved);
         }
