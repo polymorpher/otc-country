@@ -12,6 +12,8 @@ interface IDC {
 
     function getPrice(string calldata name) external view returns (uint256);
 
+    function ownerOf(string calldata name) external view returns (address);
+
     function register(
         string calldata name,
         address owner,

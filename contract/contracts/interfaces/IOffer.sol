@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
+import "./IOTC.sol";
+
 interface IOffer {
     function initialize(
+        IOTC otc,
         address creator,
         address domainOwner,
         address srcAsset,

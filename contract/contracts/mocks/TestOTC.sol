@@ -8,8 +8,21 @@ import "../OTC.sol";
 contract TestOTC is OTC {
     constructor(
         IDC domainContract_,
-        IOfferFactory offerFactory_
-    ) OTC(domainContract_, offerFactory_) {}
+        IOfferFactory offerFactory_,
+        address admin_,
+        address operator_,
+        address revenueAccount_,
+        uint256 feePercentage_
+    )
+        OTC(
+            domainContract_,
+            offerFactory_,
+            admin_,
+            operator_,
+            revenueAccount_,
+            feePercentage_
+        )
+    {}
 
     function testOfferAddress(
         string calldata domainName_
