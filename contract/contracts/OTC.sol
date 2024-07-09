@@ -58,6 +58,8 @@ contract OTC is AccessControl, Pausable {
 
     event RevenueAccountUpdated(address indexed account);
 
+    event FeePercentageUpdated(uint256 feePercentage);
+
     event OfferCreated(
         string indexed domainName,
         address indexed srcAsset,
@@ -135,6 +137,17 @@ contract OTC is AccessControl, Pausable {
     ) external whenNotPaused onlyRole(DEFAULT_ADMIN_ROLE) {
         revenueAccount = revenueAccount_;
         emit RevenueAccountUpdated(revenueAccount_);
+    }
+
+    /**
+     * @notice Set fee percentage
+     * @param value_ fee percentage value
+     */
+    function setProtocolFee(
+        uint256 value_
+    ) external whenNotPaused onlyRole(DEFAULT_ADMIN_ROLE) {
+        feePercentage = value_;
+        emit FeePercentageUpdated(value_);
     }
 
     /**
