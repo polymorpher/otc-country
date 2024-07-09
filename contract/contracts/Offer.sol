@@ -211,11 +211,7 @@ contract Offer is Initializable, IOffer {
             netAcceptAmount = acceptAmount - fee;
         }
 
-        destAsset.safeTransferFrom(
-            msg.sender,
-            otc.revenueAccount(),
-            acceptAmount
-        );
+        destAsset.safeTransferFrom(msg.sender, otc.revenueAccount(), fee);
         destAsset.safeTransferFrom(msg.sender, address(this), netAcceptAmount);
         srcAsset.safeTransfer(receiver_, totalDeposits);
 
