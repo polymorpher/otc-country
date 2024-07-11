@@ -1,22 +1,22 @@
 module.exports = {
   overrides: [
+    // {
+    //   files: '*.ts',
+    //   options: {
+    //     semi: false,
+    //     singleQuote: true,
+    //     trailingComma: 'none'
+    //   }
+    // }
     {
-      files: '*.ts',
+      files: '*.sol',
       options: {
-        semi: false,
-        singleQuote: true,
-        trailingComma: 'none'
+        printWidth: 160,
+        tabWidth: 4,
+        useTabs: false,
+        singleQuote: false,
+        bracketSpacing: false
       }
     }
-  //   {
-  //     files: '*.sol',
-  //     options: {
-  //       printWidth: 160,
-  //       tabWidth: 4,
-  //       useTabs: false,
-  //       singleQuote: false,
-  //       bracketSpacing: false
-  //     }
-  //   }
   ]
 }

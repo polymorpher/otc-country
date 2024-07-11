@@ -122,9 +122,7 @@ contract Offer is Initializable, IOffer {
     function _deposit(uint256 amount_, address depositor_) internal {
         unchecked {
             deposits[depositor_] += amount_;
-            lockWithdrawUntil[depositor_] =
-                block.timestamp +
-                lockWithdrawDuration;
+            lockWithdrawUntil[depositor_] = block.timestamp + lockWithdrawDuration;
             totalDeposits += amount_;
         }
 
@@ -222,11 +220,7 @@ contract Offer is Initializable, IOffer {
      * @notice Gets payment balance for domain owner
      * @return balance payment balance
      */
-    function paymentBalanceForDomainOwner()
-        public
-        view
-        returns (uint256 balance)
-    {
+    function paymentBalanceForDomainOwner() public view returns (uint256 balance) {
         if (withdrawPayments[domainOwner]) {
             return 0;
         }
@@ -241,9 +235,7 @@ contract Offer is Initializable, IOffer {
      * @param depositor_ depositor address
      * @return balance payment balance
      */
-    function paymentBalanceForDepositor(
-        address depositor_
-    ) public view returns (uint256 balance) {
+    function paymentBalanceForDepositor(address depositor_) public view returns (uint256 balance) {
         if (withdrawPayments[depositor_]) {
             return 0;
         }
@@ -254,9 +246,7 @@ contract Offer is Initializable, IOffer {
             balance =
                 (acceptAmount * depositAmount) /
                 totalDeposits -
-                (acceptAmount *
-                    depositAmount *
-                    (otc.feePercentage() + commissionRate)) /
+                (acceptAmount * depositAmount * (otc.feePercentage() + commissionRate)) /
                 Config.RATE_SCALE /
                 totalDeposits;
         }

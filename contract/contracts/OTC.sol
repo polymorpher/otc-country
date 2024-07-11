@@ -21,8 +21,7 @@ contract OTC is AccessControl, Pausable {
     using Address for address;
 
     /// @notice operator role constant
-    bytes32 public constant OPERATOR_ROLE =
-        keccak256(abi.encodePacked("OPERATOR_ROLE"));
+    bytes32 public constant OPERATOR_ROLE = keccak256(abi.encodePacked("OPERATOR_ROLE"));
 
     /// @notice revenue account address
     address public revenueAccount;
@@ -75,10 +74,7 @@ contract OTC is AccessControl, Pausable {
     receive() external payable {}
 
     modifier onlyUser() {
-        if (
-            !hasRole(DEFAULT_ADMIN_ROLE, msg.sender) &&
-            !hasRole(OPERATOR_ROLE, msg.sender)
-        ) {
+        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender) && !hasRole(OPERATOR_ROLE, msg.sender)) {
             revert OTCError(ErrorType.Unauthorized);
         }
 
@@ -136,9 +132,7 @@ contract OTC is AccessControl, Pausable {
      * @notice Pause or unpause the contract
      * @param revenueAccount_ revenue account address
      */
-    function setRevenueAccount(
-        address revenueAccount_
-    ) external whenNotPaused onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setRevenueAccount(address revenueAccount_) external whenNotPaused onlyRole(DEFAULT_ADMIN_ROLE) {
         revenueAccount = revenueAccount_;
         emit RevenueAccountUpdated(revenueAccount_);
     }
@@ -147,9 +141,7 @@ contract OTC is AccessControl, Pausable {
      * @notice Set fee percentage
      * @param value_ fee percentage value
      */
-    function setProtocolFee(
-        uint256 value_
-    ) external whenNotPaused onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setProtocolFee(uint256 value_) external whenNotPaused onlyRole(DEFAULT_ADMIN_ROLE) {
         feePercentage = value_;
         emit FeePercentageUpdated(value_);
     }
@@ -195,12 +187,8 @@ contract OTC is AccessControl, Pausable {
      * @param domainName_ domain name of the offer contract
      * @return contractAddress offer contract address
      */
-    function computedOfferAddress(
-        string calldata domainName_
-    ) external view returns (address contractAddress) {
-        contractAddress = offerFactory.getAddress(
-            keccak256(abi.encodePacked(domainName_))
-        );
+    function computedOfferAddress(string calldata domainName_) external view returns (address contractAddress) {
+        contractAddress = offerFactory.getAddress(keccak256(abi.encodePacked(domainName_)));
     }
 
     /**
@@ -208,12 +196,8 @@ contract OTC is AccessControl, Pausable {
      * @param domainName_ domain name of the offer contract
      * @return contractAddress offer contract address if created, zero address if offer was not created
      */
-    function offerAddress(
-        string calldata domainName_
-    ) external view returns (address contractAddress) {
-        contractAddress = offerFactory.getAddress(
-            keccak256(abi.encodePacked(domainName_))
-        );
+    function offerAddress(string calldata domainName_) external view returns (address contractAddress) {
+        contractAddress = offerFactory.getAddress(keccak256(abi.encodePacked(domainName_)));
 
         if (!contractAddress.isContract()) {
             contractAddress = address(0);
@@ -260,22 +244,12 @@ contract OTC is AccessControl, Pausable {
         }
 
         uint256 price = domainContract.getPrice(domainName_);
-        bytes32 commitment = domainContract.makeCommitment(
-            domainName_,
-            domainOwner_,
-            secret_
-        );
+        bytes32 commitment = domainContract.makeCommitment(domainName_, domainOwner_, secret_);
 
         domainContract.commit(commitment);
-        domainContract.register{value: price}(
-            domainName_,
-            domainOwner_,
-            secret_
-        );
+        domainContract.register{value: price}(domainName_, domainOwner_, secret_);
 
-        address offer = offerFactory.deploy(
-            keccak256(abi.encodePacked(domainName_))
-        );
+        address offer = offerFactory.deploy(keccak256(abi.encodePacked(domainName_)));
 
         IOffer(offer).initialize(
             IOTC(address(this)),
@@ -289,16 +263,6 @@ contract OTC is AccessControl, Pausable {
             lockWithdrawDuration_
         );
 
-        emit OfferCreated(
-            domainName_,
-            srcAsset_,
-            destAsset_,
-            offer,
-            domainOwner_,
-            depositAmount_,
-            acceptAmount_,
-            commissionRate_,
-            lockWithdrawDuration_
-        );
+        emit OfferCreated(domainName_, srcAsset_, destAsset_, offer, domainOwner_, depositAmount_, acceptAmount_, commissionRate_, lockWithdrawDuration_);
     }
 }
