@@ -8,7 +8,6 @@ export namespace Otc {
     CommissionRateBeyondLimit,
     AssetAlreadyAdded,
     AssetAlreadyRemoved,
-    AlreadyOwner,
     Unauthorized
   }
 }

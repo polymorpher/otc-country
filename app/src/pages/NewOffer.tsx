@@ -121,7 +121,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
 
   const { toastSuccess, toastError } = useToast()
 
-  const { balance, domainPrice, srcBalance, srcDecimals, destDecimals, isCreatingOffer, createOffer } = useNewOffer({
+  const { balance, domainPrice, domainOwner, srcBalance, srcDecimals, destDecimals, isCreatingOffer, createOffer } = useNewOffer({
     srcAsset: watch('srcAsset'),
     destAsset: watch('destAsset'),
     domain,
@@ -174,19 +174,30 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
 
   return (
     <VStack>
-      <Text fontSize="2xl" my="10">
-        Choose an available domain for your offer
-      </Text>
+      {domainOwner === address
+        ? (
+          <Alert status='success'>
+            <AlertIcon />
+            You already own the domain
+          </Alert>
+          )
+        : (
+          <>
+            <Text fontSize="2xl" my="10">
+              Choose an available domain for your offer
+            </Text>
 
-      {domainPrice !== undefined && (
-        <Alert status={balance > domainPrice ? 'info' : 'warning'}>
-          <AlertIcon />
-          Domain cost: {formatEther(domainPrice)} ONE <br/>
-          {balance > domainPrice
-            ? 'You will own the domain. Your offer will be hosted there'
-            : 'You have insufficient fund'}
-        </Alert>
-      )}
+            {domainPrice !== undefined && (
+              <Alert status={balance > domainPrice ? 'info' : 'warning'}>
+                <AlertIcon />
+                Domain cost: {formatEther(domainPrice)} ONE <br/>
+                {balance > domainPrice
+                  ? 'You will own the domain. Your offer will be hosted there'
+                  : 'You have insufficient fund'}
+              </Alert>
+            )}
+          </>
+          )}
 
       <VStack mt={16} onSubmit={handleSubmit(handleOfferSubmit)} as="form" width="full" spacing={12}>
         <FormControl isInvalid={!!errors.domainOwner}>
@@ -367,7 +378,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
           <AlertIcon />
           Tips: You can retract the offer at any time after it is created. Other people can join your offer by depositing asset there. The domain owner earns commission if the offer is accepted by someone (who has to deposit).
         </Alert>
-        <Button type="submit" isLoading={isCreatingOffer} loadingText="Create" size='lg'>
+        <Button type="submit" isLoading={isCreatingOffer} loadingText="Create" size='lg' isDisabled={domainOwner !== address && balance <= domainPrice}>
           Create
         </Button>
       </VStack>

@@ -31,6 +31,7 @@ export interface UseNewOfferType {
   destDecimals: bigint
   domainPrice: bigint
   isCreatingOffer: boolean
+  domainOwner: Address
   createOffer: (d: OfferData) => any
 }
 
@@ -50,6 +51,12 @@ const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettle
   const { data: domainPrice } = useContractRead({
     ...domainContract(domainContractAddress as Address),
     functionName: 'getPrice',
+    args: [domain]
+  })
+
+  const { data: domainOwner } = useContractRead({
+    ...domainContract(domainContractAddress as Address),
+    functionName: 'ownerOf',
     args: [domain]
   })
 
@@ -137,7 +144,8 @@ const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettle
     destDecimals: destDecimals as bigint,
     domainPrice: domainPrice as bigint,
     isCreatingOffer: isApproving || isCreatingOffer,
-    createOffer
+    createOffer,
+    domainOwner: domainOwner as Address
   }
 }
 

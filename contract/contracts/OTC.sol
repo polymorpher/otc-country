@@ -45,7 +45,6 @@ contract OTC is AccessControl, Pausable {
         CommissionRateBeyondLimit,
         AssetAlreadyAdded,
         AssetAlreadyRemoved,
-        AlreadyOwner,
         Unauthorized
     }
 
@@ -239,15 +238,13 @@ contract OTC is AccessControl, Pausable {
             revert OTCError(ErrorType.CommissionRateBeyondLimit);
         }
 
-        if (domainContract.ownerOf(domainName_) == domainOwner_) {
-            revert OTCError(ErrorType.AlreadyOwner);
+        if (domainContract.ownerOf(domainName_) != domainOwner_) {
+            uint256 price = domainContract.getPrice(domainName_);
+            bytes32 commitment = domainContract.makeCommitment(domainName_, domainOwner_, secret_);
+
+            domainContract.commit(commitment);
+            domainContract.register{value: price}(domainName_, domainOwner_, secret_);
         }
-
-        uint256 price = domainContract.getPrice(domainName_);
-        bytes32 commitment = domainContract.makeCommitment(domainName_, domainOwner_, secret_);
-
-        domainContract.commit(commitment);
-        domainContract.register{value: price}(domainName_, domainOwner_, secret_);
 
         address offer = offerFactory.deploy(keccak256(abi.encodePacked(domainName_)));
 
