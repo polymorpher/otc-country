@@ -21,9 +21,6 @@ contract OfferFactory is IOfferFactory {
      * @return addr
      */
     function getAddress(bytes32 salt_) external view returns (address addr) {
-        addr = Create2.computeAddress(
-            salt_,
-            keccak256(type(Offer).creationCode)
-        );
+        addr = Create2.computeAddress(salt_, keccak256(type(Offer).creationCode));
     }
 }

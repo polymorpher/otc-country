@@ -8,6 +8,8 @@ export namespace Otc {
     CommissionRateBeyondLimit,
     AssetAlreadyAdded,
     AssetAlreadyRemoved,
+    AlreadyOwner,
+    Unauthorized
   }
 }
 
@@ -19,12 +21,12 @@ export namespace Offer {
     OfferNotAccepted,
     NotCreator,
     NotDomainOwner,
-    WithdrawLocked,
+    WithdrawLocked
   }
 
   export enum Status {
     Open,
     Accepted,
-    Closed,
+    Closed
   }
 }

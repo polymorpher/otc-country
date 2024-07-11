@@ -15,9 +15,9 @@ const createOfferFixture = async () => {
 
   const creatorDepositAmount = 100n
 
-  const acceptAmount = 50n
+  const acceptAmount = 500000n
 
-  const commissionRate = BigInt(0.1 * 100000)
+  const commissionRate = BigInt(0.1 * 100000) // 10 %
 
   const lockWithdrawAfter = 3600
 
@@ -25,9 +25,12 @@ const createOfferFixture = async () => {
 
   const price = await domainContract.getPrice(domain)
 
-  const offerAddress = await otc.testOfferAddress(domain)
+  const offerAddress = await otc.computedOfferAddress(domain)
 
-  const offer = await ethers.getContractAt('Offer', offerAddress) as unknown as Offer
+  const offer = (await ethers.getContractAt(
+    'Offer',
+    offerAddress
+  )) as unknown as Offer
 
   const [depositor, acceptor] = accounts
 

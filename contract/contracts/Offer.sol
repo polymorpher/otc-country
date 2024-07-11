@@ -6,9 +6,13 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "./libraries/Config.sol";
 import "./interfaces/IOffer.sol";
+import "./interfaces/IOTC.sol";
 
 contract Offer is Initializable, IOffer {
     using SafeERC20 for IERC20;
+
+    /// @notice OTC address
+    IOTC public otc;
 
     /// @notice depositors cannot withdraw their depositions before the time is passed by this value
     uint256 public lockWithdrawDuration;
@@ -76,6 +80,7 @@ contract Offer is Initializable, IOffer {
 
     /**
      * @notice Initializes the offer and sets deposition value for the creator
+     * @param otc_ OTC address
      * @param creator_ address of the offer creator
      * @param domainOwner_ address of user that the domain will belongs to
      * @param srcAsset_ source asset address
@@ -86,6 +91,7 @@ contract Offer is Initializable, IOffer {
      * @param lockWithdrawDuration_ depositors cannot withdraw until the time is passed by this value after the deposition time
      */
     function initialize(
+        IOTC otc_,
         address creator_,
         address domainOwner_,
         address srcAsset_,
@@ -95,6 +101,7 @@ contract Offer is Initializable, IOffer {
         uint256 commissionRate_,
         uint256 lockWithdrawDuration_
     ) external override initializer {
+        otc = otc_;
         acceptAmount = acceptAmount_;
         commissionRate = commissionRate_;
         lockWithdrawDuration = lockWithdrawDuration_;
@@ -115,9 +122,7 @@ contract Offer is Initializable, IOffer {
     function _deposit(uint256 amount_, address depositor_) internal {
         unchecked {
             deposits[depositor_] += amount_;
-            lockWithdrawUntil[depositor_] =
-                block.timestamp +
-                lockWithdrawDuration;
+            lockWithdrawUntil[depositor_] = block.timestamp + lockWithdrawDuration;
             totalDeposits += amount_;
         }
 
@@ -196,7 +201,16 @@ contract Offer is Initializable, IOffer {
 
         status = Status.Accepted;
 
-        destAsset.safeTransferFrom(msg.sender, address(this), acceptAmount);
+        uint256 fee;
+        uint256 netAcceptAmount;
+
+        unchecked {
+            fee = (acceptAmount * otc.feePercentage()) / Config.RATE_SCALE;
+            netAcceptAmount = acceptAmount - fee;
+        }
+
+        destAsset.safeTransferFrom(msg.sender, otc.revenueAccount(), fee);
+        destAsset.safeTransferFrom(msg.sender, address(this), netAcceptAmount);
         srcAsset.safeTransfer(receiver_, totalDeposits);
 
         emit OfferAccepted(msg.sender);
@@ -206,19 +220,13 @@ contract Offer is Initializable, IOffer {
      * @notice Gets payment balance for domain owner
      * @return balance payment balance
      */
-    function paymentBalanceForDomainOwner()
-        public
-        view
-        returns (uint256 balance)
-    {
+    function paymentBalanceForDomainOwner() public view returns (uint256 balance) {
         if (withdrawPayments[domainOwner]) {
             return 0;
         }
 
         unchecked {
-            balance =
-                (acceptAmount * commissionRate) /
-                Config.COMMISSION_RATE_SCALE;
+            balance = (acceptAmount * commissionRate) / Config.RATE_SCALE;
         }
     }
 
@@ -227,9 +235,7 @@ contract Offer is Initializable, IOffer {
      * @param depositor_ depositor address
      * @return balance payment balance
      */
-    function paymentBalanceForDepositor(
-        address depositor_
-    ) public view returns (uint256 balance) {
+    function paymentBalanceForDepositor(address depositor_) public view returns (uint256 balance) {
         if (withdrawPayments[depositor_]) {
             return 0;
         }
@@ -240,8 +246,8 @@ contract Offer is Initializable, IOffer {
             balance =
                 (acceptAmount * depositAmount) /
                 totalDeposits -
-                (acceptAmount * depositAmount * commissionRate) /
-                Config.COMMISSION_RATE_SCALE /
+                (acceptAmount * depositAmount * (otc.feePercentage() + commissionRate)) /
+                Config.RATE_SCALE /
                 totalDeposits;
         }
     }

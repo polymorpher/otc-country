@@ -16,11 +16,11 @@ const config: HardhatUserConfig = {
     },
     harmony: {
       url: 'https://api.harmony.one',
-      accounts: [process.env.PRIVATE_KEY!]
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : undefined
     },
     mainnet: {
       url: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_KEY_MAINNET}`,
-      accounts: [process.env.PRIVATE_KEY!],
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : undefined,
       verify: {
         etherscan: {
           apiUrl: 'https://api.etherscan.io'
@@ -29,7 +29,7 @@ const config: HardhatUserConfig = {
     },
     sepolia: {
       url: `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_KEY_SEPOLIA}`,
-      accounts: [process.env.PRIVATE_KEY!],
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : undefined,
       verify: {
         etherscan: {
           apiUrl: 'https://api-sepolia.etherscan.io'

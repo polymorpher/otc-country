@@ -5,7 +5,7 @@ module.exports = {
     mocha: true,
     node: true
   },
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', '@stylistic/js'],
   extends: [
     'standard',
     'plugin:node/recommended'
@@ -23,6 +23,7 @@ module.exports = {
       'error',
       { ignores: ['modules'] }
     ],
+    '@stylistic/js/semi': ["error", "never"],
     'node/no-extraneous-import': 0,
     'node/no-unpublished-import': 0,
     'node/no-missing-import': ['error', {
