@@ -25,9 +25,12 @@ const createOfferFixture = async () => {
 
   const price = await domainContract.getPrice(domain)
 
-  const offerAddress = await otc.testOfferAddress(domain)
+  const offerAddress = await otc.computedOfferAddress(domain)
 
-  const offer = await ethers.getContractAt('Offer', offerAddress) as unknown as Offer
+  const offer = (await ethers.getContractAt(
+    'Offer',
+    offerAddress
+  )) as unknown as Offer
 
   const [depositor, acceptor] = accounts
 

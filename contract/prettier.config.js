@@ -1,5 +1,13 @@
 module.exports = {
-  // overrides: [
+  overrides: [
+    {
+      files: '*.ts',
+      options: {
+        semi: false,
+        singleQuote: true,
+        trailingComma: 'none'
+      }
+    }
   //   {
   //     files: '*.sol',
   //     options: {
@@ -10,5 +18,5 @@ module.exports = {
   //       bracketSpacing: false
   //     }
   //   }
-  // ]
+  ]
 }

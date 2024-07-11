@@ -7,11 +7,11 @@ const addAssetFixture = async () => {
     accounts: [creator],
     srcAssets: [sa1],
     destAssets: [da1],
-    owner
+    admin
   } = data
 
-  await otc.connect(owner).addAsset(sa1)
-  await otc.connect(owner).addAsset(da1)
+  await otc.connect(admin).addAsset(sa1)
+  await otc.connect(admin).addAsset(da1)
 
   await sa1.mint(creator.address, 10000000000)
 

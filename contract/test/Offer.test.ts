@@ -63,7 +63,9 @@ describe('Offer', () => {
 
       expect(await offer.totalDeposits()).to.eq(totalDeposits + amount)
       expect(await offer.deposits(depositor.address)).to.deep.eq(amount)
-      expect(await sa1.balanceOf(offer.getAddress())).to.eq(totalDeposits + amount)
+      expect(await sa1.balanceOf(offer.getAddress())).to.eq(
+        totalDeposits + amount
+      )
     })
 
     it('deposition second time increases amount', async () => {
@@ -368,16 +370,16 @@ describe('Offer', () => {
 
       const totalDeposits = creatorDepositAmount + depositAmount
 
-      const domainOwnerPayment = (
-        acceptAmount * commissionRate
-      ) / commissionRateScale
+      const domainOwnerPayment =
+        (acceptAmount * commissionRate) / commissionRateScale
 
       expect(await offer.paymentBalanceForDepositor(alice.address)).to.eq(0)
       expect(await offer.paymentBalanceForDepositor(creator.address)).to.eq(
-        (acceptAmount - domainOwnerPayment) * creatorDepositAmount / totalDeposits
+        ((acceptAmount - domainOwnerPayment) * creatorDepositAmount) /
+          totalDeposits
       )
       expect(await offer.paymentBalanceForDepositor(depositor.address)).to.eq(
-        (acceptAmount - domainOwnerPayment) * depositAmount / totalDeposits
+        ((acceptAmount - domainOwnerPayment) * depositAmount) / totalDeposits
       )
     })
 
@@ -399,13 +401,15 @@ describe('Offer', () => {
 
       const commissionRateScale = await otc.commissionRateScale()
 
-      const domainOwnerPayment = (
-        acceptAmount * commissionRate
-      ) / commissionRateScale
+      const domainOwnerPayment =
+        (acceptAmount * commissionRate) / commissionRateScale
 
-      const creatorPayment = (acceptAmount - domainOwnerPayment) * creatorDepositAmount / totalDeposits
+      const creatorPayment =
+        ((acceptAmount - domainOwnerPayment) * creatorDepositAmount) /
+        totalDeposits
 
-      const depositorPayment = (acceptAmount - domainOwnerPayment) * depositAmount / totalDeposits
+      const depositorPayment =
+        ((acceptAmount - domainOwnerPayment) * depositAmount) / totalDeposits
 
       // check payment events
       await expect(
@@ -431,9 +435,7 @@ describe('Offer', () => {
       // check balance after payment
       expect(await offer.paymentBalanceForDomainOwner()).to.eq(0)
       expect(await offer.paymentBalanceForDepositor(creator.address)).to.eq(0)
-      expect(await offer.paymentBalanceForDepositor(depositor.address)).to.eq(
-        0
-      )
+      expect(await offer.paymentBalanceForDepositor(depositor.address)).to.eq(0)
 
       // check balance on offer contract
       expect(await da1.balanceOf(await offer.getAddress())).to.eq(0)
