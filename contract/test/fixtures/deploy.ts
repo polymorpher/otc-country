@@ -3,11 +3,10 @@ import {
   DomainContract,
   ERC20Mock,
   OfferFactory,
-  OTC,
-  TestOTC
+  OTC
 } from '../../typechain-types'
 
-const feePercentage = 300
+const feePercentage = 4000n // 4 %
 
 const deployFixture = async () => {
   const [admin, operator, revenueAccount, domainOwner, ...accounts] =
@@ -53,7 +52,6 @@ const deployFixture = async () => {
     operator,
     revenueAccount,
     domainOwner,
-    feePercentage,
     accounts
   }
 }

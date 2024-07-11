@@ -15,9 +15,9 @@ const createOfferFixture = async () => {
 
   const creatorDepositAmount = 100n
 
-  const acceptAmount = 50n
+  const acceptAmount = 500000n
 
-  const commissionRate = BigInt(0.1 * 100000)
+  const commissionRate = BigInt(0.1 * 100000) // 10 %
 
   const lockWithdrawAfter = 3600
 

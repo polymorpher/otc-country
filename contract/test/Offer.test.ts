@@ -31,9 +31,10 @@ describe('Offer', () => {
     })
 
     it('fail: already called', async () => {
-      const { offer } = await loadFixture(createOfferFixture)
+      const { otc, offer } = await loadFixture(createOfferFixture)
       await expect(
         offer.initialize(
+          await otc.getAddress(),
           ethers.ZeroAddress,
           ethers.ZeroAddress,
           ethers.ZeroAddress,
@@ -228,6 +229,8 @@ describe('Offer', () => {
     it('success', async () => {
       const {
         accounts: [depositor, acceptor, receiver],
+        revenueAccount,
+        otc,
         offer,
         acceptAmount,
         srcAssets: [sa1],
@@ -242,6 +245,9 @@ describe('Offer', () => {
       await offer.connect(depositor).deposit(depositAmount)
 
       const totalDeposits = await offer.totalDeposits()
+      const commissionRateScale = await otc.commissionRateScale()
+      const feePercentage = await otc.feePercentage()
+      const fee = (feePercentage * acceptAmount) / commissionRateScale
 
       await expect(offer.connect(acceptor).accept(receiver.address))
         .to.emit(offer, 'OfferAccepted')
@@ -250,11 +256,15 @@ describe('Offer', () => {
       expect(await da1.balanceOf(acceptor.address)).to.deep.eq(
         destTokenBalance - acceptAmount
       )
-      expect(await da1.balanceOf(await offer.getAddress())).to.eq(acceptAmount)
+      expect(await da1.balanceOf(await offer.getAddress())).to.eq(
+        acceptAmount - fee
+      )
       expect(await sa1.balanceOf(await offer.getAddress())).to.eq(0)
       expect(await sa1.balanceOf(receiver.address)).to.deep.eq(
         srcTokenBalance + totalDeposits
       )
+
+      expect(await da1.balanceOf(revenueAccount.address)).to.eq(fee)
     })
 
     it('fail: dest asset balance not enough to accept', async () => {
@@ -264,7 +274,7 @@ describe('Offer', () => {
         destAssets: [da1]
       } = await loadFixture(createOfferFixture)
 
-      await da1.connect(acceptor).approve(await offer.getAddress(), 10000)
+      await da1.connect(acceptor).approve(await offer.getAddress(), 1000000000)
 
       await expect(
         offer.connect(acceptor).accept(acceptor.address)
@@ -367,19 +377,24 @@ describe('Offer', () => {
       } = await loadFixture(acceptFixture)
 
       const commissionRateScale = await otc.commissionRateScale()
+      const feePercentage = await otc.feePercentage()
 
       const totalDeposits = creatorDepositAmount + depositAmount
 
       const domainOwnerPayment =
         (acceptAmount * commissionRate) / commissionRateScale
 
+      const fee = (acceptAmount * feePercentage) / commissionRateScale
+
       expect(await offer.paymentBalanceForDepositor(alice.address)).to.eq(0)
       expect(await offer.paymentBalanceForDepositor(creator.address)).to.eq(
-        ((acceptAmount - domainOwnerPayment) * creatorDepositAmount) /
+        ((acceptAmount - domainOwnerPayment - fee) * creatorDepositAmount) /
           totalDeposits
       )
       expect(await offer.paymentBalanceForDepositor(depositor.address)).to.eq(
-        ((acceptAmount - domainOwnerPayment) * depositAmount) / totalDeposits
+        ((acceptAmount - domainOwnerPayment - fee) * depositAmount) /
+          totalDeposits +
+          1n
       )
     })
 
@@ -401,15 +416,21 @@ describe('Offer', () => {
 
       const commissionRateScale = await otc.commissionRateScale()
 
+      const feePercentage = await otc.feePercentage()
+
+      const fee = (acceptAmount * feePercentage) / commissionRateScale
+
       const domainOwnerPayment =
         (acceptAmount * commissionRate) / commissionRateScale
 
       const creatorPayment =
-        ((acceptAmount - domainOwnerPayment) * creatorDepositAmount) /
+        ((acceptAmount - domainOwnerPayment - fee) * creatorDepositAmount) /
         totalDeposits
 
       const depositorPayment =
-        ((acceptAmount - domainOwnerPayment) * depositAmount) / totalDeposits
+        ((acceptAmount - domainOwnerPayment - fee) * depositAmount) /
+          totalDeposits +
+        1n
 
       // check payment events
       await expect(

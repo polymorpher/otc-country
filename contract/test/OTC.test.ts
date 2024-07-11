@@ -378,7 +378,7 @@ describe('OTC', () => {
         .withArgs(Otc.ErrorType.CommissionRateBeyondLimit)
     })
 
-    it('fail: not enough ethers sent', async () => {
+    it('fail: not enough ETH sent', async () => {
       const {
         domainOwner,
         domainContract,
