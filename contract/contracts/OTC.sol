@@ -250,6 +250,7 @@ contract OTC is AccessControl, Pausable {
 
         IOffer(offer).initialize(
             IOTC(address(this)),
+            domainName_,
             msg.sender,
             domainOwner_,
             srcAsset_,

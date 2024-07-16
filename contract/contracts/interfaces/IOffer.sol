@@ -6,6 +6,7 @@ import "./IOTC.sol";
 interface IOffer {
     function initialize(
         IOTC otc,
+        string calldata domainName,
         address creator,
         address domainOwner,
         address srcAsset,

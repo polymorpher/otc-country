@@ -8,7 +8,7 @@ import DomainInput from '~/components/DomainInput'
 import { domainContract, otcContract } from '~/helpers/contracts'
 import Admin from '~/pages/Admin'
 import NewOffer from '~/pages/NewOffer'
-import Offer from '~/pages/Offer'
+import { Offer } from '~/pages/Offer'
 import { newName } from '~/helpers/names'
 import debounce from 'lodash.debounce'
 
@@ -114,7 +114,7 @@ const App = (): React.JSX.Element => {
         <Offer address={offerAddress } />
       </VStack>
       }
-      {!isFetching && offerAddress &&
+      {!isFetching && offerAddress === zeroAddress &&
       <NewOffer domain={domain} onCreate={() => { refetch(domain) }} />
       }
 

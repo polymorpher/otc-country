@@ -26,6 +26,7 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.43.7",
     "react-icons": "^4.9.0",
+    "react-router-dom": "^6.24.1",
     "react-select": "^5.8.0",
     "sass": "^1.77.6",
     "viem": "^1.0.7",

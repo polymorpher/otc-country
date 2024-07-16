@@ -29,6 +29,9 @@ contract Offer is Initializable, IOffer {
     /// @notice domain owner address
     address public domainOwner;
 
+    /// @notice domain name
+    string public domainName;
+
     /// @notice source asset address
     IERC20 public srcAsset;
 
@@ -92,6 +95,7 @@ contract Offer is Initializable, IOffer {
      */
     function initialize(
         IOTC otc_,
+        string calldata domainName_,
         address creator_,
         address domainOwner_,
         address srcAsset_,
@@ -102,6 +106,7 @@ contract Offer is Initializable, IOffer {
         uint256 lockWithdrawDuration_
     ) external override initializer {
         otc = otc_;
+        domainName = domainName_;
         acceptAmount = acceptAmount_;
         commissionRate = commissionRate_;
         lockWithdrawDuration = lockWithdrawDuration_;
