@@ -1,7 +1,7 @@
 import fs from "fs"
 import dotenv from "dotenv"
 import { http, createPublicClient, Address, parseAbi } from 'viem'
-import { Datastore } from "@google-cloud/datastore"
+import { Firestore } from "@google-cloud/firestore"
 import OFFER_ABI from '../contract/artifacts/contracts/Offer.sol/Offer.json'
 
 dotenv.config()
@@ -10,30 +10,28 @@ const SAVE_FILE_PATH = '.otc'
 
 const BLOCK_INTERVAL = 3
 
-const datastore = new Datastore()
+const firestore = new Firestore();
 
-export const publicClient = createPublicClient({
+const collection = firestore.collection('events');
+
+const doc = collection.doc('logs');
+
+const publicClient = createPublicClient({
   cacheTime: 0,
   transport: http(process.env.RPC_URL),
 })
 
-const listen = async () => {
-  const kind = 'events';
-  const name = 'sampletask1';
-  const taskKey = datastore.key([kind, name]);
-  const task = {
-    key: taskKey,
-    data: {
-      description: 'Buy milk',
-    },
+const timestampCache: Record<number, number> = {}
+
+const getTimestamp = async (blockNumber: number) => {
+  if (timestampCache[blockNumber] === undefined) {
+    timestampCache[blockNumber] = Number(await publicClient.getBlock({ blockNumber: BigInt(blockNumber) }))
   }
 
-  await datastore.save(task)
+  return timestampCache[blockNumber]
+}
 
-  console.log("SSSS")
-
-  return
-
+const listen = async () => {
   let lastBlockNumber = 0
 
   if (fs.existsSync(SAVE_FILE_PATH)) {
@@ -59,44 +57,63 @@ const listen = async () => {
 
       console.log(`block number: from ${lastBlockNumber} to ${blockNumber}`)
 
-      const offerCreatedFilter = await publicClient.createContractEventFilter({
-        abi: parseAbi(['event OfferCreated(string indexed domainName, address indexed srcAsset, address indexed destAsset, address offerAddress, address domainOwner, uint256 depositAmount, uint256 closeAmount, uint256 commissionRate, uint256 lockWithdrawAfter)']),
-        address: String(process.env.OTC_CONTRACT) as Address,
-        fromBlock: BigInt(lastBlockNumber),
-        toBlock: BigInt(blockNumber),
-        eventName: 'OfferCreated'
-      })
+      const [offerCreatedFilter, offerAcceptedFilter] = await Promise.all([
+        publicClient.createContractEventFilter({
+          abi: parseAbi(['event OfferCreated(string indexed domainName, address indexed srcAsset, address indexed destAsset, address offerAddress, address domainOwner, uint256 depositAmount, uint256 closeAmount, uint256 commissionRate, uint256 lockWithdrawAfter)']),
+          address: String(process.env.OTC_CONTRACT) as Address,
+          fromBlock: BigInt(lastBlockNumber),
+          toBlock: BigInt(blockNumber),
+          eventName: 'OfferCreated'
+        }),
 
-      const offerAcceptedFilter = await publicClient.createContractEventFilter({
-        abi: OFFER_ABI.abi,
-        fromBlock: BigInt(lastBlockNumber),
-        toBlock: BigInt(blockNumber),
-        eventName: 'OfferAccepted'
-      })
+        publicClient.createContractEventFilter({
+          abi: OFFER_ABI.abi,
+          fromBlock: BigInt(lastBlockNumber),
+          toBlock: BigInt(blockNumber),
+          eventName: 'OfferAccepted'
+        })
+      ])
 
-      const createdLogs = await publicClient.getFilterLogs({ filter: offerCreatedFilter })
-      const acceptedLogs = await publicClient.getFilterLogs({ filter: offerAcceptedFilter })
+      const [createdLogs, acceptedLogs] = await Promise.all([
+        publicClient.getFilterLogs({ filter: offerCreatedFilter }),
+        publicClient.getFilterLogs({ filter: offerAcceptedFilter })
+      ])
 
       for (const log of createdLogs) {
         if (log.eventName === 'OfferCreated') {
-          // log.args.domainName
-          // log.args.srcAsset
-          // log.args.destAsset
-          // log.args.offerAddress
-          // log.args.domainOwner
-          // log.args.closeAmount
+          doc.set({
+            eventName: 'OfferCreated',
+            time: getTimestamp(Number(log.blockNumber)),
+            domainName: log.args.domainName,
+            srcAsset: log.args.srcAsset,
+            destAsset: log.args.destAsset,
+            offerAddress: log.args.offerAddress,
+            domainOwner: log.args.domainOwner,
+            closeAmount: log.args.closeAmount,
+          })
         }
       }
 
       for (const log of acceptedLogs) {
-        const [domainName, srcAsset, destAsset, domainOwner, totalDeposits, acceptAmount] = await Promise.all(
-          ['domainName', 'srcAsset', 'destAsset', 'domainOwner', 'totalDeposits', 'acceptAmount']
+        const [domainName, srcAsset, destAsset, domainOwner, closeAmount] = await Promise.all(
+          ['domainName', 'srcAsset', 'destAsset', 'domainOwner', 'acceptAmount']
             .map((func) => publicClient.readContract({
               address: log.address,
               abi: OFFER_ABI.abi,
               functionName: func
             }))
         )
+
+        doc.set({
+          eventName: 'OfferAccepted',
+          offerAddress: log.address,
+          time: getTimestamp(Number(log.blockNumber)),
+          domainName,
+          srcAsset,
+          destAsset,
+          domainOwner,
+          closeAmount,
+        })
       }
 
       lastBlockNumber = blockNumber + 1
