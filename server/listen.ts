@@ -1,8 +1,7 @@
 import fs from "fs"
 import dotenv from "dotenv"
-import { http, createPublicClient, Address } from 'viem'
+import { http, createPublicClient, Address, parseAbi } from 'viem'
 import { Datastore } from "@google-cloud/datastore"
-import OTC_ABI from '../contract/artifacts/contracts/OTC.sol/OTC.json'
 import OFFER_ABI from '../contract/artifacts/contracts/Offer.sol/Offer.json'
 
 dotenv.config()
@@ -61,10 +60,11 @@ const listen = async () => {
       console.log(`block number: from ${lastBlockNumber} to ${blockNumber}`)
 
       const offerCreatedFilter = await publicClient.createContractEventFilter({
-        abi: OTC_ABI.abi,
+        abi: parseAbi(['event OfferCreated(string indexed domainName, address indexed srcAsset, address indexed destAsset, address offerAddress, address domainOwner, uint256 depositAmount, uint256 closeAmount, uint256 commissionRate, uint256 lockWithdrawAfter)']),
         address: String(process.env.OTC_CONTRACT) as Address,
         fromBlock: BigInt(lastBlockNumber),
         toBlock: BigInt(blockNumber),
+        eventName: 'OfferCreated'
       })
 
       const offerAcceptedFilter = await publicClient.createContractEventFilter({
@@ -93,7 +93,7 @@ const listen = async () => {
           ['domainName', 'srcAsset', 'destAsset', 'domainOwner', 'totalDeposits', 'acceptAmount']
             .map((func) => publicClient.readContract({
               address: log.address,
-              abi: OFFER_ABI,
+              abi: OFFER_ABI.abi,
               functionName: func
             }))
         )
