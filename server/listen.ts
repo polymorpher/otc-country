@@ -1,20 +1,15 @@
 import fs from "fs"
 import dotenv from "dotenv"
 import { http, createPublicClient, Address, parseAbi } from 'viem'
-import { Firestore } from "@google-cloud/firestore"
+import client from "./pg"
 import OFFER_ABI from '../contract/artifacts/contracts/Offer.sol/Offer.json'
+import getPrice from "./price"
 
 dotenv.config()
 
 const SAVE_FILE_PATH = '.otc'
 
 const BLOCK_INTERVAL = 3
-
-const firestore = new Firestore();
-
-const collection = firestore.collection('events');
-
-const doc = collection.doc('logs');
 
 const publicClient = createPublicClient({
   cacheTime: 0,
@@ -25,7 +20,8 @@ const timestampCache: Record<number, number> = {}
 
 const getTimestamp = async (blockNumber: number) => {
   if (timestampCache[blockNumber] === undefined) {
-    timestampCache[blockNumber] = Number(await publicClient.getBlock({ blockNumber: BigInt(blockNumber) }))
+    const block = await publicClient.getBlock({ blockNumber: BigInt(blockNumber) })
+    timestampCache[blockNumber] = Number(block.timestamp)
   }
 
   return timestampCache[blockNumber]
@@ -43,6 +39,8 @@ const listen = async () => {
   }
 
   console.log(`start: ${lastBlockNumber}`)
+
+  await client.connect()
 
   setInterval(async () => {
     try {
@@ -81,16 +79,28 @@ const listen = async () => {
 
       for (const log of createdLogs) {
         if (log.eventName === 'OfferCreated') {
-          doc.set({
-            eventName: 'OfferCreated',
-            time: getTimestamp(Number(log.blockNumber)),
-            domainName: log.args.domainName,
-            srcAsset: log.args.srcAsset,
-            destAsset: log.args.destAsset,
-            offerAddress: log.args.offerAddress,
-            domainOwner: log.args.domainOwner,
-            closeAmount: log.args.closeAmount,
-          })
+          const [srcPrice, destPrice, time] = await Promise.all([
+            getPrice(log.args.srcAsset!),
+            getPrice(log.args.destAsset!),
+            getTimestamp(Number(log.blockNumber))
+          ])
+
+          await client.query(`
+            INSERT INTO
+              logs(event_name, time, domain_name, src_asset, dest_asset, offer_address, domain_owner, close_amount, src_price, dest_price)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+          `, [
+            'OfferCreated',
+            time,
+            log.args.domainName,
+            log.args.srcAsset,
+            log.args.destAsset,
+            log.args.offerAddress,
+            log.args.domainOwner,
+            log.args.closeAmount,
+            srcPrice,
+            destPrice,
+          ])
         }
       }
 
@@ -104,16 +114,28 @@ const listen = async () => {
             }))
         )
 
-        doc.set({
-          eventName: 'OfferAccepted',
-          offerAddress: log.address,
-          time: getTimestamp(Number(log.blockNumber)),
+        const [srcPrice, destPrice, time] = await Promise.all([
+          getPrice(String(srcAsset)),
+          getPrice(String(destAsset)),
+          getTimestamp(Number(log.blockNumber))
+        ])
+
+        await client.query(`
+          INSERT INTO
+            logs(event_name, time, domain_name, src_asset, dest_asset, offer_address, domain_owner, close_amount, src_price, dest_price)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        `, [
+          'OfferAccepted',
+          time,
           domainName,
           srcAsset,
           destAsset,
+          log.address,
           domainOwner,
           closeAmount,
-        })
+          srcPrice,
+          destPrice,
+        ])
       }
 
       lastBlockNumber = blockNumber + 1

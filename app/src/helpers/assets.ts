@@ -1,7 +1,5 @@
-import { type Address } from 'viem'
-
 export interface Asset {
-  value: Address
+  value: `0x${string}`
   label: string
   rate: number | string
   icon?: string
@@ -70,6 +68,7 @@ export const DEPEGGED: Asset[] = [
 ]
 
 export const ASSETS: Asset[] = [
+  // https://hermes.pyth.network/api/latest_price_feeds?ids[]=0xc9d8b075a5c69303365ae23633d4e085199bf5c520a3b90fed1322a0342ffc33
   {
     value: '0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a',
     label: 'WONE',
