@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
-import client from "./pg";
+import pool from "./pg";
 
 // configures dotenv to work in your application
 dotenv.config();
@@ -36,18 +36,14 @@ app.get("/", async (request: Request, response: Response) => {
     SELECT *
     FROM logs
     WHERE ${where.join(" AND ")}
+    ORDER BY id DESC
     OFFSET $
     LIMIT $
-    ORDER BY id DESC
   `.replace(/\$/g, () => `$${cnt++}`);
 
-  await client.connect()
+  const res = await pool.query(query, args)
 
-  const res = await client.query(query, args)
-
-  await client.end()
-
-  response.status(200).send(res.rows);
+  return response.status(200).header('content-type', 'application/json').send(res.rows);
 }); 
 
 app.listen(PORT, () => {

@@ -1,7 +1,7 @@
 import fs from "fs"
 import dotenv from "dotenv"
 import { http, createPublicClient, Address, parseAbi } from 'viem'
-import client from "./pg"
+import pool from "./pg"
 import OFFER_ABI from '../contract/artifacts/contracts/Offer.sol/Offer.json'
 import getPrice from "./price"
 
@@ -39,8 +39,6 @@ const listen = async () => {
   }
 
   console.log(`start: ${lastBlockNumber}`)
-
-  await client.connect()
 
   setInterval(async () => {
     try {
@@ -85,7 +83,7 @@ const listen = async () => {
             getTimestamp(Number(log.blockNumber))
           ])
 
-          await client.query(`
+          await pool.query(`
             INSERT INTO
               logs(event_name, time, domain_name, src_asset, dest_asset, offer_address, domain_owner, close_amount, src_price, dest_price)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -120,7 +118,7 @@ const listen = async () => {
           getTimestamp(Number(log.blockNumber))
         ])
 
-        await client.query(`
+        await pool.query(`
           INSERT INTO
             logs(event_name, time, domain_name, src_asset, dest_asset, offer_address, domain_owner, close_amount, src_price, dest_price)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
