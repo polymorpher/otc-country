@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
+import cors from "cors";
 import pool from "./pg";
 
 // configures dotenv to work in your application
@@ -8,6 +9,8 @@ dotenv.config();
 const app = express();
 
 const PORT = process.env.PORT;
+
+app.use(cors())
 
 app.get("/", async (request: Request, response: Response) => {
   const { asset, age } = request.query
@@ -19,12 +22,13 @@ app.get("/", async (request: Request, response: Response) => {
   if (asset !== undefined) {
     where.push("(src_asset = $ OR dest_asset = $)")
     args.push(asset)
+    args.push(asset)
   }
 
   if (age !== undefined) {
     // age in hour
     where.push("time >= $")
-    args.push(Date.now() / 1000 - Number(age) * 3600)
+    args.push(new Date(Date.now() - Number(age) * 3600 * 1000).toISOString())
   }
 
   args.push(pageSize * page)
