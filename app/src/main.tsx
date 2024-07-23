@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { extendTheme, ChakraProvider, Container, VStack, HStack } from '@chakra-ui/react'
+import { extendTheme, ChakraProvider, Container, VStack, Stack } from '@chakra-ui/react'
 import { WagmiConfig, createConfig, configureChains } from 'wagmi'
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
 import {
@@ -61,14 +61,14 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: (
-      <HStack alignItems="flex-start" spacing="24" w="100%">
+      <Stack alignItems="flex-start" spacing="24" w="100%" direction={['column', 'column', 'row']}>
         <VStack w="100%">
           <MetamskConnector />
           <ChainDetector />
           <App />
         </VStack>
-        <EventHistory />
-      </HStack>
+        <EventHistory minW={['full', 'full', '400px']} width={['full', 'full', 'auto']} />
+      </Stack>
     )
   },
   {
@@ -82,7 +82,7 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <ChakraProvider theme={theme}>
-      <Container my="10" maxW="container.lg">
+      <Container my="10" maxW="container.xl">
         <WagmiConfig config={config}>
           <PendingTransactionsProvider>
             <VStack>
