@@ -9,6 +9,24 @@ export const getAssetByAddress = (address: string) => {
   return DEPEGGED.concat(ASSETS).find(item => item.value.toLowerCase() === address.toLowerCase())
 }
 
+export const getPrice = async (tokenAddress: string) => {
+  const rate = DEPEGGED.concat(ASSETS).find(item => item.value.toLowerCase() === tokenAddress.toLowerCase())?.rate
+
+  if (rate === undefined) {
+    return 0
+  }
+
+  if (typeof (rate) === 'number') {
+    return rate
+  }
+
+  const price = await fetch(`https://hermes.pyth.network/api/latest_price_feeds?ids[]=${rate}`)
+    .then(res => res.json())
+    .then(res => Number(res[0].price.price) * 10 ** res[0].price.expo)
+
+  return price
+}
+
 export const DEPEGGED: Asset[] = [
   {
     value: '0x985458E523dB3d53125813eD68c274899e9DfAb4',

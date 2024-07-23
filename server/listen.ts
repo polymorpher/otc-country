@@ -3,7 +3,7 @@ import dotenv from "dotenv"
 import { http, createPublicClient, Address, parseAbi } from 'viem'
 import pool from "./pg"
 import OFFER_ABI from '../contract/artifacts/contracts/Offer.sol/Offer.json'
-import getPrice from "./price"
+import { getPrice } from "../app/src/helpers/assets"
 
 dotenv.config()
 

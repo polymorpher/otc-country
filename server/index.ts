@@ -40,7 +40,7 @@ app.get("/", async (request: Request, response: Response) => {
     SELECT *
     FROM logs
     WHERE ${where.join(" AND ")}
-    ORDER BY id DESC
+    ORDER BY time DESC
     OFFSET $
     LIMIT $
   `.replace(/\$/g, () => `$${cnt++}`);

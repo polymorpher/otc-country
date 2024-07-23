@@ -1,10 +1,10 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Box, Link, SimpleGrid } from '@chakra-ui/react'
 import type { Address } from 'wagmi'
 import { useContractRead } from 'wagmi'
-import { getAssetByAddress } from '~/helpers/assets'
+import { getPrice, getAssetByAddress } from '~/helpers/assets'
 import AddressField from '~/components/AddressField'
-import { fmtNum, fmtTime } from '~/helpers/format'
+import { fmrHr, fmtNum, fmtTime } from '~/helpers/format'
 import { erc20Contract } from '~/helpers/contracts'
 import { formatUnits } from 'viem'
 
@@ -37,6 +37,25 @@ const Event: React.FC<EventProps> = ({ event }) => {
     functionName: 'decimals'
   })
 
+  const srcAsset = getAssetByAddress(event.src_asset)
+
+  const destAsset = getAssetByAddress(event.dest_asset)
+
+  const [srcAssetRate, setSrcAssetRate] = useState<number>()
+
+  const [destAssetRate, setDestAssetRate] = useState<number>()
+
+  useEffect(() => {
+    getPrice(srcAsset!.value).then(setSrcAssetRate)
+    getPrice(destAsset!.value).then(setDestAssetRate)
+  }, [destAsset, srcAsset, event])
+
+  const srcAmount = Number(formatUnits(BigInt(event.total_deposits), Number(srcDecimals)))
+
+  const destAmount = Number(formatUnits(BigInt(event.close_amount), Number(destDecimals)))
+
+  const elapsed = (Date.now() - new Date(event.time).getTime()) / 1000
+
   return (
     <SimpleGrid
       columns={2}
@@ -60,32 +79,58 @@ const Event: React.FC<EventProps> = ({ event }) => {
       <Box textAlign="right">
         Source Asset
       </Box>
-      <AddressField text={getAssetByAddress(event.src_asset)?.label}>
+      <AddressField text={srcAsset?.label}>
         {event.src_asset}
       </AddressField>
       <Box textAlign="right">
         Source Amount
       </Box>
       <Box>
-        {fmtNum(formatUnits(BigInt(event.total_deposits), Number(srcDecimals)))}
+        {fmtNum(srcAmount)}
       </Box>
       <Box textAlign="right">
         Destination Asset
       </Box>
-      <AddressField text={getAssetByAddress(event.dest_asset)?.label}>
+      <AddressField text={destAsset?.label}>
         {event.dest_asset}
       </AddressField>
       <Box textAlign="right">
         Accept Amount
       </Box>
       <Box>
-        {fmtNum(formatUnits(BigInt(event.close_amount), Number(destDecimals)))}
+        {fmtNum(destAmount)}
       </Box>
-      <Box textAlign="right">
-        Exchange Rate
-      </Box>
-      <Box>
-      </Box>
+      {event.event_name === 'OfferCreated'
+        ? (
+          <>
+            <Box textAlign="right">
+              Exchange Rate
+            </Box>
+            <Box>
+              {destAssetRate && srcAssetRate && fmtNum(destAssetRate * destAmount / (srcAssetRate * srcAmount))}
+            </Box>
+          </>
+          )
+        : (
+          <>
+            <Box textAlign="right">
+              Exchange Rate
+            </Box>
+            <Box />
+            <Box textAlign="right">
+              Current
+            </Box>
+            <Box>
+              {destAssetRate && srcAssetRate && fmtNum(destAssetRate * destAmount / (srcAssetRate * srcAmount))}
+            </Box>
+            <Box textAlign="right">
+              Accepted
+            </Box>
+            <Box>
+              {fmtNum(Number(event.dest_price) * destAmount / (Number(event.src_price) * srcAmount))}
+            </Box>
+          </>
+          )}
       <Box textAlign="right">
         Domain Name
       </Box>
@@ -93,10 +138,12 @@ const Event: React.FC<EventProps> = ({ event }) => {
         {event.domain_name}
       </Box>
       <Box textAlign="right">
-        Created At
+        Time
       </Box>
       <Box>
         {fmtTime(event.time)}
+        <br/>
+        {elapsed < 60 ? 'A few seconds' : elapsed < 3600 ? `${Math.round(elapsed / 60)} mins` : fmrHr(Math.round(elapsed / 3600))} ago
       </Box>
     </SimpleGrid>
   )
