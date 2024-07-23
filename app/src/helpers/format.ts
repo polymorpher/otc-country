@@ -13,7 +13,7 @@ const timeFormatter = new Intl.DateTimeFormat('en-US', {
   hour12: true
 })
 
-export const fmtNum = (value: number): string => numFormatter.format(value)
+export const fmtNum = (value: number | string): string => numFormatter.format(Number(value))
 
 export const fmtTime = (value: string): string => {
   const date = new Date(value)

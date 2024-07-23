@@ -80,18 +80,16 @@ const router = createBrowserRouter([
 ])
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <React.StrictMode>
-    <ChakraProvider theme={theme}>
-      <Container my="10" maxW="container.xl">
-        <WagmiConfig config={config}>
-          <PendingTransactionsProvider>
-            <VStack>
-              <Intro/>
-              <RouterProvider router={router} />
-            </VStack>
-          </PendingTransactionsProvider>
-        </WagmiConfig>
-      </Container>
-    </ChakraProvider>
-  </React.StrictMode>
+  <ChakraProvider theme={theme}>
+    <Container my="10" maxW="container.xl">
+      <WagmiConfig config={config}>
+        <PendingTransactionsProvider>
+          <VStack>
+            <Intro/>
+            <RouterProvider router={router} />
+          </VStack>
+        </PendingTransactionsProvider>
+      </WagmiConfig>
+    </Container>
+  </ChakraProvider>
 )

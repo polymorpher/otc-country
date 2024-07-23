@@ -5,6 +5,10 @@ export interface Asset {
   icon?: string
 }
 
+export const getAssetByAddress = (address: string) => {
+  return DEPEGGED.concat(ASSETS).find(item => item.value.toLowerCase() === address.toLowerCase())
+}
+
 export const DEPEGGED: Asset[] = [
   {
     value: '0x985458E523dB3d53125813eD68c274899e9DfAb4',
