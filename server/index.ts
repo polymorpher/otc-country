@@ -12,6 +12,8 @@ const PORT = process.env.PORT;
 
 app.use(cors())
 
+const addressRegex = /^(0x)?[0-9a-fA-F]{40}$/;
+
 app.get("/", async (request: Request, response: Response) => {
   const { asset, age } = request.query
   const page = Number(request.query.page ?? 0)
@@ -20,6 +22,10 @@ app.get("/", async (request: Request, response: Response) => {
   const where = ["TRUE"], args = []
 
   if (asset !== undefined) {
+    if (!addressRegex.test(String(asset))) {
+      return response.status(400).header('content-type', 'application/json').send('invalid asset');
+    }
+
     where.push("(src_asset = $ OR dest_asset = $)")
     args.push(asset)
     args.push(asset)
