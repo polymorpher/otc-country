@@ -21,7 +21,7 @@ const timestampCache: Record<number, number> = {}
 const getTimestamp = async (blockNumber: number) => {
   if (timestampCache[blockNumber] === undefined) {
     const block = await publicClient.getBlock({ blockNumber: BigInt(blockNumber) })
-    timestampCache[blockNumber] = Number(block.timestamp)
+    timestampCache[blockNumber] = Number(block.timestamp) * 1000
   }
 
   return timestampCache[blockNumber]
@@ -40,18 +40,23 @@ const listen = async () => {
 
   console.log(`start: ${lastBlockNumber}`)
 
+  // should be var, not let, as interval callback should access updated value
+  var lastBlockNumberBeingProcessed = 0
+
   setInterval(async () => {
     try {
       const blockNumber = Number(await publicClient.getBlockNumber())
 
       console.log(`block number: ${blockNumber}`)
 
-      if (blockNumber - BLOCK_INTERVAL < lastBlockNumber) {
+      if (blockNumber - BLOCK_INTERVAL < lastBlockNumberBeingProcessed) {
         console.log(`skipping ${blockNumber}`)
         return
       }
 
       console.log(`block number: from ${lastBlockNumber} to ${blockNumber}`)
+
+      lastBlockNumberBeingProcessed = blockNumber + 1
 
       const [offerCreatedFilter, offerAcceptedFilter] = await Promise.all([
         publicClient.createContractEventFilter({
@@ -85,12 +90,11 @@ const listen = async () => {
 
           await pool.query(`
             INSERT INTO
-              logs(event_name, time, domain_name, src_asset, dest_asset, offer_address, domain_owner, close_amount, total_deposits, src_price, dest_price)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+              logs(event_name, time, src_asset, dest_asset, offer_address, domain_owner, close_amount, total_deposits, src_price, dest_price)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
           `, [
             'OfferCreated',
-            time,
-            log.args.domainName,
+            new Date(time).toUTCString(),
             String(log.args.srcAsset).toLowerCase(),
             String(log.args.destAsset).toLowerCase(),
             String(log.args.offerAddress).toLowerCase(),
@@ -104,8 +108,8 @@ const listen = async () => {
       }
 
       for (const log of acceptedLogs) {
-        const [domainName, srcAsset, destAsset, domainOwner, closeAmount, totalDeposits] = await Promise.all(
-          ['domainName', 'srcAsset', 'destAsset', 'domainOwner', 'acceptAmount', 'total_deposits']
+        const [srcAsset, destAsset, domainOwner, closeAmount, totalDeposits] = await Promise.all(
+          ['srcAsset', 'destAsset', 'domainOwner', 'acceptAmount', 'total_deposits']
             .map((func) => publicClient.readContract({
               address: log.address,
               abi: OFFER_ABI.abi,
@@ -121,12 +125,11 @@ const listen = async () => {
 
         await pool.query(`
           INSERT INTO
-            logs(event_name, time, domain_name, src_asset, dest_asset, offer_address, domain_owner, close_amount, total_deposits, src_price, dest_price)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            logs(event_name, time, src_asset, dest_asset, offer_address, domain_owner, close_amount, total_deposits, src_price, dest_price)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         `, [
           'OfferAccepted',
-          time,
-          domainName,
+          new Date(time).toUTCString(),
           String(srcAsset).toLowerCase(),
           String(destAsset).toLowerCase(),
           String(log.address).toLowerCase(),

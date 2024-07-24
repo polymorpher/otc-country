@@ -1,9 +1,17 @@
-import pg from 'pg'
+import pg, { types } from 'pg'
 import dotenv from 'dotenv'
 
 dotenv.config()
 
 const { Pool } = pg
+
+const TIMESTAMPTZ_OID = 1114;
+
+// Override the default parsing for timestamps
+// This is to return raw value when querying timestamp value from db without timezone affected
+types.setTypeParser(TIMESTAMPTZ_OID, (stringValue) => {
+  return new Date(stringValue + 'Z'); // Append 'Z' to treat as UTC
+})
 
 const pool = new Pool({
   user: process.env.DB_USER,

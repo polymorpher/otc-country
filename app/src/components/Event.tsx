@@ -5,7 +5,7 @@ import { useContractRead } from 'wagmi'
 import { getPrice, getAssetByAddress } from '~/helpers/assets'
 import AddressField from '~/components/AddressField'
 import { fmrHr, fmtNum, fmtTime } from '~/helpers/format'
-import { erc20Contract } from '~/helpers/contracts'
+import { erc20Contract, offerContract } from '~/helpers/contracts'
 import { formatUnits } from 'viem'
 
 export interface EventType {
@@ -35,6 +35,11 @@ const Event: React.FC<EventProps> = ({ event }) => {
   const { data: destDecimals } = useContractRead({
     ...erc20Contract(event.dest_asset as Address),
     functionName: 'decimals'
+  })
+
+  const { data: domainName } = useContractRead({
+    ...offerContract(event.offer_address as Address),
+    functionName: 'domainName'
   })
 
   const srcAsset = getAssetByAddress(event.src_asset)
@@ -135,7 +140,7 @@ const Event: React.FC<EventProps> = ({ event }) => {
         Domain Name
       </Box>
       <Box>
-        {event.domain_name}
+        {String(domainName)}
       </Box>
       <Box textAlign="right">
         Time
