@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import pool from "./pg";
+import { getAssetByAddress } from "../app/src/helpers/assets"
 
 // configures dotenv to work in your application
 dotenv.config();
@@ -12,8 +13,6 @@ const PORT = process.env.PORT;
 
 app.use(cors())
 
-const addressRegex = /^(0x)?[0-9a-fA-F]{40}$/;
-
 app.get("/", async (request: Request, response: Response) => {
   const { asset, age } = request.query
   const page = Number(request.query.page ?? 0)
@@ -22,7 +21,7 @@ app.get("/", async (request: Request, response: Response) => {
   const where = ["TRUE"], args = []
 
   if (asset !== undefined) {
-    if (!addressRegex.test(String(asset))) {
+    if (!getAssetByAddress(String(asset))) {
       return response.status(400).header('content-type', 'application/json').send('invalid asset');
     }
 
