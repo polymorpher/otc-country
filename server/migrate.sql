@@ -9,5 +9,6 @@ CREATE TABLE "public"."logs" (
   "close_amount" TEXT NOT NULL,
   "src_price" TEXT NOT NULL,
   "dest_price" TEXT NOT NULL,
-  "time" TIMESTAMP NOT NULL
+  "time" TIMESTAMP NOT NULL,
+  UNIQUE (event_name, offer_address)
 );

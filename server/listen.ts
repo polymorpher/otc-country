@@ -88,22 +88,26 @@ const listen = async () => {
             getTimestamp(Number(log.blockNumber))
           ])
 
-          await pool.query(`
-            INSERT INTO
-              logs(event_name, time, src_asset, dest_asset, offer_address, domain_owner, close_amount, total_deposits, src_price, dest_price)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-          `, [
-            'OfferCreated',
-            new Date(time).toUTCString(),
-            String(log.args.srcAsset).toLowerCase(),
-            String(log.args.destAsset).toLowerCase(),
-            String(log.args.offerAddress).toLowerCase(),
-            String(log.args.domainOwner).toLowerCase(),
-            log.args.closeAmount,
-            log.args.depositAmount,
-            srcPrice,
-            destPrice,
-          ])
+          try {
+            await pool.query(`
+              INSERT INTO
+                logs(event_name, time, src_asset, dest_asset, offer_address, domain_owner, close_amount, total_deposits, src_price, dest_price)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            `, [
+              'OfferCreated',
+              new Date(time).toUTCString(),
+              String(log.args.srcAsset).toLowerCase(),
+              String(log.args.destAsset).toLowerCase(),
+              String(log.args.offerAddress).toLowerCase(),
+              String(log.args.domainOwner).toLowerCase(),
+              log.args.closeAmount,
+              log.args.depositAmount,
+              srcPrice,
+              destPrice,
+            ])
+          } catch (e) {
+            console.log(`error while adding created event to db: ${JSON.stringify(e)}`)
+          }
         }
       }
 
@@ -123,22 +127,26 @@ const listen = async () => {
           getTimestamp(Number(log.blockNumber))
         ])
 
-        await pool.query(`
-          INSERT INTO
-            logs(event_name, time, src_asset, dest_asset, offer_address, domain_owner, close_amount, total_deposits, src_price, dest_price)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-        `, [
-          'OfferAccepted',
-          new Date(time).toUTCString(),
-          String(srcAsset).toLowerCase(),
-          String(destAsset).toLowerCase(),
-          String(log.address).toLowerCase(),
-          String(domainOwner).toLowerCase(),
-          closeAmount,
-          totalDeposits,
-          srcPrice,
-          destPrice,
-        ])
+        try {
+          await pool.query(`
+            INSERT INTO
+              logs(event_name, time, src_asset, dest_asset, offer_address, domain_owner, close_amount, total_deposits, src_price, dest_price)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+          `, [
+            'OfferAccepted',
+            new Date(time).toUTCString(),
+            String(srcAsset).toLowerCase(),
+            String(destAsset).toLowerCase(),
+            String(log.address).toLowerCase(),
+            String(domainOwner).toLowerCase(),
+            closeAmount,
+            totalDeposits,
+            srcPrice,
+            destPrice,
+          ])
+        } catch (e) {
+          console.log(`error while adding accepted event to db: ${JSON.stringify(e)}`)
+        }
       }
 
       lastBlockNumber = blockNumber + 1
