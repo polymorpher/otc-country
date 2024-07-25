@@ -204,6 +204,17 @@ contract OTC is AccessControl, Pausable {
     }
 
     /**
+     * @notice Fail safe function to check owner of domain name
+     * @param domainName_  domain name of the offer contract
+     * @return owner owner address
+     */
+    function _ownerOf(string memory domainName_) internal view returns (address owner) {
+        try domainContract.ownerOf(domainName_) returns (address _owner) {
+            owner = _owner;
+        } catch {}
+    }
+
+    /**
      * @notice Create offer with given data after purchasing the domain with ethers
      * @param domainName_ domain name for the offer
      * @param secret_ secret used to buy the domain name
@@ -238,7 +249,7 @@ contract OTC is AccessControl, Pausable {
             revert OTCError(ErrorType.CommissionRateBeyondLimit);
         }
 
-        if (domainContract.ownerOf(domainName_) != domainOwner_) {
+        if (_ownerOf(domainName_) != domainOwner_) {
             uint256 price = domainContract.getPrice(domainName_);
             bytes32 commitment = domainContract.makeCommitment(domainName_, domainOwner_, secret_);
 
