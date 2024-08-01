@@ -1,9 +1,9 @@
-import fs from "fs"
-import dotenv from "dotenv"
-import { http, createPublicClient, Address, parseAbi } from 'viem'
-import pool from "./pg"
+import fs from 'fs'
+import dotenv from 'dotenv'
+import { http, createPublicClient, type Address, parseAbi } from 'viem'
+import pool from './pg'
 import OFFER_ABI from '../contract/artifacts/contracts/Offer.sol/Offer.json'
-import { getPrice } from "../app/src/helpers/assets"
+import { getPrice } from '../app/src/helpers/assets'
 
 dotenv.config()
 
@@ -13,7 +13,7 @@ const BLOCK_INTERVAL = 3
 
 const publicClient = createPublicClient({
   cacheTime: 0,
-  transport: http(process.env.RPC_URL),
+  transport: http(process.env.RPC_URL)
 })
 
 const timestampCache: Record<number, number> = {}
@@ -41,7 +41,7 @@ const listen = async () => {
   console.log(`start: ${lastBlockNumber}`)
 
   // should be var, not let, as interval callback should access updated value
-  var lastBlockNumberBeingProcessed = 0
+  let lastBlockNumberBeingProcessed = 0
 
   setInterval(async () => {
     try {
@@ -103,7 +103,7 @@ const listen = async () => {
               log.args.closeAmount,
               log.args.depositAmount,
               srcPrice,
-              destPrice,
+              destPrice
             ])
           } catch (e) {
             console.log(`error while adding created event to db: ${JSON.stringify(e)}`)
@@ -114,7 +114,7 @@ const listen = async () => {
       for (const log of acceptedLogs) {
         const [srcAsset, destAsset, domainOwner, closeAmount, totalDeposits] = await Promise.all(
           ['srcAsset', 'destAsset', 'domainOwner', 'acceptAmount', 'total_deposits']
-            .map((func) => publicClient.readContract({
+            .map(async (func) => await publicClient.readContract({
               address: log.address,
               abi: OFFER_ABI.abi,
               functionName: func
@@ -142,7 +142,7 @@ const listen = async () => {
             closeAmount,
             totalDeposits,
             srcPrice,
-            destPrice,
+            destPrice
           ])
         } catch (e) {
           console.log(`error while adding accepted event to db: ${JSON.stringify(e)}`)
@@ -158,4 +158,4 @@ const listen = async () => {
   }, 5000)
 }
 
-listen()
+listen().catch(console.error)
