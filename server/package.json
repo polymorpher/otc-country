@@ -2,11 +2,12 @@
   "name": "sample_app",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "listen": "ts-node listen.ts",
-    "http": "ts-node index.ts",
+    "listen": "NODE_OPTIONS=\"--loader ts-node/esm\" node listen.ts",
+    "http": "NODE_OPTIONS=\"--loader ts-node/esm\" node index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

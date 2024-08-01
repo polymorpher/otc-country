@@ -1,9 +1,9 @@
 import fs from 'fs'
 import dotenv from 'dotenv'
 import { http, createPublicClient, type Address, parseAbi } from 'viem'
-import pool from './pg'
+import pool from './pg.js'
 import OFFER_ABI from '../contract/artifacts/contracts/Offer.sol/Offer.json'
-import { getPrice } from '../app/src/helpers/assets'
+import { getPrice } from '../app/src/helpers/assets.js'
 
 dotenv.config()
 
@@ -18,7 +18,7 @@ const publicClient = createPublicClient({
 
 const timestampCache: Record<number, number> = {}
 
-const getTimestamp = async (blockNumber: number) => {
+const getTimestamp = async (blockNumber: number): Promise<number> => {
   if (timestampCache[blockNumber] === undefined) {
     const block = await publicClient.getBlock({ blockNumber: BigInt(blockNumber) })
     timestampCache[blockNumber] = Number(block.timestamp) * 1000
@@ -27,7 +27,7 @@ const getTimestamp = async (blockNumber: number) => {
   return timestampCache[blockNumber]
 }
 
-const listen = async () => {
+const listen = async (): Promise<void> => {
   let lastBlockNumber = 0
 
   if (fs.existsSync(SAVE_FILE_PATH)) {
