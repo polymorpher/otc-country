@@ -13,6 +13,10 @@ const PORT = process.env.PORT;
 
 app.use(cors())
 
+app.get("/health", async (request: Request, response: Response) => {
+  response.send('OK').end()
+})
+
 app.get("/", async (request: Request, response: Response) => {
   const { asset, age } = request.query
   const page = Number(request.query.page ?? 0)
