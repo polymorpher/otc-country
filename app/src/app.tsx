@@ -23,9 +23,15 @@ const App = (): React.JSX.Element => {
 
   const [error, setError] = useState<any>()
 
-  const { data: ownerAddress } = useContractRead({
+  const { data: operatorRoleBytes } = useContractRead({
     ...otcContract,
-    functionName: 'owner'
+    functionName: 'OPERATOR_ROLE'
+  })
+
+  const { data: isOperator } = useContractRead({
+    ...otcContract,
+    functionName: 'hasRole',
+    args: [operatorRoleBytes, address]
   })
 
   const { data: domainContractAddress } = useContractRead({
@@ -38,7 +44,7 @@ const App = (): React.JSX.Element => {
       return
     }
 
-    console.log(domain)
+    // console.log(domain)
 
     setError(undefined)
     setOfferAddress(undefined)
@@ -91,7 +97,7 @@ const App = (): React.JSX.Element => {
     [refetch]
   )
 
-  if (isConnected && ownerAddress === address) {
+  if (isConnected && isOperator) {
     return <Admin />
   }
 
