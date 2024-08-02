@@ -31,10 +31,11 @@ describe('Offer', () => {
     })
 
     it('fail: already called', async () => {
-      const { otc, offer } = await loadFixture(createOfferFixture)
+      const { otc, offer, domain } = await loadFixture(createOfferFixture)
       await expect(
         offer.initialize(
           await otc.getAddress(),
+          domain,
           ethers.ZeroAddress,
           ethers.ZeroAddress,
           ethers.ZeroAddress,

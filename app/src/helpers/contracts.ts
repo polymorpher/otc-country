@@ -1,8 +1,12 @@
 import { type Abi, type Address } from 'abitype'
+// eslint-disable-next-line import/no-extraneous-dependencies
 import otcAbi from '~/../../contract/artifacts/contracts/OTC.sol/OTC.json' assert {type: 'json'}
 // import ierc20Abi from '~/../../contract/artifacts/@openzeppelin/contracts/token/ERC20/IERC20.sol/IERC20.json' assert {type: 'json'}
+// eslint-disable-next-line import/no-extraneous-dependencies
 import offerAbi from '~/../../contract/artifacts/contracts/Offer.sol/Offer.json' assert {type: 'json'}
+// eslint-disable-next-line import/no-extraneous-dependencies
 import domainContractAbi from '~/../../contract/artifacts/contracts/mocks/DomainContract.sol/DomainContract.json' assert {type: 'json'}
+// eslint-disable-next-line import/no-extraneous-dependencies
 import erc20Abi from '~/../../contract/artifacts/contracts/mocks/ERC20.sol/ERC20Mock.json' assert {type: 'json'}
 import * as CONFIG from './config'
 
@@ -10,6 +14,7 @@ export interface ContractType {
   address: `0x${string}`
   abi: Abi
 }
+
 export const otcContract: ContractType = {
   address: CONFIG.otcAddress,
   abi: otcAbi.abi as Abi

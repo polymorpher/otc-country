@@ -1,11 +1,17 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { extendTheme, ChakraProvider, Container, VStack } from '@chakra-ui/react'
+import { extendTheme, ChakraProvider, Container, VStack, Stack } from '@chakra-ui/react'
 import { WagmiConfig, createConfig, configureChains } from 'wagmi'
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
+import {
+  createBrowserRouter,
+  RouterProvider
+} from 'react-router-dom'
 import App from '~/app'
 import chain from '~/helpers/chain'
 import PendingTransactionsProvider from '~/providers/PendingTransactionsProvider'
+import EventHistory from './pages/EventHistory'
+import Offer from './pages/Offer'
 import ChainDetector from './components/ChainDetector'
 import MetamskConnector from './components/MetamaskConnector'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
@@ -51,21 +57,39 @@ const theme = extendTheme({
 
 export default theme
 
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: (
+      <Stack alignItems="flex-start" spacing="24" w="100%" direction={['column', 'column', 'row']}>
+        <VStack w="100%">
+          <MetamskConnector />
+          <ChainDetector />
+          <App />
+        </VStack>
+        <EventHistory minW={['full', 'full', '400px']} width={['full', 'full', 'auto']} />
+      </Stack>
+    )
+  },
+  {
+    path: '/offer/:address',
+    element: (
+      <Offer />
+    )
+  }
+])
+
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <React.StrictMode>
-    <ChakraProvider theme={theme}>
-      <Container my="10">
-        <WagmiConfig config={config}>
-          <PendingTransactionsProvider>
-            <VStack>
-              <Intro/>
-              <MetamskConnector />
-              <ChainDetector />
-              <App />
-            </VStack>
-          </PendingTransactionsProvider>
-        </WagmiConfig>
-      </Container>
-    </ChakraProvider>
-  </React.StrictMode>
+  <ChakraProvider theme={theme}>
+    <Container my="10" maxW="container.xl">
+      <WagmiConfig config={config}>
+        <PendingTransactionsProvider>
+          <VStack>
+            <Intro/>
+            <RouterProvider router={router} />
+          </VStack>
+        </PendingTransactionsProvider>
+      </WagmiConfig>
+    </Container>
+  </ChakraProvider>
 )

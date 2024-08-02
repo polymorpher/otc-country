@@ -61,6 +61,7 @@ const createOfferFixture = async () => {
 
   return {
     ...data,
+    domain,
     acceptAmount,
     creatorDepositAmount,
     commissionRate,

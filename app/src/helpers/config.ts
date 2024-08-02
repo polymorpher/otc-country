@@ -1,7 +1,7 @@
 export const otcAddress = import.meta.env.VITE_OTC_ADDRESS
 export const RPC: string = import.meta.env.VITE_RPC
 export const WS: string = import.meta.env.VITE_WS
-export const DEBUG_TEST_TOKEN: string = import.meta.env.VITE_DEBUG_TEST_TOKEN
+export const SERVER: string = import.meta.env.VITE_SERVER
 
 export const prod = import.meta.env.PROD
 
