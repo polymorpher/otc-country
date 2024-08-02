@@ -77,9 +77,13 @@ app.get('/', async (request: Request, response: Response) => {
     LIMIT $
   `.replace(/\$/g, () => `$${cnt++}`)
 
-  const res = await pool.query(query, args)
-
-  return response.status(200).header('content-type', 'application/json').send(res.rows)
+  try {
+    const res = await pool.query(query, args)
+    return response.status(200).header('content-type', 'application/json').send(res.rows)
+  } catch (ex) {
+    console.error(ex)
+    return response.status(500).send('{"error":"Internal Server Error"}')
+  }
 })
 
 // catch 404 and forward to error handler
