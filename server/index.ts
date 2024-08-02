@@ -9,6 +9,7 @@ import https from 'https'
 import http from 'http'
 import compression from 'compression'
 import type { AddressInfo } from 'net'
+import logger from 'morgan'
 
 // configures dotenv to work in your application
 dotenv.config()
@@ -32,6 +33,8 @@ const httpsServer = https.createServer(httpsOptions, app)
 app.set('trust proxy', true)
 app.use(cors())
 app.use(compression())
+
+app.use(logger('dev'))
 
 app.options('*', async (_req, res) => {
   res.end()
