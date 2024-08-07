@@ -2,7 +2,7 @@ export interface Asset {
   value: `0x${string}`
   label: string
   rate: number | string
-  icon?: string
+  icon: string
 }
 
 export const getAssetByAddress = (address: string) => {
@@ -67,7 +67,9 @@ export const DEPEGGED: Asset[] = [
   {
     value: '0xF720b7910C6b2FF5bd167171aDa211E226740bfe',
     label: 'Depegged 1WETH',
+    icon: 'https://cryptologos.cc/logos/ethereum-eth-logo.svg',
     rate: 1100
+
   },
   {
     value: '0xb1f6E61E1e113625593a22fa6aa94F8052bc39E0',

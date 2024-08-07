@@ -78,9 +78,11 @@ const Event: React.FC<EventProps> = ({ event }) => {
       _hover={{ textDecor: 'none', bgColor: 'gray.100' }}
     >
       <Box textAlign="right">
-        {event.event_name === 'OfferAccepted' ? 'Offer Accepted' : 'Offer Created'}
+        Status
       </Box>
-      <Box />
+      <Box>
+        {event.event_name === 'OfferAccepted' ? 'Accepted' : 'Created'}
+      </Box>
       <Box textAlign="right">
         Source Asset
       </Box>
@@ -140,7 +142,7 @@ const Event: React.FC<EventProps> = ({ event }) => {
         Domain Name
       </Box>
       <Box>
-        {String(domainName)}
+        {domainName ? String(domainName) : 'N/A'}
       </Box>
       <Box textAlign="right">
         Time

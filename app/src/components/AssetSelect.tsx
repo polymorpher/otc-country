@@ -1,6 +1,6 @@
 import React from 'react'
 import { HStack, Image, Tooltip } from '@chakra-ui/react'
-import Select, { components, type OptionProps, type SingleValueProps } from 'react-select'
+import Select, { components, type PropsValue, type OptionProps, type SingleValueProps } from 'react-select'
 import { abbreviateAddress } from '~/helpers/address'
 import { type Asset } from '~/helpers/assets'
 
@@ -54,9 +54,11 @@ interface AssetSelectProps {
 
 const AssetSelect: React.FC<AssetSelectProps> = ({ value, onChange, list }) => (
   <Select
-    value={list.find(item => item.value === value) ?? list[0]}
+    value={(list.find(item => item.value === value) ?? list[0]) as PropsValue<Item>}
     options={list}
-    onChange={value => { onChange(value.value) }}
+    onChange={(selected: any) => {
+      onChange(selected?.value)
+    }}
     components={{
       Option,
       SingleValue
