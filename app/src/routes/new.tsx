@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { VStack } from '@chakra-ui/react'
+import { SimpleGrid, VStack } from '@chakra-ui/react'
 import { useAccount, useContractRead } from 'wagmi'
 import Admin from '~/pages/Admin'
 import DomainNameForm from '~/pages/DomainNameForm'
@@ -23,9 +23,17 @@ const User = () => {
 
   return (
     <>
-      {events.map((event, key) => (
-        <Event event={event} key={key} />
-      ))}
+      <SimpleGrid
+        columns={[1, 1, 1, 3]}
+        rowGap={4}
+        columnGap={4}
+        fontSize="xs"
+        width={['100%', '100%', '100%', '150%', '200%']}
+      >
+        {events.map((event, key) => (
+          <Event event={event} key={key} />
+        ))}
+      </SimpleGrid>
       <DomainNameForm />
     </>
   )
