@@ -29,17 +29,32 @@ interface EventProps {
 const Event: React.FC<EventProps> = ({ event }) => {
   const { data: srcDecimals } = useContractRead({
     ...erc20Contract(event.src_asset as Address),
-    functionName: 'decimals'
+    functionName: 'decimals',
+    onError: (err) => {
+      // TODO
+      // setError({ details: 'Cannot find operators' })
+      console.error('[Event][src][decimals]', err)
+    }
   })
 
   const { data: destDecimals } = useContractRead({
     ...erc20Contract(event.dest_asset as Address),
-    functionName: 'decimals'
+    functionName: 'decimals',
+    onError: (err) => {
+      // TODO
+      // setError({ details: 'Cannot find operators' })
+      console.error('[Event][dest][decimals]', err)
+    }
   })
 
   const { data: domainName } = useContractRead({
     ...offerContract(event.offer_address as Address),
-    functionName: 'domainName'
+    functionName: 'domainName',
+    onError: (err) => {
+      // TODO
+      // setError({ details: 'Cannot find operators' })
+      console.error('[Event][domainName]', err)
+    }
   })
 
   const srcAsset = getAssetByAddress(event.src_asset)
