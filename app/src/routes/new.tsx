@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { SimpleGrid, VStack } from '@chakra-ui/react'
 import { useAccount, useContractRead } from 'wagmi'
 import Admin from '~/pages/Admin'
-import DomainNameForm from '~/pages/DomainNameForm'
+import NewOfferWithDomainName from '~/pages/NewOfferWithDomainName'
 import MetamskConnector from '~/components/MetamaskConnector'
 import ChainDetector from '~/components/ChainDetector'
 import type { EventType } from '~/components/Event'
@@ -19,6 +19,10 @@ const User = () => {
       .then(res => {
         setEvents(res)
       })
+      .catch(ex => {
+        // TODO
+        console.error(ex)
+      })
   }, [])
 
   return (
@@ -34,7 +38,7 @@ const User = () => {
           <Event event={event} key={key} />
         ))}
       </SimpleGrid>
-      <DomainNameForm />
+      <NewOfferWithDomainName />
     </>
   )
 }
@@ -44,13 +48,23 @@ const New = () => {
 
   const { data: operatorRoleBytes } = useContractRead({
     ...otcContract,
-    functionName: 'OPERATOR_ROLE'
+    functionName: 'OPERATOR_ROLE',
+    onError: (err) => {
+      // TODO
+      // setError({ details: 'Cannot find operators' })
+      console.error(err)
+    }
   })
 
   const { data: isOperator } = useContractRead({
     ...otcContract,
     functionName: 'hasRole',
-    args: [operatorRoleBytes, address]
+    args: [operatorRoleBytes, address],
+    onError: (err) => {
+      // TODO
+      // setError({ details: 'Cannot determine if user is operator' })
+      console.error(err)
+    }
   })
 
   return (

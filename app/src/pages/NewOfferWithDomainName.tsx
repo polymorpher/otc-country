@@ -11,7 +11,7 @@ import Offer from '~/pages/Offer'
 import { newName } from '~/helpers/names'
 import debounce from 'lodash.debounce'
 
-const DomainNameForm = (): React.JSX.Element => {
+const NewOfferWithDomainName = (): React.JSX.Element => {
   const { address } = useAccount()
 
   const [domain, setDomain] = useState<string>(newName())
@@ -24,14 +24,21 @@ const DomainNameForm = (): React.JSX.Element => {
 
   const { data: domainContractAddress } = useContractRead({
     ...otcContract,
-    functionName: 'domainContract'
+    functionName: 'domainContract',
+    onError: (err) => {
+      // TODO
+      setError({ details: 'Cannot find .country contract on-chain' })
+      console.error(err)
+    }
   })
 
   const onDomainChange = useCallback(async (domain: string) => {
     if (!domain) {
       return
     }
-
+    if (!domainContractAddress) {
+      return
+    }
     // console.log(domain)
 
     setError(undefined)
@@ -56,7 +63,15 @@ const DomainNameForm = (): React.JSX.Element => {
         functionName: 'ownerOf',
         args: [domain]
       })
-    ])
+    ]).catch(ex => {
+      console.error(ex)
+      return []
+    })
+    if (!res1 && !res2 && !res3) {
+      setError({ details: 'Cannot read domain data from DNS or blockchain' })
+      setIsFetching(false)
+      return
+    }
 
     if ((!res1 || !res2) && res3 !== address) {
       setError({ details: 'The domain is not available. Please choose another domain name' })
@@ -124,4 +139,4 @@ const DomainNameForm = (): React.JSX.Element => {
   )
 }
 
-export default DomainNameForm
+export default NewOfferWithDomainName
