@@ -1,4 +1,4 @@
-CREATE TABLE "public"."logs" (
+CREATE TABLE logs (
   "id" SERIAL PRIMARY KEY,
   "event_name" TEXT NOT NULL,
   "src_asset" TEXT NOT NULL,
