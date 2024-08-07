@@ -3,7 +3,6 @@ import { Alert, AlertIcon, Box, Button, Spinner, Text, VStack } from '@chakra-ui
 import { type Address } from 'abitype'
 import { formatUnits } from 'viem'
 import { useAccount, useContractRead } from 'wagmi'
-import { useParams } from 'react-router-dom'
 import AddressField from '~/components/AddressField'
 import AmountPopover from '~/components/AmountPopover'
 import ClaimPayment from '~/components/ClaimPayment'
@@ -23,7 +22,7 @@ interface OfferProps {
   address: Address
 }
 
-export const Offer: React.FC<OfferProps> = ({ address }) => {
+const Offer: React.FC<OfferProps> = ({ address }) => {
   const { address: walletAddr } = useAccount()
 
   const {
@@ -354,9 +353,4 @@ export const Offer: React.FC<OfferProps> = ({ address }) => {
   )
 }
 
-const OfferPage: React.FC = () => {
-  const { address } = useParams()
-  return <Offer address={address} />
-}
-
-export default OfferPage
+export default Offer

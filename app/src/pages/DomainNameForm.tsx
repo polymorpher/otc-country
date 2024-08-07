@@ -6,14 +6,13 @@ import { zeroAddress } from 'viem'
 import { useAccount, useContractRead } from 'wagmi'
 import DomainInput from '~/components/DomainInput'
 import { domainContract, otcContract } from '~/helpers/contracts'
-import Admin from '~/pages/Admin'
 import NewOffer from '~/pages/NewOffer'
-import { Offer } from '~/pages/Offer'
+import Offer from '~/pages/Offer'
 import { newName } from '~/helpers/names'
 import debounce from 'lodash.debounce'
 
-const App = (): React.JSX.Element => {
-  const { address, isConnected } = useAccount()
+const DomainNameForm = (): React.JSX.Element => {
+  const { address } = useAccount()
 
   const [domain, setDomain] = useState<string>(newName())
 
@@ -22,17 +21,6 @@ const App = (): React.JSX.Element => {
   const [offerAddress, setOfferAddress] = useState<Address>()
 
   const [error, setError] = useState<any>()
-
-  const { data: operatorRoleBytes } = useContractRead({
-    ...otcContract,
-    functionName: 'OPERATOR_ROLE'
-  })
-
-  const { data: isOperator } = useContractRead({
-    ...otcContract,
-    functionName: 'hasRole',
-    args: [operatorRoleBytes, address]
-  })
 
   const { data: domainContractAddress } = useContractRead({
     ...otcContract,
@@ -50,7 +38,7 @@ const App = (): React.JSX.Element => {
     setOfferAddress(undefined)
     setIsFetching(true)
 
-    const [res1, res2] = await Promise.all([
+    const [res1, res2, res3] = await Promise.all([
       readContract({
         ...domainContract(domainContractAddress as Address),
         functionName: 'available',
@@ -61,10 +49,16 @@ const App = (): React.JSX.Element => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sld: domain })
-      }).then(async (res) => await res.json()).then(res => res.isAvailable)
+      }).then(async (res) => await res.json()).then(res => res.isAvailable),
+
+      readContract({
+        ...domainContract(domainContractAddress as Address),
+        functionName: 'ownerOf',
+        args: [domain]
+      })
     ])
 
-    if (!res1 || !res2) {
+    if ((!res1 || !res2) && res3 !== address) {
       setError({ details: 'The domain is not available. Please choose another domain name' })
       setIsFetching(false)
       return
@@ -78,7 +72,7 @@ const App = (): React.JSX.Element => {
       .then((res) => { setOfferAddress(res as Address) })
       .catch(setError)
       .finally(() => { setIsFetching(false) })
-  }, [domainContractAddress])
+  }, [address, domainContractAddress])
 
   const refetch = useMemo(
     () => debounce(onDomainChange, 300),
@@ -96,10 +90,6 @@ const App = (): React.JSX.Element => {
     },
     [refetch]
   )
-
-  if (isConnected && isOperator) {
-    return <Admin />
-  }
 
   return (
     <VStack width="full">
@@ -121,7 +111,7 @@ const App = (): React.JSX.Element => {
       </VStack>
       }
       {!isFetching && offerAddress === zeroAddress &&
-      <NewOffer domain={domain} onCreate={() => { refetch(domain) }} />
+        <NewOffer domain={domain} onCreate={() => { refetch(domain) }} />
       }
 
       {error && (
@@ -134,4 +124,4 @@ const App = (): React.JSX.Element => {
   )
 }
 
-export default App
+export default DomainNameForm

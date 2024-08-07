@@ -41,7 +41,7 @@ const EventHistory: React.FC<BoxProps> = (props) => {
   }, [fetchData])
 
   return (
-    <VStack w="3xl" {...props}>
+    <VStack w="100%" {...props}>
       <Text fontSize={20}>Offer History</Text>
       <FormControl>
         <AssetSelect
