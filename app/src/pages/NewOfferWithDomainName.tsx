@@ -1,16 +1,16 @@
 import React, { useState, useCallback, useMemo } from 'react'
 import { Alert, AlertIcon, Text, VStack } from '@chakra-ui/react'
+import debounce from 'lodash.debounce'
 import { readContract } from '@wagmi/core'
 import { type Address } from 'abitype'
 import { zeroAddress } from 'viem'
 import { useAccount, useContractRead } from 'wagmi'
 import DomainInput from '~/components/DomainInput'
 import { idcContract, otcContract } from '~/helpers/contracts'
+import { newName } from '~/helpers/names'
 import NewOffer from '~/pages/NewOffer'
 import Offer from '~/pages/Offer'
-import { newName } from '~/helpers/names'
-import debounce from 'lodash.debounce'
-import { useShowError } from '~/providers/ErrorProvider'
+import useShowError from '~/hooks/useShowError'
 
 const NewOfferWithDomainName = (): React.JSX.Element => {
   const { isConnected, address } = useAccount()
@@ -125,7 +125,7 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
           There is already an offer at this domain
         </Alert>
 
-        <Offer address={offerAddress } />
+        <Offer address={offerAddress} />
       </VStack>
       }
       {!isFetching && offerAddress === zeroAddress && !isConnected && (

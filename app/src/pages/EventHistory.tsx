@@ -2,11 +2,11 @@ import React, { useCallback, useEffect, useState, useRef } from 'react'
 import { FormControl, Text, VStack } from '@chakra-ui/react'
 import type { BoxProps } from '@chakra-ui/react'
 import AssetSelect from '~/components/AssetSelect'
-import { type Asset, ASSETS, DEPEGGED } from '~/helpers/assets'
-import * as CONFIG from '~/helpers/config'
 import Event from '~/components/Event'
 import type { EventType } from '~/components/Event'
-import { useShowError } from '~/providers/ErrorProvider'
+import { type Asset, ASSETS, DEPEGGED } from '~/helpers/assets'
+import * as CONFIG from '~/helpers/config'
+import useShowError from '~/hooks/useShowError'
 
 const PAGE_SIZE = 10
 

@@ -91,14 +91,15 @@ const listen = async (): Promise<void> => {
           try {
             await pool.query(`
               INSERT INTO
-                logs(event_name, time, src_asset, dest_asset, offer_address, domain_owner, close_amount, total_deposits, src_price, dest_price)
-              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                logs(event_name, time, src_asset, dest_asset, offer_address, domain_name, domain_owner, close_amount, total_deposits, src_price, dest_price)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
             `, [
               'OfferCreated',
               new Date(time).toUTCString(),
               String(log.args.srcAsset).toLowerCase(),
               String(log.args.destAsset).toLowerCase(),
               String(log.args.offerAddress).toLowerCase(),
+              String(log.args.domainName).toLowerCase(),
               String(log.args.domainOwner).toLowerCase(),
               log.args.closeAmount,
               log.args.depositAmount,
@@ -112,8 +113,8 @@ const listen = async (): Promise<void> => {
       }
 
       for (const log of acceptedLogs) {
-        const [srcAsset, destAsset, domainOwner, closeAmount, totalDeposits] = await Promise.all(
-          ['srcAsset', 'destAsset', 'domainOwner', 'acceptAmount', 'total_deposits']
+        const [srcAsset, destAsset, domainOwner, closeAmount, totalDeposits, domainName] = await Promise.all(
+          ['srcAsset', 'destAsset', 'domainOwner', 'acceptAmount', 'totalDeposits', 'domainName']
             .map(async (func) => await publicClient.readContract({
               address: log.address,
               abi: OFFER_ABI.abi,
@@ -130,14 +131,15 @@ const listen = async (): Promise<void> => {
         try {
           await pool.query(`
             INSERT INTO
-              logs(event_name, time, src_asset, dest_asset, offer_address, domain_owner, close_amount, total_deposits, src_price, dest_price)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+              logs(event_name, time, src_asset, dest_asset, offer_address, domain_name, domain_owner, close_amount, total_deposits, src_price, dest_price)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
           `, [
             'OfferAccepted',
             new Date(time).toUTCString(),
             String(srcAsset).toLowerCase(),
             String(destAsset).toLowerCase(),
             String(log.address).toLowerCase(),
+            domainName,
             String(domainOwner).toLowerCase(),
             closeAmount,
             totalDeposits,

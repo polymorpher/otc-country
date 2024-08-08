@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { Box, SimpleGrid } from '@chakra-ui/react'
-import type { Address } from 'wagmi'
-import { useContractRead } from 'wagmi'
+import { type Address, useContractRead } from 'wagmi'
+import { formatUnits } from 'viem'
 import { getPrice, getAssetByAddress } from '~/helpers/assets'
 import AddressField from '~/components/AddressField'
 import { fmrHr, fmtNum, fmtTime } from '~/helpers/format'
 import { erc20Contract, offerContract } from '~/helpers/contracts'
-import { formatUnits } from 'viem'
-import { useShowError } from '~/providers/ErrorProvider'
+import useShowError from '~/hooks/useShowError'
 
 export interface EventType {
   event_name: 'OfferCreated' | 'OfferAccepted'
@@ -25,7 +24,7 @@ export interface EventType {
 
 interface EventProps {
   event: EventType
-  simple: boolean
+  simple?: boolean
 }
 
 const Event: React.FC<EventProps> = ({ event, simple }) => {
@@ -88,7 +87,7 @@ const Event: React.FC<EventProps> = ({ event, simple }) => {
       border="1px"
       borderColor="gray.200"
       p="2"
-      onClick={() => { window.open(`/offer/${event.offer_address}`) }}
+      onClick={() => { window.open(`/offer/${event.domain_name}`) }}
       cursor="pointer"
       _hover={{ textDecor: 'none', bgColor: 'gray.100' }}
     >

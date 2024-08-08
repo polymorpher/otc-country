@@ -11,7 +11,6 @@ import LandingPage from '~/routes/index'
 import NewOffer from '~/routes/new'
 import Offer from './routes/offer'
 import PendingTransactionsProvider from '~/providers/PendingTransactionsProvider'
-import ErrorProvider from './providers/ErrorProvider'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 import chain from '~/helpers/chain'
 import { RPC, WS } from '~/helpers/config'
@@ -66,7 +65,7 @@ const router = createBrowserRouter([
     element: <NewOffer />
   },
   {
-    path: '/offer/:address',
+    path: '/offer/:domain',
     element: <Offer />
   }
 ])
@@ -76,10 +75,8 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <Container my="10" maxW="container.sm">
       <WagmiConfig config={config}>
         <PendingTransactionsProvider>
-          <ErrorProvider>
-            <Intro/>
-            <RouterProvider router={router} />
-          </ErrorProvider>
+          <Intro/>
+          <RouterProvider router={router} />
         </PendingTransactionsProvider>
       </WagmiConfig>
     </Container>
