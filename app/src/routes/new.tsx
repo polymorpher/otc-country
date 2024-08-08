@@ -37,7 +37,7 @@ const User = () => {
         width={['100%', '100%', '100%', '150%', '200%']}
       >
         {events.map((event, key) => (
-          <Event event={event} key={key} />
+          <Event event={event} key={key} simple />
         ))}
       </SimpleGrid>
       <NewOfferWithDomainName />

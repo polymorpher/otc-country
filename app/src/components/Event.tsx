@@ -25,16 +25,17 @@ export interface EventType {
 
 interface EventProps {
   event: EventType
+  simple: boolean
 }
 
-const Event: React.FC<EventProps> = ({ event }) => {
+const Event: React.FC<EventProps> = ({ event, simple }) => {
   const showError = useShowError()
 
   const { data: srcDecimals } = useContractRead({
     ...erc20Contract(event.src_asset as Address),
     functionName: 'decimals',
     onError: (err) => {
-      showError({ title: 'Cannot get source asset decimals', message: err })
+      !simple && showError({ title: 'Cannot get source asset decimals', message: err })
       console.error('[Event][src][decimals]', err)
     }
   })
@@ -43,7 +44,7 @@ const Event: React.FC<EventProps> = ({ event }) => {
     ...erc20Contract(event.dest_asset as Address),
     functionName: 'decimals',
     onError: (err) => {
-      showError({ title: 'Cannot get dest asset decimals', message: err })
+      !simple && showError({ title: 'Cannot get dest asset decimals', message: err })
       console.error('[Event][dest][decimals]', err)
     }
   })
@@ -52,7 +53,7 @@ const Event: React.FC<EventProps> = ({ event }) => {
     ...offerContract(event.offer_address as Address),
     functionName: 'domainName',
     onError: (err) => {
-      showError({ title: 'Cannot get domain name', message: err })
+      !simple && showError({ title: 'Cannot get domain name', message: err })
       console.error('[Event][domainName]', err)
     }
   })
