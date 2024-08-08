@@ -5,7 +5,7 @@ import { type Address } from 'abitype'
 import { zeroAddress } from 'viem'
 import { useAccount, useContractRead } from 'wagmi'
 import DomainInput from '~/components/DomainInput'
-import { domainContract, otcContract } from '~/helpers/contracts'
+import { idcContract, otcContract } from '~/helpers/contracts'
 import NewOffer from '~/pages/NewOffer'
 import Offer from '~/pages/Offer'
 import { newName } from '~/helpers/names'
@@ -47,7 +47,7 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
 
     const [res1, res2, res3] = await Promise.all([
       readContract({
-        ...domainContract(domainContractAddress as Address),
+        ...idcContract(domainContractAddress as Address),
         functionName: 'available',
         args: [domain]
       }),
@@ -59,7 +59,7 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
       }).then(async (res) => await res.json()).then(res => res.isAvailable),
 
       readContract({
-        ...domainContract(domainContractAddress as Address),
+        ...idcContract(domainContractAddress as Address),
         functionName: 'ownerOf',
         args: [domain]
       })

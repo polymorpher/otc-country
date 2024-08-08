@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { type Address } from 'abitype'
 import { keccak256, toHex } from 'viem'
 import { useAccount, useBalance, useContractRead } from 'wagmi'
-import { domainContract, erc20Contract, otcContract } from '~/helpers/contracts'
+import { idcContract, erc20Contract, otcContract } from '~/helpers/contracts'
 import useContractWriteComplete, { type SettledHandler, type SuccessHandler } from './useContractWriteComplete'
 
 interface Config {
@@ -49,13 +49,13 @@ const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettle
   })
 
   const { data: domainPrice } = useContractRead({
-    ...domainContract(domainContractAddress as Address),
+    ...idcContract(domainContractAddress as Address),
     functionName: 'getPrice',
     args: [domain]
   })
 
   const { data: domainOwner } = useContractRead({
-    ...domainContract(domainContractAddress as Address),
+    ...idcContract(domainContractAddress as Address),
     functionName: 'ownerOf',
     args: [domain]
   })
