@@ -5,7 +5,7 @@ import otcAbi from '~/../../contract/artifacts/contracts/OTC.sol/OTC.json' asser
 // eslint-disable-next-line import/no-extraneous-dependencies
 import offerAbi from '~/../../contract/artifacts/contracts/Offer.sol/Offer.json' assert {type: 'json'}
 // eslint-disable-next-line import/no-extraneous-dependencies
-import domainContractAbi from '~/../../contract/artifacts/contracts/mocks/DomainContract.sol/DomainContract.json' assert {type: 'json'}
+import idcAbi from '~/../../contract/artifacts/contracts/externals/IDC.sol/IDC.json' assert {type: 'json'}
 // eslint-disable-next-line import/no-extraneous-dependencies
 import erc20Abi from '~/../../contract/artifacts/contracts/mocks/ERC20.sol/ERC20Mock.json' assert {type: 'json'}
 import * as CONFIG from './config'
@@ -25,9 +25,9 @@ export const offerContract = (offerAddress: Address): ContractType => ({
   abi: offerAbi.abi as Abi
 })
 
-export const domainContract = (domainContractAddress: Address): ContractType => ({
+export const idcContract = (domainContractAddress: Address): ContractType => ({
   address: domainContractAddress,
-  abi: domainContractAbi.abi as Abi
+  abi: idcAbi.abi as Abi
 })
 
 export const erc20Contract = (erc20Address: Address): ContractType => ({

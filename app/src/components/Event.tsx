@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Box, Link, SimpleGrid } from '@chakra-ui/react'
+import { Box, SimpleGrid } from '@chakra-ui/react'
 import type { Address } from 'wagmi'
 import { useContractRead } from 'wagmi'
 import { getPrice, getAssetByAddress } from '~/helpers/assets'
@@ -7,6 +7,7 @@ import AddressField from '~/components/AddressField'
 import { fmrHr, fmtNum, fmtTime } from '~/helpers/format'
 import { erc20Contract, offerContract } from '~/helpers/contracts'
 import { formatUnits } from 'viem'
+import { useShowError } from '~/providers/ErrorProvider'
 
 export interface EventType {
   event_name: 'OfferCreated' | 'OfferAccepted'
@@ -24,22 +25,37 @@ export interface EventType {
 
 interface EventProps {
   event: EventType
+  simple: boolean
 }
 
-const Event: React.FC<EventProps> = ({ event }) => {
+const Event: React.FC<EventProps> = ({ event, simple }) => {
+  const showError = useShowError()
+
   const { data: srcDecimals } = useContractRead({
     ...erc20Contract(event.src_asset as Address),
-    functionName: 'decimals'
+    functionName: 'decimals',
+    onError: (err) => {
+      !simple && showError({ title: 'Cannot get source asset decimals', message: err })
+      console.error('[Event][src][decimals]', err)
+    }
   })
 
   const { data: destDecimals } = useContractRead({
     ...erc20Contract(event.dest_asset as Address),
-    functionName: 'decimals'
+    functionName: 'decimals',
+    onError: (err) => {
+      !simple && showError({ title: 'Cannot get dest asset decimals', message: err })
+      console.error('[Event][dest][decimals]', err)
+    }
   })
 
   const { data: domainName } = useContractRead({
     ...offerContract(event.offer_address as Address),
-    functionName: 'domainName'
+    functionName: 'domainName',
+    onError: (err) => {
+      !simple && showError({ title: 'Cannot get domain name', message: err })
+      console.error('[Event][domainName]', err)
+    }
   })
 
   const srcAsset = getAssetByAddress(event.src_asset)
@@ -72,15 +88,16 @@ const Event: React.FC<EventProps> = ({ event }) => {
       border="1px"
       borderColor="gray.200"
       p="2"
-      as={Link}
-      href={`/offer/${event.offer_address}`}
-      target="_blank"
+      onClick={() => { window.open(`/offer/${event.offer_address}`) }}
+      cursor="pointer"
       _hover={{ textDecor: 'none', bgColor: 'gray.100' }}
     >
       <Box textAlign="right">
-        {event.event_name === 'OfferAccepted' ? 'Offer Accepted' : 'Offer Created'}
+        Status
       </Box>
-      <Box />
+      <Box>
+        {event.event_name === 'OfferAccepted' ? 'Accepted' : 'Created'}
+      </Box>
       <Box textAlign="right">
         Source Asset
       </Box>
@@ -140,7 +157,7 @@ const Event: React.FC<EventProps> = ({ event }) => {
         Domain Name
       </Box>
       <Box>
-        {String(domainName)}
+        {domainName ? String(domainName) : 'N/A'}
       </Box>
       <Box textAlign="right">
         Time

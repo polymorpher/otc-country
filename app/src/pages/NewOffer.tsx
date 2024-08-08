@@ -22,7 +22,7 @@ import {
 } from '@chakra-ui/react'
 import { readContract } from '@wagmi/core'
 import { type Address } from 'abitype'
-import { formatEther, formatUnits, isAddress, parseUnits } from 'viem'
+import { formatEther, formatUnits, isAddress, parseUnits, zeroAddress } from 'viem'
 import { useAccount } from 'wagmi'
 import AmountPicker from '~/components/AmountPicker'
 import AssetSelect from '~/components/AssetSelect'
@@ -56,12 +56,21 @@ const defaultValues = {
   lockWithdrawDuration: 6
 }
 
-type FormFields = typeof defaultValues
+interface FormFields {
+  domainOwner: Address
+  srcAsset: Address
+  destAsset: Address
+  depositAmount: string
+  acceptAmount: string
+  commissionRate: number
+  lockWithdrawDuration: number
+
+}
 
 const rules: Record<keyof FormFields, RegisterOptions> = {
   domainOwner: {
     required: 'required',
-    validate: { address: (v: string) => isAddress(v) || 'not address format' }
+    validate: { address: (v: string) => (isAddress(v) && v !== zeroAddress) || 'not address format' }
   },
   srcAsset: {
     required: 'required',
@@ -98,11 +107,12 @@ const rules: Record<keyof FormFields, RegisterOptions> = {
       number: (v: string) => !isNaN(Number(v)) || 'should be number',
       notZero: (v: string) => Number(v) > 0 || 'should be not zero'
     }
-  }
+  },
+  lockWithdrawDuration: { required: true }
 }
 
 const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
-  const { isConnected, address } = useAccount()
+  const { address } = useAccount()
 
   const {
     register,
@@ -115,7 +125,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
   } = useForm({
     defaultValues: {
       ...defaultValues,
-      domainOwner: address
+      domainOwner: address ?? zeroAddress
     }
   })
 
@@ -162,15 +172,6 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
   const commissionRate = Number(watch('commissionRate'))
 
   const exchangeRate = Number(watch('acceptAmount')) * destRate / (depositAmountInBase * srcRate)
-
-  if (!isConnected) {
-    return (
-      <Alert status="info">
-        <AlertIcon />
-        Please connect your wallet to proceed.
-      </Alert>
-    )
-  }
 
   return (
     <VStack>

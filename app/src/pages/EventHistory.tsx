@@ -2,28 +2,34 @@ import React, { useCallback, useEffect, useState, useRef } from 'react'
 import { FormControl, Text, VStack } from '@chakra-ui/react'
 import type { BoxProps } from '@chakra-ui/react'
 import AssetSelect from '~/components/AssetSelect'
-import { ASSETS, DEPEGGED } from '~/helpers/assets'
+import { type Asset, ASSETS, DEPEGGED } from '~/helpers/assets'
 import * as CONFIG from '~/helpers/config'
 import Event from '~/components/Event'
 import type { EventType } from '~/components/Event'
+import { useShowError } from '~/providers/ErrorProvider'
 
 const PAGE_SIZE = 10
 
+const ALL_ASSETS = '0x0'
+
+const ALL_ASSET_OPTION = { value: ALL_ASSETS, label: 'All', rate: 0, icon: '' }
+
 const EventHistory: React.FC<BoxProps> = (props) => {
-  const [asset, setAsset] = useState('all')
+  const [assetAddress, setAssetAddress] = useState(ALL_ASSETS)
   const page = useRef(0)
   const morePage = useRef(true)
   const [events, setEvents] = useState<EventType[]>([])
+  const showError = useShowError()
 
   useEffect(() => {
     setEvents([])
-  }, [asset])
+  }, [assetAddress])
 
   const fetchData = useCallback(() => {
     const query = [`age=${24 * 31}`, `page=${page.current}`]
 
-    if (asset !== 'all') {
-      query.push(`asset=${asset}`)
+    if (assetAddress !== ALL_ASSETS) {
+      query.push(`asset=${assetAddress}`)
     }
 
     fetch(CONFIG.SERVER + '?' + query.join('&'))
@@ -32,7 +38,10 @@ const EventHistory: React.FC<BoxProps> = (props) => {
         setEvents(prev => prev.concat(res))
         morePage.current = res.length <= PAGE_SIZE
       })
-  }, [asset])
+      .catch(ex => {
+        showError({ title: 'Failed to show offer history', message: ex })
+      })
+  }, [assetAddress, showError])
 
   useEffect(() => {
     setEvents([])
@@ -41,13 +50,13 @@ const EventHistory: React.FC<BoxProps> = (props) => {
   }, [fetchData])
 
   return (
-    <VStack w="3xl" {...props}>
+    <VStack w="100%" {...props}>
       <Text fontSize={20}>Offer History</Text>
       <FormControl>
         <AssetSelect
-          value={asset}
-          onChange={setAsset}
-          list={[{ value: 'all', label: 'All' }].concat(DEPEGGED).concat(ASSETS)}
+          value={assetAddress}
+          onChange={setAssetAddress}
+          list={([ALL_ASSET_OPTION] as Asset[]).concat(DEPEGGED).concat(ASSETS)}
         />
       </FormControl>
       {events.map((event, key) => (

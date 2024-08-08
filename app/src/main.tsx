@@ -1,20 +1,19 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { extendTheme, ChakraProvider, Container, VStack, Stack } from '@chakra-ui/react'
+import { extendTheme, ChakraProvider, Container } from '@chakra-ui/react'
 import { WagmiConfig, createConfig, configureChains } from 'wagmi'
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
 import {
   createBrowserRouter,
   RouterProvider
 } from 'react-router-dom'
-import App from '~/app'
-import chain from '~/helpers/chain'
+import LandingPage from '~/routes/index'
+import NewOffer from '~/routes/new'
+import Offer from './routes/offer'
 import PendingTransactionsProvider from '~/providers/PendingTransactionsProvider'
-import EventHistory from './pages/EventHistory'
-import Offer from './pages/Offer'
-import ChainDetector from './components/ChainDetector'
-import MetamskConnector from './components/MetamaskConnector'
+import ErrorProvider from './providers/ErrorProvider'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
+import chain from '~/helpers/chain'
 import { RPC, WS } from '~/helpers/config'
 import Intro from '~/components/Intro'
 
@@ -60,34 +59,27 @@ export default theme
 const router = createBrowserRouter([
   {
     path: '/',
-    element: (
-      <Stack alignItems="flex-start" spacing="24" w="100%" direction={['column', 'column', 'row']}>
-        <VStack w="100%">
-          <MetamskConnector />
-          <ChainDetector />
-          <App />
-        </VStack>
-        <EventHistory minW={['full', 'full', '400px']} width={['full', 'full', 'auto']} />
-      </Stack>
-    )
+    element: <LandingPage />
+  },
+  {
+    path: '/new',
+    element: <NewOffer />
   },
   {
     path: '/offer/:address',
-    element: (
-      <Offer />
-    )
+    element: <Offer />
   }
 ])
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <ChakraProvider theme={theme}>
-    <Container my="10" maxW="container.xl">
+    <Container my="10" maxW="container.sm">
       <WagmiConfig config={config}>
         <PendingTransactionsProvider>
-          <VStack>
+          <ErrorProvider>
             <Intro/>
             <RouterProvider router={router} />
-          </VStack>
+          </ErrorProvider>
         </PendingTransactionsProvider>
       </WagmiConfig>
     </Container>

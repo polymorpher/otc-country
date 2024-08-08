@@ -11,4 +11,6 @@ interface IDC {
     function ownerOf(string calldata name) external view returns (address);
 
     function register(string calldata name, address owner, bytes32 secret) external payable;
+
+    function available(string memory) external view returns (bool);
 }

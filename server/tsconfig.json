@@ -9,9 +9,6 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "outDir": "./dist",
-    "paths": {
-      "*.ts": ["*"]
-    }
   },
   "include": ["./"]
 }

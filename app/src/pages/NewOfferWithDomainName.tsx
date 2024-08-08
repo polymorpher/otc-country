@@ -1,21 +1,19 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import { Alert, AlertIcon, Text, VStack } from '@chakra-ui/react'
 import { readContract } from '@wagmi/core'
 import { type Address } from 'abitype'
 import { zeroAddress } from 'viem'
 import { useAccount, useContractRead } from 'wagmi'
 import DomainInput from '~/components/DomainInput'
-import { domainContract, otcContract } from '~/helpers/contracts'
-import Admin from '~/pages/Admin'
+import { idcContract, otcContract } from '~/helpers/contracts'
 import NewOffer from '~/pages/NewOffer'
-import { Offer } from '~/pages/Offer'
+import Offer from '~/pages/Offer'
 import { newName } from '~/helpers/names'
 import debounce from 'lodash.debounce'
+import { useShowError } from '~/providers/ErrorProvider'
 
-const App = (): React.JSX.Element => {
-  const { address, isConnected } = useAccount()
-
-  const [domain, setDomain] = useState<string>(newName())
+const NewOfferWithDomainName = (): React.JSX.Element => {
+  const { isConnected, address } = useAccount()
 
   const [isFetching, setIsFetching] = useState<boolean>(false)
 
@@ -23,20 +21,15 @@ const App = (): React.JSX.Element => {
 
   const [error, setError] = useState<any>()
 
-  const { data: operatorRoleBytes } = useContractRead({
-    ...otcContract,
-    functionName: 'OPERATOR_ROLE'
-  })
+  const showError = useShowError()
 
-  const { data: isOperator } = useContractRead({
+  const { data: dcAddress } = useContractRead({
     ...otcContract,
-    functionName: 'hasRole',
-    args: [operatorRoleBytes, address]
-  })
-
-  const { data: domainContractAddress } = useContractRead({
-    ...otcContract,
-    functionName: 'domainContract'
+    functionName: 'domainContract',
+    onError: (err) => {
+      showError({ title: 'Cannot find .country contract on-chain', message: err })
+      console.error(err)
+    }
   })
 
   const onDomainChange = useCallback(async (domain: string) => {
@@ -44,15 +37,17 @@ const App = (): React.JSX.Element => {
       return
     }
 
-    // console.log(domain)
+    if (!dcAddress) {
+      return
+    }
 
     setError(undefined)
     setOfferAddress(undefined)
     setIsFetching(true)
 
-    const [res1, res2] = await Promise.all([
+    const [isAvailableOnChain, isAvailableOffChain] = await Promise.all([
       readContract({
-        ...domainContract(domainContractAddress as Address),
+        ...idcContract(dcAddress as Address),
         functionName: 'available',
         args: [domain]
       }),
@@ -62,12 +57,27 @@ const App = (): React.JSX.Element => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sld: domain })
       }).then(async (res) => await res.json()).then(res => res.isAvailable)
-    ])
+    ]).catch(ex => {
+      console.error(ex)
+      return []
+    })
 
-    if (!res1 || !res2) {
-      setError({ details: 'The domain is not available. Please choose another domain name' })
-      setIsFetching(false)
-      return
+    const isAvailable = isAvailableOnChain && isAvailableOffChain
+
+    if (!isAvailable) {
+      const owner = await readContract({
+        ...idcContract(dcAddress as Address),
+        functionName: 'ownerOf',
+        args: [domain]
+      }).catch(ex => {
+        console.log(`Domain ${domain} does not exist on-chain or is expired`)
+        return undefined
+      })
+      if (!owner || owner !== address) {
+        setError({ details: 'The domain is not available. Please choose another domain name' })
+        setIsFetching(false)
+        return
+      }
     }
 
     readContract({
@@ -78,16 +88,18 @@ const App = (): React.JSX.Element => {
       .then((res) => { setOfferAddress(res as Address) })
       .catch(setError)
       .finally(() => { setIsFetching(false) })
-  }, [domainContractAddress])
+  }, [address, dcAddress])
 
   const refetch = useMemo(
     () => debounce(onDomainChange, 300),
     [onDomainChange]
   )
 
-  useEffect(() => {
-    refetch('')
-  }, [refetch])
+  const [domain, setDomain] = useState<string>(() => {
+    const value = newName()
+    onDomainChange(value)
+    return value
+  })
 
   const handleDomainChange = useCallback(
     (value: string) => {
@@ -96,10 +108,6 @@ const App = (): React.JSX.Element => {
     },
     [refetch]
   )
-
-  if (isConnected && isOperator) {
-    return <Admin />
-  }
 
   return (
     <VStack width="full">
@@ -120,8 +128,14 @@ const App = (): React.JSX.Element => {
         <Offer address={offerAddress } />
       </VStack>
       }
-      {!isFetching && offerAddress === zeroAddress &&
-      <NewOffer domain={domain} onCreate={() => { refetch(domain) }} />
+      {!isFetching && offerAddress === zeroAddress && !isConnected && (
+        <Alert status="info">
+          <AlertIcon />
+          Please connect your wallet to proceed.
+        </Alert>
+      )}
+      {!isFetching && offerAddress === zeroAddress && isConnected &&
+        <NewOffer domain={domain} onCreate={() => { refetch(domain) }} />
       }
 
       {error && (
@@ -134,4 +148,4 @@ const App = (): React.JSX.Element => {
   )
 }
 
-export default App
+export default NewOfferWithDomainName
