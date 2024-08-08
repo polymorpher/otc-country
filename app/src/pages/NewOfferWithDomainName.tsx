@@ -23,7 +23,7 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
 
   const showError = useShowError()
 
-  const { data: domainContractAddress } = useContractRead({
+  const { data: dcAddress } = useContractRead({
     ...otcContract,
     functionName: 'domainContract',
     onError: (err) => {
@@ -37,7 +37,7 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
       return
     }
 
-    if (!domainContractAddress) {
+    if (!dcAddress) {
       return
     }
 
@@ -45,9 +45,9 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
     setOfferAddress(undefined)
     setIsFetching(true)
 
-    const [res1, res2, res3] = await Promise.all([
+    const [isAvailableOnChain, isAvailableOffChain] = await Promise.all([
       readContract({
-        ...idcContract(domainContractAddress as Address),
+        ...idcContract(dcAddress as Address),
         functionName: 'available',
         args: [domain]
       }),
@@ -56,28 +56,28 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sld: domain })
-      }).then(async (res) => await res.json()).then(res => res.isAvailable),
-
-      readContract({
-        ...idcContract(domainContractAddress as Address),
-        functionName: 'ownerOf',
-        args: [domain]
-      })
+      }).then(async (res) => await res.json()).then(res => res.isAvailable)
     ]).catch(ex => {
       console.error(ex)
       return []
     })
 
-    if (!res1 && !res2 && !res3) {
-      setError({ details: 'Cannot read domain data from DNS or blockchain' })
-      setIsFetching(false)
-      return
-    }
+    const isAvailable = isAvailableOnChain && isAvailableOffChain
 
-    if ((!res1 || !res2) && res3 !== address) {
-      setError({ details: 'The domain is not available. Please choose another domain name' })
-      setIsFetching(false)
-      return
+    if (!isAvailable) {
+      const owner = await readContract({
+        ...idcContract(dcAddress as Address),
+        functionName: 'ownerOf',
+        args: [domain]
+      }).catch(ex => {
+        console.log(`Domain ${domain} does not exist on-chain or is expired`)
+        return undefined
+      })
+      if (!owner || owner !== address) {
+        setError({ details: 'The domain is not available. Please choose another domain name' })
+        setIsFetching(false)
+        return
+      }
     }
 
     readContract({
@@ -88,7 +88,7 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
       .then((res) => { setOfferAddress(res as Address) })
       .catch(setError)
       .finally(() => { setIsFetching(false) })
-  }, [address, domainContractAddress])
+  }, [address, dcAddress])
 
   const refetch = useMemo(
     () => debounce(onDomainChange, 300),
