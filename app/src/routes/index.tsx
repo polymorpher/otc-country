@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Alert, AlertIcon, Button, Spinner, VStack } from '@chakra-ui/react'
+import { Box, Alert, AlertIcon, Button, Spinner, VStack } from '@chakra-ui/react'
 import { readContract } from '@wagmi/core'
 import { type Address, zeroAddress } from 'viem'
 import { Link } from 'react-router-dom'
@@ -44,7 +44,7 @@ const LandingPage = () => {
     <VStack spacing={8} w="100%">
       <Button as={Link} to="/new">Create your offer</Button>
       <EventHistory />
-      {isFetching && <Spinner />}
+      {isFetching && <Box textAlign="center"><Spinner /></Box>}
       {!isFetching && offerAddress === zeroAddress && (
         <Alert status="error">
           <AlertIcon />

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { readContract } from '@wagmi/core'
 import { type Address, isAddress, zeroAddress } from 'viem'
-import { Alert, AlertIcon, Spinner } from '@chakra-ui/react'
+import { Alert, AlertIcon, Box, Spinner } from '@chakra-ui/react'
 import { otcContract } from '~/helpers/contracts'
 import OfferPage from '~/pages/Offer'
 import useShowError from '~/hooks/useShowError'
@@ -17,7 +17,7 @@ const Offer: React.FC = () => {
   const showError = useShowError()
 
   useEffect(() => {
-    if (!domain || !isAddress(domain)) {
+    if (!domain || isAddress(domain)) {
       return
     }
 
@@ -48,13 +48,13 @@ const Offer: React.FC = () => {
   }
 
   if (isFetching) {
-    return <Spinner />
+    return <Box textAlign="center"><Spinner /></Box>
   }
 
   if (offerAddress === zeroAddress) {
     return (
       <Alert status="warning">
-        <AlertIcon boxSize="24" />
+        <AlertIcon />
         Offer is not created
       </Alert>
     )
