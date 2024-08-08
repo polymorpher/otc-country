@@ -203,6 +203,17 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
     isLoadingPaymentBalanceForDepositor ||
     isLoadingPaymentBalanceForDomainOwner
 
+  if (!isLoading && status === undefined) {
+    return (
+      <Alert status="error">
+        <AlertIcon />
+        Error while fetching offer data
+        <br/>
+        {address}
+      </Alert>
+    )
+  }
+
   return (
     <VStack width="full">
       {!isLoadingStatus && <OfferStatus status={status} />}

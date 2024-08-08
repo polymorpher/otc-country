@@ -10,9 +10,10 @@ import {
 import LandingPage from '~/routes/index'
 import NewOffer from '~/routes/new'
 import Offer from './routes/offer'
-import chain from '~/helpers/chain'
 import PendingTransactionsProvider from '~/providers/PendingTransactionsProvider'
+import ErrorProvider from './providers/ErrorProvider'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
+import chain from '~/helpers/chain'
 import { RPC, WS } from '~/helpers/config'
 import Intro from '~/components/Intro'
 
@@ -75,8 +76,10 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <Container my="10" maxW="container.sm">
       <WagmiConfig config={config}>
         <PendingTransactionsProvider>
-          <Intro/>
-          <RouterProvider router={router} />
+          <ErrorProvider>
+            <Intro/>
+            <RouterProvider router={router} />
+          </ErrorProvider>
         </PendingTransactionsProvider>
       </WagmiConfig>
     </Container>

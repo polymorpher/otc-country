@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import { Alert, AlertIcon, Text, VStack } from '@chakra-ui/react'
 import { readContract } from '@wagmi/core'
 import { type Address } from 'abitype'
@@ -10,11 +10,10 @@ import NewOffer from '~/pages/NewOffer'
 import Offer from '~/pages/Offer'
 import { newName } from '~/helpers/names'
 import debounce from 'lodash.debounce'
+import { useShowError } from '~/providers/ErrorProvider'
 
 const NewOfferWithDomainName = (): React.JSX.Element => {
-  const { address } = useAccount()
-
-  const [domain, setDomain] = useState<string>(newName())
+  const { isConnected, address } = useAccount()
 
   const [isFetching, setIsFetching] = useState<boolean>(false)
 
@@ -22,12 +21,13 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
 
   const [error, setError] = useState<any>()
 
+  const showError = useShowError()
+
   const { data: domainContractAddress } = useContractRead({
     ...otcContract,
     functionName: 'domainContract',
     onError: (err) => {
-      // TODO
-      setError({ details: 'Cannot find .country contract on-chain' })
+      showError({ title: 'Cannot find .country contract on-chain', message: err })
       console.error(err)
     }
   })
@@ -36,10 +36,10 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
     if (!domain) {
       return
     }
+
     if (!domainContractAddress) {
       return
     }
-    // console.log(domain)
 
     setError(undefined)
     setOfferAddress(undefined)
@@ -67,6 +67,7 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
       console.error(ex)
       return []
     })
+
     if (!res1 && !res2 && !res3) {
       setError({ details: 'Cannot read domain data from DNS or blockchain' })
       setIsFetching(false)
@@ -94,9 +95,11 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
     [onDomainChange]
   )
 
-  useEffect(() => {
-    refetch('')
-  }, [refetch])
+  const [domain, setDomain] = useState<string>(() => {
+    const value = newName()
+    onDomainChange(value)
+    return value
+  })
 
   const handleDomainChange = useCallback(
     (value: string) => {
@@ -125,7 +128,13 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
         <Offer address={offerAddress } />
       </VStack>
       }
-      {!isFetching && offerAddress === zeroAddress &&
+      {!isFetching && offerAddress === zeroAddress && !isConnected && (
+        <Alert status="info">
+          <AlertIcon />
+          Please connect your wallet to proceed.
+        </Alert>
+      )}
+      {!isFetching && offerAddress === zeroAddress && isConnected &&
         <NewOffer domain={domain} onCreate={() => { refetch(domain) }} />
       }
 

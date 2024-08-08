@@ -6,6 +6,7 @@ import { type Asset, ASSETS, DEPEGGED } from '~/helpers/assets'
 import * as CONFIG from '~/helpers/config'
 import Event from '~/components/Event'
 import type { EventType } from '~/components/Event'
+import { useShowError } from '~/providers/ErrorProvider'
 
 const PAGE_SIZE = 10
 
@@ -18,6 +19,7 @@ const EventHistory: React.FC<BoxProps> = (props) => {
   const page = useRef(0)
   const morePage = useRef(true)
   const [events, setEvents] = useState<EventType[]>([])
+  const showError = useShowError()
 
   useEffect(() => {
     setEvents([])
@@ -36,7 +38,10 @@ const EventHistory: React.FC<BoxProps> = (props) => {
         setEvents(prev => prev.concat(res))
         morePage.current = res.length <= PAGE_SIZE
       })
-  }, [assetAddress])
+      .catch(ex => {
+        showError({ title: 'Failed to show offer history', message: ex })
+      })
+  }, [assetAddress, showError])
 
   useEffect(() => {
     setEvents([])

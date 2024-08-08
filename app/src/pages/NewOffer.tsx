@@ -102,7 +102,7 @@ const rules: Record<keyof FormFields, RegisterOptions> = {
 }
 
 const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
-  const { isConnected, address } = useAccount()
+  const { address } = useAccount()
 
   const {
     register,
@@ -162,15 +162,6 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
   const commissionRate = Number(watch('commissionRate'))
 
   const exchangeRate = Number(watch('acceptAmount')) * destRate / (depositAmountInBase * srcRate)
-
-  if (!isConnected) {
-    return (
-      <Alert status="info">
-        <AlertIcon />
-        Please connect your wallet to proceed.
-      </Alert>
-    )
-  }
 
   return (
     <VStack>

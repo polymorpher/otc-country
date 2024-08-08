@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import { SimpleGrid, VStack } from '@chakra-ui/react'
 import { useAccount, useContractRead } from 'wagmi'
+import { readContract } from '@wagmi/core'
 import Admin from '~/pages/Admin'
 import NewOfferWithDomainName from '~/pages/NewOfferWithDomainName'
 import MetamskConnector from '~/components/MetamaskConnector'
 import ChainDetector from '~/components/ChainDetector'
 import type { EventType } from '~/components/Event'
+import { useShowError } from '~/providers/ErrorProvider'
 import Event from '~/components/Event'
 import { otcContract } from '~/helpers/contracts'
 import * as CONFIG from '~/helpers/config'
 
 const User = () => {
   const [events, setEvents] = useState<EventType[]>([])
+  const showError = useShowError()
 
   useEffect(() => {
     fetch(`${CONFIG.SERVER}?pageSize=3`)
@@ -20,10 +23,9 @@ const User = () => {
         setEvents(res)
       })
       .catch(ex => {
-        // TODO
-        console.error(ex)
+        showError({ title: 'Failed to show recent offers', message: ex })
       })
-  }, [])
+  }, [showError])
 
   return (
     <>
@@ -46,26 +48,34 @@ const User = () => {
 const New = () => {
   const { address, isConnected } = useAccount()
 
+  const showError = useShowError()
+
+  const [isOperator, setIsOperator] = useState<boolean>()
+
   const { data: operatorRoleBytes } = useContractRead({
     ...otcContract,
     functionName: 'OPERATOR_ROLE',
     onError: (err) => {
-      // TODO
-      // setError({ details: 'Cannot find operators' })
+      showError({ title: 'Cannot find operators', message: err })
       console.error(err)
     }
   })
 
-  const { data: isOperator } = useContractRead({
-    ...otcContract,
-    functionName: 'hasRole',
-    args: [operatorRoleBytes, address],
-    onError: (err) => {
-      // TODO
-      // setError({ details: 'Cannot determine if user is operator' })
-      console.error(err)
+  useEffect(() => {
+    if (!address) {
+      return
     }
-  })
+
+    readContract({
+      ...otcContract,
+      functionName: 'hasRole',
+      args: [operatorRoleBytes, address]
+    }).then((res) => { setIsOperator(Boolean(res)) })
+      .catch((err) => {
+        showError({ title: 'Cannot determine if user is operator', message: err })
+        console.error(err)
+      })
+  }, [address, operatorRoleBytes, showError])
 
   return (
     <VStack w="100%">
