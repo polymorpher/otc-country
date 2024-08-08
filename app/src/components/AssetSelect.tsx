@@ -48,7 +48,7 @@ const Option: React.FC<OptionProps<Item>> = (props) => (
 
 interface AssetSelectProps {
   value: string
-  onChange: (value: string) => void
+  onChange: (value: Address) => void
   list: Asset[]
 }
 
