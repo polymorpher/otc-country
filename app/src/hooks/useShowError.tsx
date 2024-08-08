@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { useToast } from '@chakra-ui/react'
 
 interface ErrorInfo {
@@ -20,14 +21,17 @@ const errorMessage = (error: any) => {
 const useShowError = () => {
   const toast = useToast()
 
-  return (data: ErrorInfo) => {
+  const show = useCallback((data: ErrorInfo) => {
     toast({
       title: data.title,
       description: errorMessage(data.message),
       status: 'error',
+      position: 'top-left',
       duration: 7000
     })
-  }
+  }, [toast])
+
+  return show
 }
 
 export default useShowError
