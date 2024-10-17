@@ -7,13 +7,14 @@ import NewOfferWithDomainName from '~/pages/NewOfferWithDomainName'
 import MetamskConnector from '~/components/MetamaskConnector'
 import ChainDetector from '~/components/ChainDetector'
 import type { EventType } from '~/components/Event'
-import { useShowError } from '~/providers/ErrorProvider'
 import Event from '~/components/Event'
 import { otcContract } from '~/helpers/contracts'
 import * as CONFIG from '~/helpers/config'
+import useShowError from '~/hooks/useShowError'
 
 const User = () => {
   const [events, setEvents] = useState<EventType[]>([])
+
   const showError = useShowError()
 
   useEffect(() => {
