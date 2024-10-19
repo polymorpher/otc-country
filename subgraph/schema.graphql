@@ -1,0 +1,47 @@
+type Asset @entity {
+  id: ID!
+  address: Bytes!
+  decimals: Int!
+  label: String!
+}
+
+type Offer @entity {
+  id: ID!
+  domainName: String!
+  sourceAsset: Asset!
+  destAsset: Asset!
+  offerAddress: Bytes!
+  domainOwner: Bytes!
+  depositHistory: [BigInt!]!
+  totalDeposits: BigInt!
+  closeAmount: BigInt!
+  commissionRate: BigInt!
+  lockWithdrawAfter: BigInt!
+  events: [Event!]!
+}
+
+enum OfferEvent {
+  CREATED
+  ASSET_DEPOSITED
+  ASSET_WITHDRAWN
+  CLOSED
+  ACCEPTED
+  PAYMENT_WITHDRAWN
+}
+
+type Event @entity {
+  id: ID!
+  type: OfferEvent!
+  offer: Offer!
+  sourceAssetPrice: BigInt!
+  destAssetPrice: BigInt!
+  blockNumber: Int!
+  txHash: Bytes!
+  timestamp: Int!
+}
+
+type Query @entity {
+  id: ID!
+  events: [Event!]!
+  offers: [Offer!]!
+}

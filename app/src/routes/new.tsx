@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { SimpleGrid, VStack } from '@chakra-ui/react'
+import { SimpleGrid, Spinner, VStack } from '@chakra-ui/react'
+import { useQuery } from '@tanstack/react-query';
 import { useAccount, useContractRead } from 'wagmi'
 import { readContract } from '@wagmi/core'
+import gql from '~/graphql/client'
+import { GET_RECENT_EVENTS } from '~/graphql/queries'
 import Admin from '~/pages/Admin'
 import NewOfferWithDomainName from '~/pages/NewOfferWithDomainName'
 import MetamskConnector from '~/components/MetamaskConnector'
@@ -9,27 +12,25 @@ import ChainDetector from '~/components/ChainDetector'
 import type { EventType } from '~/components/Event'
 import Event from '~/components/Event'
 import { otcContract } from '~/helpers/contracts'
-import * as CONFIG from '~/helpers/config'
 import useShowError from '~/hooks/useShowError'
 
 const User = () => {
-  const [events, setEvents] = useState<EventType[]>([])
-
   const showError = useShowError()
 
+  const { data, isLoading, error } = useQuery<EventType[]>({
+    queryKey: ['events', 'recent'],
+    queryFn: gql.request(GET_RECENT_EVENTS, { recent: 10 }),
+  })
+
   useEffect(() => {
-    fetch(`${CONFIG.SERVER}?pageSize=3`)
-      .then((res) => res.json())
-      .then(res => {
-        setEvents(res)
-      })
-      .catch(ex => {
-        showError({ title: 'Failed to show recent offers', message: ex })
-      })
-  }, [showError])
+    if (error) {
+      showError({ title: 'Failed to show recent offers', message: JSON.stringify(error) }) 
+    }
+  }, [error])
 
   return (
     <>
+      {isLoading && <Spinner />}
       <SimpleGrid
         columns={[1, 1, 1, 3]}
         rowGap={4}
@@ -37,8 +38,8 @@ const User = () => {
         fontSize="xs"
         width={['100%', '100%', '100%', '150%', '200%']}
       >
-        {events.map((event, key) => (
-          <Event event={event} key={key} simple />
+        {data && data.map((event, key) => (
+          <Event event={event} key={key} />
         ))}
       </SimpleGrid>
       <NewOfferWithDomainName />

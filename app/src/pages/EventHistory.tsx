@@ -1,14 +1,14 @@
-import React, { useCallback, useEffect, useState, useRef } from 'react'
-import { FormControl, Text, VStack } from '@chakra-ui/react'
+import React, { useEffect, useState } from 'react'
+import { FormControl, Spinner, Text, VStack } from '@chakra-ui/react'
 import type { BoxProps } from '@chakra-ui/react'
+import { useQuery } from '@tanstack/react-query'
+import gql from '~/graphql/client'
+import { GET_ALL_EVENTS } from '~/graphql/queries'
 import AssetSelect from '~/components/AssetSelect'
 import Event from '~/components/Event'
 import type { EventType } from '~/components/Event'
 import { type Asset, ASSETS, DEPEGGED } from '~/helpers/assets'
-import * as CONFIG from '~/helpers/config'
 import useShowError from '~/hooks/useShowError'
-
-const PAGE_SIZE = 10
 
 const ALL_ASSETS = '0x0'
 
@@ -16,38 +16,18 @@ const ALL_ASSET_OPTION = { value: ALL_ASSETS, label: 'All', rate: 0, icon: '' }
 
 const EventHistory: React.FC<BoxProps> = (props) => {
   const [assetAddress, setAssetAddress] = useState(ALL_ASSETS)
-  const page = useRef(0)
-  const morePage = useRef(true)
-  const [events, setEvents] = useState<EventType[]>([])
   const showError = useShowError()
 
+  const { data, isLoading, error } = useQuery<EventType[]>({
+    queryKey: ['events', 'all'],
+    queryFn: gql.request(GET_ALL_EVENTS),
+  })
+
   useEffect(() => {
-    setEvents([])
-  }, [assetAddress])
-
-  const fetchData = useCallback(() => {
-    const query = [`age=${24 * 31}`, `page=${page.current}`]
-
-    if (assetAddress !== ALL_ASSETS) {
-      query.push(`asset=${assetAddress}`)
+    if (error) {
+      showError({ title: 'Failed to show offer history', message: JSON.stringify(error) }) 
     }
-
-    fetch(CONFIG.SERVER + '?' + query.join('&'))
-      .then((res) => res.json())
-      .then(res => {
-        setEvents(prev => prev.concat(res))
-        morePage.current = res.length <= PAGE_SIZE
-      })
-      .catch(ex => {
-        showError({ title: 'Failed to show offer history', message: ex })
-      })
-  }, [assetAddress, showError])
-
-  useEffect(() => {
-    setEvents([])
-    page.current = 0
-    fetchData()
-  }, [fetchData])
+  }, [error])
 
   return (
     <VStack w="100%" {...props}>
@@ -59,7 +39,8 @@ const EventHistory: React.FC<BoxProps> = (props) => {
           list={([ALL_ASSET_OPTION] as Asset[]).concat(DEPEGGED).concat(ASSETS)}
         />
       </FormControl>
-      {events.map((event, key) => (
+      {isLoading && <Spinner />}
+      {data && data.map((event, key) => (
         <Event event={event} key={key} />
       ))}
     </VStack>
