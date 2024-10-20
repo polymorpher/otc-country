@@ -4,7 +4,7 @@ import { getPrice } from '../app/src/helpers/assets.js'
 import { OfferCreated as OfferCreatedEvent } from '../types/OTC/OTC.js'
 import { OfferAccepted as OfferAcceptedEvent } from '../types/Offer/Offer.js'
 import { Offer } from '../types/schema.js'
-import { generateEvent, getOrCreateAsset, getQuery } from './utils.js'
+import { generateEvent, getOrCreateAsset } from './utils.js'
 import { Address } from 'viem'
 
 enum OfferEvent {
@@ -48,11 +48,6 @@ export const handleOfferCreated = async (event: OfferCreatedEvent) => {
   offer.depositHistory.push(event.params.depositAmount)
   offer.events.push(e.id)
   offer.save()
-
-  const query = getQuery()
-  query.events.push(e.id)
-  query.offers.push(offer.id)
-  query.save()
 }
 
 export const handleOfferAccepted = async (event: OfferAcceptedEvent) => {
@@ -94,9 +89,4 @@ export const handleOfferAccepted = async (event: OfferAcceptedEvent) => {
   offer.totalDeposits = totalDeposits
   offer.events.push(e.id)
   offer.save()
-
-  const query = getQuery()
-
-  query.events.push(e.id)
-  query.save()
 }

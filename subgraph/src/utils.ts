@@ -36,7 +36,3 @@ export const generateEvent = (event: ethereum.Event) => {
 
   return e
 }
-
-const QUERY_ID = 'query'
-
-export const getQuery = () => Query.load(QUERY_ID) ?? new Query(QUERY_ID)
