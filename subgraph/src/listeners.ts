@@ -1,10 +1,10 @@
-import publicClient from './client.js'
+import publicClient from './client'
 import OFFER_ABI from '../contract/artifacts/contracts/Offer.sol/Offer.json'
-import { getPrice } from '../app/src/helpers/assets.js'
-import { OfferCreated as OfferCreatedEvent } from '../types/OTC/OTC.js'
-import { OfferAccepted as OfferAcceptedEvent } from '../types/Offer/Offer.js'
-import { Offer } from '../types/schema.js'
-import { generateEvent, getOrCreateAsset } from './utils.js'
+import { getPrice } from '../app/src/helpers/assets'
+import { OfferCreated as OfferCreatedEvent } from '../types/OTC/OTC'
+import { OfferAccepted as OfferAcceptedEvent } from '../types/Offer/Offer'
+import { Offer } from '../types/schema'
+import { generateEvent, getOrCreateAsset } from './utils'
 import { Address } from 'viem'
 
 enum OfferEvent {

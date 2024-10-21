@@ -8,13 +8,13 @@
     "setup:local": "yarn codegen && yarn create:local && yarn deploy:local",
     "setup:prod": "yarn codegen && yarn create:prod && yarn deploy:prod",
     "create:prod": "graph create otc-country --node http://graph.sigmoid.one:8020",
-    "create:local": "graph create otc-country-test --node http://127.0.0.1:8020",
-    "deploy:prod": "graph deploy otc-country --debug --ipfs http://ipfs.sigmoid.one:5001 --node http://graph.sigmoid.one:8020/ --version-label 0.0.1",
-    "deploy:local": "graph deploy otc-country-test  subgraph.sepolia.yaml --debug --ipfs http://127.0.0.1:5001 --node http://127.0.0.1:8020/ --version-label 0.0.1",
-    "remove:local": "graph remove otc-country-test --node http://127.0.0.1:8020",
+    "create:local": "graph create otc-country --node http://127.0.0.1:8020",
+    "deploy:prod": "graph deploy otc-country --ipfs http://ipfs.sigmoid.one:5001 --node http://graph.sigmoid.one:8020/ --version-label 0.0.1",
+    "deploy:local": "graph deploy otc-country subgraph.sepolia.yaml --ipfs http://127.0.0.1:5001 --node http://127.0.0.1:8020/ --version-label 0.0.1",
+    "remove:local": "graph remove otc-country --node http://127.0.0.1:8020",
     "build": "graph build",
     "deploy": "graph deploy otc-country --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
-    "watch:local": "graph deploy otc-country-test --watch --debug --node http://127.0.0.1:8020/ --ipfs http://localhost:5001"
+    "watch:local": "graph deploy otc-country --watch --debug --node http://127.0.0.1:8020/ --ipfs http://localhost:5001"
   },
   "devDependencies": {},
   "dependencies": {
