@@ -1,11 +1,10 @@
-import publicClient from './client'
-import OFFER_ABI from '../contract/artifacts/contracts/Offer.sol/Offer.json'
-import { getPrice } from '../app/src/helpers/assets'
+import { Bytes } from '@graphprotocol/graph-ts'
+import { getPrice } from '../../app/src/helpers/assets'
+import { ERC20Mock as ERC20Contract } from '../types/ERC20/ERC20Mock'
 import { OfferCreated as OfferCreatedEvent } from '../types/OTC/OTC'
-import { OfferAccepted as OfferAcceptedEvent } from '../types/Offer/Offer'
+import { Offer as OfferContract, OfferAccepted as OfferAcceptedEvent } from '../types/Offer/Offer'
 import { Offer } from '../types/schema'
 import { generateEvent, getOrCreateAsset } from './utils'
-import { Address } from 'viem'
 
 enum OfferEvent {
   CREATED = 'CREATED',
@@ -17,17 +16,26 @@ enum OfferEvent {
 }
 
 export const handleOfferCreated = async (event: OfferCreatedEvent) => {
-  const sourceAssetAddress = event.params.srcAsset.toHexString() as Address
-  const destAssetAddress = event.params.destAsset.toHexString() as Address
-  const [sourceAsset, destAsset, sourceAssetPrice, destAssetPrice] = await Promise.all([
-    getOrCreateAsset(sourceAssetAddress),
-    getOrCreateAsset(destAssetAddress),
+  const sourceAssetAddress = event.params.srcAsset.toHexString()
+  const destAssetAddress = event.params.destAsset.toHexString()
+  const sourceAsset = getOrCreateAsset(sourceAssetAddress)
+  const destAsset = getOrCreateAsset(destAssetAddress)
+  const sourceAssetContract = ERC20Contract.bind(event.params.srcAsset)
+  const destAssetContract = ERC20Contract.bind(event.params.destAsset)
+
+  sourceAsset.decimals = sourceAssetContract.decimals()
+  destAsset.decimals = destAssetContract.decimals()
+  
+  sourceAsset.save()
+  destAsset.save()
+
+  const [sourceAssetPrice, destAssetPrice] = await Promise.all([
     getPrice(sourceAssetAddress),
     getPrice(destAssetAddress),
   ])
 
   const domainName = event.params.domainName.toString()
-  const offer = new Offer(domainName)
+  const offer = new Offer(event.params.domainName)
   const e = generateEvent(event)
     
   e.type = OfferEvent.CREATED
@@ -51,31 +59,17 @@ export const handleOfferCreated = async (event: OfferCreatedEvent) => {
 }
 
 export const handleOfferAccepted = async (event: OfferAcceptedEvent) => {
-  const [
-    sourceAssetAddress,
-    destAssetAddress,
-    domainOwner,
-    totalDeposits,
-  ] = await Promise.all([
-    'srcAsset',
-    'destAsset',
-    'domainOwner',
-    'totalDeposits',
-  ].map(func => publicClient.readContract({
-    address: event.address,
-    abi: OFFER_ABI.abi,
-    functionName: func
-  })))
-
-  const offer = Offer.load(domainOwner)
+  const offerContract = OfferContract.bind(event.address)
+  const id = Bytes.fromUTF8(offerContract.domainName())
+  const offer = Offer.load(id)
 
   if (!offer) {
     return
   }
 
   const [sourceAssetPrice, destAssetPrice] = await Promise.all([
-    getPrice(sourceAssetAddress),
-    getPrice(destAssetAddress),
+    getPrice(offerContract.srcAsset().toHex()),
+    getPrice(offerContract.destAsset().toHex()),
   ])
 
   const e = generateEvent(event)
@@ -86,7 +80,7 @@ export const handleOfferAccepted = async (event: OfferAcceptedEvent) => {
   e.destAssetPrice = destAssetPrice
   e.save()
 
-  offer.totalDeposits = totalDeposits
+  offer.totalDeposits = offerContract.totalDeposits()
   offer.events.push(e.id)
   offer.save()
 }

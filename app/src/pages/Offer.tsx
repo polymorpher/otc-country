@@ -320,7 +320,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
 
           {status === Status.Open && srcBalance !== undefined && (
             <>
-              <AmountPopover max={srcBalance as bigint} decimals={Number(srcDecimals)} onOkay={async (amount) => await depositFund(amount)}>
+              <AmountPopover max={srcBalance as bigint} decimals={Number(srcDecimals)} onOkay={depositFund}>
                 <Button isDisabled={isUserActionDoing} isLoading={isDepositing} loadingText="Deposit">
                   Deposit
                 </Button>

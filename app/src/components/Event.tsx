@@ -18,9 +18,9 @@ interface Offer {
   destAsset: Asset
   offerAddress: string
   domainOwner: string
-  depositHistory: number[]
-  totalDeposits: number
-  closeAmount: number
+  depositHistory: bigint[]
+  totalDeposits: bigint
+  closeAmount: bigint
   commissionRate: number
   lockWithdrawAfter: number
 }
@@ -51,11 +51,11 @@ const Event: React.FC<EventProps> = ({ event }) => {
   })
 
   const srcAmount = Number(formatUnits(
-    BigInt(event.type === 'OfferCreated' ? event.offer.depositHistory[0] : event.offer.totalDeposits),
-    Number(event.offer.sourceAsset.decimals)
+    event.type === 'OfferCreated' ? event.offer.depositHistory[0] : event.offer.totalDeposits,
+    event.offer.sourceAsset.decimals
   ))
 
-  const destAmount = Number(formatUnits(BigInt(event.offer.closeAmount), Number(event.offer.destAsset.decimals)))
+  const destAmount = Number(formatUnits(event.offer.closeAmount, event.offer.destAsset.decimals))
 
   const elapsed = (Date.now() - new Date(event.timestamp).getTime()) / 1000
 

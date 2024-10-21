@@ -75,7 +75,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <Container my="10" maxW="container.sm">
       <WagmiConfig config={config}>
         <PendingTransactionsProvider>
-          <Intro/>
+          <Intro />
           <RouterProvider router={router} />
         </PendingTransactionsProvider>
       </WagmiConfig>

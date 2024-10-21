@@ -1,12 +1,12 @@
 type Asset @entity {
-  id: ID!
+  id: Bytes!
   address: Bytes!
   decimals: Int!
   label: String!
 }
 
 type Offer @entity {
-  id: ID!
+  id: Bytes!
   domainName: String!
   sourceAsset: Asset!
   destAsset: Asset!
@@ -30,11 +30,11 @@ enum OfferEvent {
 }
 
 type Event @entity {
-  id: ID!
+  id: Bytes!
   type: OfferEvent!
   offer: Offer!
-  sourceAssetPrice: BigInt!
-  destAssetPrice: BigInt!
+  sourceAssetPrice: Int!
+  destAssetPrice: Int!
   blockNumber: Int!
   txHash: Bytes!
   timestamp: Int!

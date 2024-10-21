@@ -1,3 +1,5 @@
+import { gql } from 'graphql-request'
+
 const EVENT_FIELDS = `
   type
   offer {
@@ -27,7 +29,7 @@ const EVENT_FIELDS = `
   timestamp
 `
 
-export const GET_RECENT_EVENTS = `
+export const GET_RECENT_EVENTS = gql`
   query GetEvents($recent: Int!) {
     events(first: $recent) {
       ${EVENT_FIELDS}
@@ -35,7 +37,7 @@ export const GET_RECENT_EVENTS = `
   }
 `
 
-export const GET_ALL_EVENTS = `
+export const GET_ALL_EVENTS = gql`
   query GetEvents {
     events {
       ${EVENT_FIELDS}

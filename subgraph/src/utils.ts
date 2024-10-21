@@ -1,34 +1,27 @@
-import { Address, erc20Abi  } from 'viem'
-import { v4 as uuidv4 } from 'uuid'
-import { Asset, Event, Query } from '../types/schema'
-import { getAssetByAddress } from '../app/src/helpers/assets.js'
-import publicClient from './client.js'
 import { Bytes, ethereum } from '@graphprotocol/graph-ts'
+import { Asset, Event } from '../types/schema'
+import { getAssetByAddress } from '../../app/src/helpers/assets'
 
 
-export const getOrCreateAsset = async (address: Address) => {
-  const asset = Asset.load(address)
+export const getOrCreateAsset = (address: string) => {
+  const addr = Bytes.fromUTF8(address)
+  const asset = Asset.load(addr)
 
   if (asset) {
     return asset
   }
 
-  const newAsset = new Asset(address)
+  const newAsset = new Asset(addr)
+  const val = getAssetByAddress(address)
 
-  newAsset.id = address
   newAsset.address = Bytes.fromHexString(address)
-  newAsset.label = getAssetByAddress(address)?.label ?? "Unknown"
-  newAsset.decimals = await publicClient.readContract({
-    address,
-    abi: erc20Abi,
-    functionName: 'decimals',
-  })
+  newAsset.label = val ? val.label : 'Unknown'
 
   return newAsset
 }
 
 export const generateEvent = (event: ethereum.Event) => {
-  const e = new Event(uuidv4())
+  const e = new Event(Bytes.fromUTF8(`${event.block}-${event.logIndex}`))
 
   e.blockNumber = event.block.number
   e.txHash = event.transaction.hash

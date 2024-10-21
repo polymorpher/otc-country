@@ -19,7 +19,6 @@ dataSources:
       language: wasm/assemblyscript
       file: ./src/listeners.ts
       entities:
-        - Query
         - Event
         - Offer
         - Asset
@@ -41,7 +40,6 @@ dataSources:
       language: wasm/assemblyscript
       file: ./src/listeners.ts
       entities:
-        - Query
         - Event
         - Offer
         - Asset
@@ -51,3 +49,20 @@ dataSources:
       eventHandlers:
         - event: "OfferAccepted(indexed address)"
           handler: handleOfferAccepted
+  - kind: ethereum/contract
+    name: ERC20
+    network: mainnet
+    source:
+      abi: ERC20Mock
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      file: ./src/listeners.ts
+      entities:
+        - Asset
+      abis:
+        - name: ERC20Mock
+          file: ../contract/artifacts/contracts/mocks/ERC20.sol/ERC20Mock.json
+      blockHandlers:
+        - handler: handleBlock

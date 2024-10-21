@@ -119,7 +119,7 @@ const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettle
         await approveSrcAsset?.({ args: [computedOfferAddress, depositAmount] })
       }
 
-      return await createOfferAsync?.({
+      return createOfferAsync?.({
         args: [
           domain,
           keccak256(toHex(Math.random().toString())),

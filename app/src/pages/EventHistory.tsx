@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { FormControl, Spinner, Text, VStack } from '@chakra-ui/react'
 import type { BoxProps } from '@chakra-ui/react'
 import { useQuery } from '@tanstack/react-query'
-import gql from '~/graphql/client'
+import client from '~/graphql/client'
 import { GET_ALL_EVENTS } from '~/graphql/queries'
 import AssetSelect from '~/components/AssetSelect'
 import Event from '~/components/Event'
@@ -20,14 +20,14 @@ const EventHistory: React.FC<BoxProps> = (props) => {
 
   const { data, isLoading, error } = useQuery<EventType[]>({
     queryKey: ['events', 'all'],
-    queryFn: gql.request(GET_ALL_EVENTS),
+    queryFn: client.request(GET_ALL_EVENTS)
   })
 
   useEffect(() => {
     if (error) {
-      showError({ title: 'Failed to show offer history', message: JSON.stringify(error) }) 
+      showError({ title: 'Failed to show offer history', message: JSON.stringify(error) })
     }
-  }, [error])
+  }, [error, showError])
 
   return (
     <VStack w="100%" {...props}>
@@ -40,7 +40,7 @@ const EventHistory: React.FC<BoxProps> = (props) => {
         />
       </FormControl>
       {isLoading && <Spinner />}
-      {data && data.map((event, key) => (
+      {data?.map((event, key) => (
         <Event event={event} key={key} />
       ))}
     </VStack>
