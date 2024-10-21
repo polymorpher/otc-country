@@ -6,12 +6,14 @@ import { Link } from 'react-router-dom'
 import OfferPage from '~/pages/Offer'
 import EventHistory from '~/pages/EventHistory'
 import { otcContract } from '~/helpers/contracts'
-import * as CONFIG from '~/helpers/config'
 import useShowError from '~/hooks/useShowError'
+import { config } from '~/helpers/config'
 
 const hostname = location.hostname.toLowerCase()
 
-const deployedOnDomain = hostname.endsWith(`.${CONFIG.TLD}`) && hostname !== `otc.${CONFIG.TLD}`
+const tld = import.meta.env.VITE_TLD
+
+const deployedOnDomain = hostname.endsWith(`.${tld}`) && hostname !== `otc.${tld}`
 
 const LandingPage = () => {
   const [offerAddress, setOfferAddress] = useState<string>()
@@ -27,7 +29,7 @@ const LandingPage = () => {
 
     const [sld] = hostname.split('.')
 
-    readContract({
+    readContract(config, {
       ...otcContract,
       functionName: 'offerAddress',
       args: [sld]

@@ -1,14 +1,12 @@
 import React from 'react'
 import { Button, Alert, AlertIcon, Drawer, DrawerOverlay, DrawerContent, DrawerHeader, DrawerBody, VStack } from '@chakra-ui/react'
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
+import { useAccount, useSwitchChain } from 'wagmi'
 import chain from '~/helpers/chain'
 
 const ChainDetector = (): React.JSX.Element | null => {
-  const { isConnected } = useAccount()
+  const { isConnected, chain: currentChain } = useAccount()
 
-  const { isLoading, switchNetwork } = useSwitchNetwork({ chainId: chain.id })
-
-  const { chain: currentChain } = useNetwork()
+  const { status, switchChain } = useSwitchChain()
 
   return (
     <Drawer placement="bottom" isOpen={isConnected && currentChain?.id !== chain.id} onClose={() => true}>
@@ -21,7 +19,12 @@ const ChainDetector = (): React.JSX.Element | null => {
           <Alert status="warning" flexDir="column" as={VStack} textAlign="center">
             <AlertIcon boxSize="24" />
             <div>Please switch to {chain.name} to continue</div>
-            <Button colorScheme="yellow" onClick={() => switchNetwork?.()} isLoading={isLoading} loadingText="Switch">
+            <Button
+              colorScheme="yellow"
+              onClick={() => { switchChain({ chainId: chain.id }) }}
+              isLoading={status === 'pending'}
+              loadingText="Switch"
+            >
               Switch
             </Button>
           </Alert>

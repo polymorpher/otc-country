@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from 'react'
 import { SimpleGrid, Spinner, VStack } from '@chakra-ui/react'
 import { useQuery } from '@tanstack/react-query'
-import { useAccount, useContractRead } from 'wagmi'
+import { ConnectKitButton } from 'connectkit'
+import { useAccount, useReadContract } from 'wagmi'
 import { readContract } from '@wagmi/core'
 import client from '~/graphql/client'
 import { GET_RECENT_EVENTS } from '~/graphql/queries'
 import Admin from '~/pages/Admin'
 import NewOfferWithDomainName from '~/pages/NewOfferWithDomainName'
-import MetamskConnector from '~/components/MetamaskConnector'
 import ChainDetector from '~/components/ChainDetector'
 import type { EventType } from '~/components/Event'
 import Event from '~/components/Event'
 import { otcContract } from '~/helpers/contracts'
 import useShowError from '~/hooks/useShowError'
+import { config } from '~/helpers/config'
 
 const User = () => {
   const showError = useShowError()
@@ -54,7 +55,7 @@ const New = () => {
 
   const [isOperator, setIsOperator] = useState<boolean>()
 
-  const { data: operatorRoleBytes } = useContractRead({
+  const { data: operatorRoleBytes } = useReadContract({
     ...otcContract,
     functionName: 'OPERATOR_ROLE',
     onError: (err) => {
@@ -68,7 +69,7 @@ const New = () => {
       return
     }
 
-    readContract({
+    readContract(config, {
       ...otcContract,
       functionName: 'hasRole',
       args: [operatorRoleBytes, address]
@@ -81,7 +82,7 @@ const New = () => {
 
   return (
     <VStack w="100%">
-      <MetamskConnector />
+      <ConnectKitButton />
       <ChainDetector />
       {isConnected && isOperator ? <Admin /> : <User />}
     </VStack>

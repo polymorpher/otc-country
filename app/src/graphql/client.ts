@@ -1,6 +1,5 @@
 import { GraphQLClient } from 'graphql-request'
-import { THEGRAPH } from '~/helpers/config'
 
-const client = new GraphQLClient(THEGRAPH)
+const client = new GraphQLClient(import.meta.env.VITE_THEGRAPH)
 
 export default client

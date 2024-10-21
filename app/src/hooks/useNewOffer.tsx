@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { type Address } from 'abitype'
 import { keccak256, toHex } from 'viem'
-import { useAccount, useBalance, useContractRead } from 'wagmi'
+import { useAccount, useBalance, useReadContract } from 'wagmi'
 import { idcContract, erc20Contract, otcContract } from '~/helpers/contracts'
 import useContractWriteComplete, { type SettledHandler, type SuccessHandler } from './useContractWriteComplete'
 
@@ -43,47 +43,47 @@ const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettle
     chainId
   })
 
-  const { data: domainContractAddress } = useContractRead({
+  const { data: domainContractAddress } = useReadContract({
     ...otcContract,
     functionName: 'domainContract'
   })
 
-  const { data: domainPrice } = useContractRead({
+  const { data: domainPrice } = useReadContract({
     ...idcContract(domainContractAddress as Address),
     functionName: 'getPrice',
     args: [domain]
   })
 
-  const { data: domainOwner } = useContractRead({
+  const { data: domainOwner } = useReadContract({
     ...idcContract(domainContractAddress as Address),
     functionName: 'ownerOf',
     args: [domain]
   })
 
-  const { data: srcBalance } = useContractRead({
+  const { data: srcBalance } = useReadContract({
     ...erc20Contract(srcAsset),
     functionName: 'balanceOf',
     args: [address]
   })
 
-  const { data: computedOfferAddress } = useContractRead({
+  const { data: computedOfferAddress } = useReadContract({
     ...otcContract,
     functionName: 'computedOfferAddress',
     args: [domain]
   })
 
-  const { data: allowance, refetch: refetchAllowance } = useContractRead({
+  const { data: allowance, refetch: refetchAllowance } = useReadContract({
     ...erc20Contract(srcAsset),
     functionName: 'allowance',
     args: [address, computedOfferAddress]
   })
 
-  const { data: srcDecimals } = useContractRead({
+  const { data: srcDecimals } = useReadContract({
     ...erc20Contract(srcAsset),
     functionName: 'decimals'
   })
 
-  const { data: destDecimals } = useContractRead({
+  const { data: destDecimals } = useReadContract({
     ...erc20Contract(destAsset),
     functionName: 'decimals'
   })

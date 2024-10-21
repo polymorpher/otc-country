@@ -28,6 +28,7 @@ import AmountPicker from '~/components/AmountPicker'
 import AssetSelect from '~/components/AssetSelect'
 import chain from '~/helpers/chain'
 import { otcContract } from '~/helpers/contracts'
+import { config } from '~/helpers/config'
 import useNewOffer from '~/hooks/useNewOffer'
 import useToast from '~/hooks/useToast'
 import useTokenRate from '~/hooks/useTokenRate'
@@ -39,8 +40,8 @@ interface NewOfferProps {
   onCreate: () => void
 }
 
-const checkAssetAvailable = async (asset: string): Promise<boolean> =>
-  await readContract({
+const checkAssetAvailable = (asset: string): Promise<boolean> =>
+  readContract(config, {
     ...otcContract,
     functionName: 'assets',
     args: [asset]
