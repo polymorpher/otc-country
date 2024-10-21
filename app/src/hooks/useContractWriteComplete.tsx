@@ -1,12 +1,12 @@
 import { useCallback, useRef } from 'react'
 import { type WriteContractResult } from '@wagmi/core'
 import { type TransactionReceipt } from 'viem'
-import { useContractWrite, useWaitForTransaction } from 'wagmi'
+import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { usePendingTransactions } from '~/providers/PendingTransactionsProvider'
 
-type ContractWriteOptions = Parameters<typeof useContractWrite>[0]
+type ContractWriteOptions = Parameters<typeof useWriteContract>[0]
 
-type WaitForTransactionOptions = Parameters<typeof useWaitForTransaction>[0]
+type WaitForTransactionOptions = Parameters<typeof useWaitForTransactionReceipt>[0]
 
 export type SuccessHandler = (data: TransactionReceipt) => void
 
@@ -39,10 +39,9 @@ const useContractWriteComplete = ({
 
   const {
     data,
-    writeAsync: writeTxAsync,
+    writeContractAsync: writeTxAsync,
     ...other
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  } = useContractWrite({
+  } = useWriteContract({
     ...options,
     onSuccess: (data) => {
       initiateNewTx({
@@ -53,7 +52,7 @@ const useContractWriteComplete = ({
     onSettled
   } as ContractWriteOptions)
 
-  const waitResult = useWaitForTransaction({
+  const waitResult = useWaitForTransactionReceipt({
     hash: data?.hash,
     onSuccess: (arg) => {
       completeTx({ hash: arg.transactionHash })
@@ -64,9 +63,7 @@ const useContractWriteComplete = ({
     onSettled
   } satisfies WaitForTransactionOptions)
 
-  const writeAsync: ReturnType<typeof useContractWrite>['writeAsync'] = useCallback(
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
+  const writeAsync: ReturnType<typeof useWriteContract>['writeContractAsync'] = useCallback(
     async (config) => {
       (writeTxAsync as (args: any) => any)?.(config).catch(console.error)
       return await new Promise<WriteContractResult>((resolve) => (resolveRef.current = resolve))

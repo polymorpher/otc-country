@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react'
 import debounce from 'lodash/debounce'
 import { isAddress } from 'viem'
-import { useContractRead } from 'wagmi'
+import { useReadContract } from 'wagmi'
 import { debounceTimeout } from '~/helpers/config'
 import { otcContract } from '~/helpers/contracts'
 import useContractWriteComplete from '~/hooks/useContractWriteComplete'
@@ -29,7 +29,7 @@ const Admin: React.FC = () => {
 
   const handleDebouncedChange = useMemo(() => debounce((e) => { setAsset(e.target.value) }, debounceTimeout), [])
 
-  const { refetch, isFetching: isChecking } = useContractRead({
+  const { refetch, isFetching: isChecking } = useReadContract({
     ...otcContract,
     functionName: 'assets',
     args: [asset],

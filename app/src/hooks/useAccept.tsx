@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { type Address } from 'abitype'
-import { useAccount, useContractRead } from 'wagmi'
+import { useAccount, useReadContract } from 'wagmi'
 import { erc20Contract, offerContract } from '~/helpers/contracts'
 import useContractWriteComplete, { type SettledHandler, type SuccessHandler } from './useContractWriteComplete'
 
@@ -22,13 +22,13 @@ export interface UseAcceptType {
 const useAccept = ({ offerAddress, destAsset, acceptAmount, onSuccess, onSettled }: Config): UseAcceptType => {
   const { address: userAddress } = useAccount()
 
-  const { data: destBalance } = useContractRead({
+  const { data: destBalance } = useReadContract({
     ...erc20Contract(destAsset),
     functionName: 'balanceOf',
     args: [userAddress]
   }) as { data: bigint }
 
-  const { data: allowance } = useContractRead({
+  const { data: allowance } = useReadContract({
     ...erc20Contract(destAsset),
     functionName: 'allowance',
     args: [userAddress, offerAddress]

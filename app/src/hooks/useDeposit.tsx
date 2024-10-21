@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { type Address } from 'abitype'
-import { useAccount, useContractRead } from 'wagmi'
+import { useAccount, useReadContract } from 'wagmi'
 import { erc20Contract, offerContract } from '~/helpers/contracts'
 import useContractWriteComplete, { type SettledHandler, type SuccessHandler } from './useContractWriteComplete'
 
@@ -24,7 +24,7 @@ const useDeposit = ({ offerAddress, srcAsset, onSuccess, onSettled }: Config): {
     onSettled
   })
 
-  const { data: allowance, refetch: refetchAllowance } = useContractRead({
+  const { data: allowance, refetch: refetchAllowance } = useReadContract({
     ...erc20Contract(srcAsset),
     functionName: 'allowance',
     args: [address, offerAddress]

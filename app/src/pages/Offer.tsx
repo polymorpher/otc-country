@@ -2,7 +2,7 @@ import React, { useCallback } from 'react'
 import { Alert, AlertIcon, Box, Button, Spinner, Text, VStack } from '@chakra-ui/react'
 import { type Address } from 'abitype'
 import { formatUnits } from 'viem'
-import { useAccount, useContractRead } from 'wagmi'
+import { useAccount, useReadContract } from 'wagmi'
 import AddressField from '~/components/AddressField'
 import AmountPopover from '~/components/AmountPopover'
 import ClaimPayment from '~/components/ClaimPayment'
@@ -67,18 +67,18 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
 
   const { toastSuccess, toastError } = useToast()
 
-  const { data: srcDecimals } = useContractRead({
+  const { data: srcDecimals } = useReadContract({
     ...erc20Contract(srcAsset),
     functionName: 'decimals'
   })
 
-  const { data: srcBalance } = useContractRead({
+  const { data: srcBalance } = useReadContract({
     ...erc20Contract(srcAsset),
     functionName: 'balanceOf',
     args: [walletAddr]
   })
 
-  const { data: destDecimals } = useContractRead({
+  const { data: destDecimals } = useReadContract({
     ...erc20Contract(destAsset),
     functionName: 'decimals'
   })
@@ -320,7 +320,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
 
           {status === Status.Open && srcBalance !== undefined && (
             <>
-              <AmountPopover max={srcBalance as bigint} decimals={Number(srcDecimals)} onOkay={async (amount) => await depositFund(amount)}>
+              <AmountPopover max={srcBalance as bigint} decimals={Number(srcDecimals)} onOkay={depositFund}>
                 <Button isDisabled={isUserActionDoing} isLoading={isDepositing} loadingText="Deposit">
                   Deposit
                 </Button>
