@@ -18,62 +18,32 @@ import { useReadContract } from 'wagmi'
 import { debounceTimeout } from '~/helpers/config'
 import { otcContract } from '~/helpers/contracts'
 import useContractWriteComplete from '~/hooks/useContractWriteComplete'
-import useToast from '~/hooks/useToast'
 
 const Admin: React.FC = () => {
   const [asset, setAsset] = useState<string>()
 
   const [assetRegistered, setAssetRegistered] = useState<boolean>()
 
-  const { toastSuccess, toastError } = useToast()
-
   const handleDebouncedChange = useMemo(() => debounce((e) => { setAsset(e.target.value) }, debounceTimeout), [])
 
-  const { refetch, isFetching: isChecking } = useReadContract({
+  const { data, refetch, isFetching: isChecking } = useReadContract({
     ...otcContract,
     functionName: 'assets',
-    args: [asset],
-    onSuccess: setAssetRegistered
+    args: [asset]
   })
 
-  const { write: addAsset, isLoading: isAdding } = useContractWriteComplete({
+  useEffect(() => {
+    setAssetRegistered(Boolean(data))
+  }, [data])
+
+  const { writeAsync: addAsset, status: addStatus } = useContractWriteComplete({
     ...otcContract,
-    functionName: 'addAsset',
-    description: 'Adding asset',
-    onSuccess: (data) => {
-      setAssetRegistered(true)
-      toastSuccess({
-        title: 'Asset has been added',
-        txHash: data.transactionHash
-      })
-    },
-    onSettled: (data, err) =>
-      err &&
-      toastError({
-        title: 'Failed to add the asset',
-        description: err.details,
-        txHash: data?.transactionHash
-      })
+    functionName: 'addAsset'
   })
 
-  const { write: removeAsset, isLoading: isRemoving } = useContractWriteComplete({
+  const { writeAsync: removeAsset, status: removeStatus } = useContractWriteComplete({
     ...otcContract,
-    functionName: 'removeAsset',
-    description: 'Removing asset',
-    onSuccess: (data) => {
-      setAssetRegistered(false)
-      toastSuccess({
-        title: 'Asset has been removed',
-        txHash: data.transactionHash
-      })
-    },
-    onSettled: (data, err) =>
-      err &&
-      toastError({
-        title: 'Failed to removed the asset',
-        description: err.details,
-        txHash: data?.transactionHash
-      })
+    functionName: 'removeAsset'
   })
 
   useEffect(() => {
@@ -112,24 +82,38 @@ const Admin: React.FC = () => {
       <HStack>
         <Button
           isDisabled={isChecking || !!assetRegistered}
-          isLoading={isAdding}
+          isLoading={addStatus === 'pending'}
           loadingText="Add"
           onClick={() =>
             asset &&
             isAddress(asset) &&
-            addAsset?.({ args: [asset] })
+            addAsset(
+              [asset],
+              {
+                pendingTitle: 'Adding asset',
+                successTitle: 'Asset has been added',
+                failTitle: 'Failed to add the asset'
+              }
+            ).then(() => { setAssetRegistered(true) })
           }
         >
           Add
         </Button>
         <Button
           isDisabled={isChecking || !assetRegistered}
-          isLoading={isRemoving}
+          isLoading={removeStatus === 'pending'}
           loadingText="Remove"
           onClick={() =>
             asset &&
             isAddress(asset) &&
-            removeAsset?.({ args: [asset] })
+            removeAsset(
+              [asset],
+              {
+                pendingTitle: 'Adding asset',
+                successTitle: 'Asset has been added',
+                failTitle: 'Failed to add the asset'
+              }
+            ).then(() => { setAssetRegistered(false) })
           }
         >
           Remove

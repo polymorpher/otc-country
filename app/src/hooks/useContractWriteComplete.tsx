@@ -1,81 +1,70 @@
-import { useCallback, useRef } from 'react'
-import { type WriteContractResult } from '@wagmi/core'
-import { type TransactionReceipt } from 'viem'
-import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { useCallback, useState } from 'react'
+import type { Abi, Address } from 'abitype'
+import { writeContract, waitForTransactionReceipt, type WriteContractParameters } from '@wagmi/core'
 import { usePendingTransactions } from '~/providers/PendingTransactionsProvider'
-
-type ContractWriteOptions = Parameters<typeof useWriteContract>[0]
-
-type WaitForTransactionOptions = Parameters<typeof useWaitForTransactionReceipt>[0]
-
-export type SuccessHandler = (data: TransactionReceipt) => void
-
-export type SettledHandler = (data: TransactionReceipt | undefined, error: any | null) => void
+import { config } from '~/helpers/config'
+import useToast from '~/hooks/useToast'
 
 export type ErrorHandler = (error: any) => void
 
-export interface UseContractWriteComplete {
-  isLoading: boolean
-  write?: (args?: any) => any
-  writeAsync: (args: any) => Promise<any>
-  [x: string | number | symbol]: unknown
+type ContractWriteComplete = (data: { address: Address, abi: Abi, functionName: string }) => {
+  status: 'idle' | 'pending' | 'error' | 'success'
+  writeAsync: (
+    args: WriteContractParameters['args'],
+    title?: {
+      pendingTitle?: string
+      successTitle?: string
+      failTitle?: string
+    },
+    value?: bigint,
+  ) => ReturnType<typeof waitForTransactionReceipt>
 }
 
-const useContractWriteComplete = ({
-  description,
-  onSuccess,
-  onError,
-  onSettled,
-  ...options
-}: Omit<ContractWriteOptions, 'onSuccess' | 'onError' | 'onSettled'> & {
-  description: string
-  onSuccess?: SuccessHandler
-  onSettled?: SettledHandler
-  onError?: ErrorHandler
-}): UseContractWriteComplete => {
-  const resolveRef = useRef<(value: WriteContractResult) => void>()
-
+const useContractWriteComplete: ContractWriteComplete = data => {
   const { initiateNewTx, completeTx } = usePendingTransactions()
 
-  const {
-    data,
-    writeContractAsync: writeTxAsync,
-    ...other
-  } = useWriteContract({
-    ...options,
-    onSuccess: (data) => {
-      initiateNewTx({
-        hash: data.hash,
-        title: description
-      })
-    },
-    onSettled
-  } as ContractWriteOptions)
+  const [status, setStatus] = useState<ReturnType<ContractWriteComplete>['status']>('idle')
 
-  const waitResult = useWaitForTransactionReceipt({
-    hash: data?.hash,
-    onSuccess: (arg) => {
-      completeTx({ hash: arg.transactionHash })
-      onSuccess?.(arg)
-      resolveRef.current?.({ hash: arg.transactionHash })
-    },
-    onError,
-    onSettled
-  } satisfies WaitForTransactionOptions)
+  const { toastSuccess, toastError } = useToast()
 
-  const writeAsync: ReturnType<typeof useWriteContract>['writeContractAsync'] = useCallback(
-    async (config) => {
-      (writeTxAsync as (args: any) => any)?.(config).catch(console.error)
-      return await new Promise<WriteContractResult>((resolve) => (resolveRef.current = resolve))
-    },
-    [writeTxAsync]
-  )
+  const writeAsync: ReturnType<ContractWriteComplete>['writeAsync'] =
+    useCallback(async (args, title, value) => {
+      let hash
+
+      try {
+        setStatus('pending')
+
+        hash = await writeContract(config, { ...data, ...args, value })
+
+        title?.pendingTitle && initiateNewTx({
+          hash,
+          title: title.pendingTitle
+        })
+
+        const receipt = await waitForTransactionReceipt(config, { hash })
+
+        completeTx({ hash })
+        setStatus('success')
+        title?.successTitle && toastSuccess({
+          title: title.successTitle,
+          txHash: hash
+        })
+
+        return receipt
+      } catch (e: any) {
+        setStatus('error')
+        title?.failTitle && toastError({
+          title: title.failTitle,
+          description: e.details,
+          txHash: hash
+        })
+        throw e
+      }
+    }, [data, initiateNewTx, completeTx, toastSuccess, toastError])
 
   return {
-    ...waitResult,
-    ...other,
     writeAsync,
-    isLoading: waitResult.isLoading || other.isLoading
+    status
   }
 }
 

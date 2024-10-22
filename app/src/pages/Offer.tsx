@@ -16,7 +16,6 @@ import useBlockTimestamp from '~/hooks/useBlockTimestamp'
 import useContractWriteComplete from '~/hooks/useContractWriteComplete'
 import useDeposit from '~/hooks/useDeposit'
 import useOffer from '~/hooks/useOffer'
-import useToast from '~/hooks/useToast'
 
 interface OfferProps {
   address: Address
@@ -65,8 +64,6 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
 
   const timestamp = useBlockTimestamp()
 
-  const { toastSuccess, toastError } = useToast()
-
   const { data: srcDecimals } = useReadContract({
     ...erc20Contract(srcAsset),
     functionName: 'decimals'
@@ -83,17 +80,9 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
     functionName: 'decimals'
   })
 
-  const { write: closeOffer, isLoading: isClosing } = useContractWriteComplete({
+  const { writeAsync: closeOffer, status: closeStatus } = useContractWriteComplete({
     ...offerContract(address),
-    functionName: 'close',
-    description: 'Closing offer',
-    onSuccess: (data) => {
-      refetchStatus()
-      toastSuccess({
-        title: 'Offer has been closed',
-        txHash: data.transactionHash
-      })
-    }
+    functionName: 'close'
   })
 
   const {
@@ -103,21 +92,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
   } = useAccept({
     offerAddress: address,
     acceptAmount,
-    destAsset,
-    onSettled: (data, err) =>
-      err &&
-      toastError({
-        title: 'Failed to deposit',
-        description: err.details,
-        txHash: data?.transactionHash
-      }),
-    onSuccess: (data) => {
-      refetchStatus()
-      toastSuccess({
-        title: 'Offer has been accepted',
-        txHash: data.transactionHash
-      })
-    }
+    destAsset
   })
 
   const refetch = useCallback(() => {
@@ -136,70 +111,31 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
     refetchTotalDeposits
   ])
 
-  const { depositFund, isDepositing } = useDeposit({
-    offerAddress: address,
-    srcAsset,
-    onSuccess: (data) => {
-      refetch()
-      toastSuccess({
-        title: 'Deposit succeeded',
-        txHash: data.transactionHash
-      })
-    },
-    onSettled: (data, err) =>
-      err &&
-      toastError({
-        title: 'Failed to deposit',
-        description: err.details,
-        txHash: data?.transactionHash
-      })
+  const { depositFund, isDepositing } = useDeposit({ offerAddress: address, srcAsset })
+
+  const { writeAsync: withdraw, status: withdrawStatus } = useContractWriteComplete({
+    ...offerContract(address),
+    functionName: 'withdraw'
   })
 
-  const { write: withdraw, isLoading: isWithdrawing } = useContractWriteComplete({
+  const { writeAsync: claimDepositorPayment, status: claimDepositorPaymentStatus } = useContractWriteComplete({
     ...offerContract(address),
-    functionName: 'withdraw',
-    description: 'Withdrawing',
-    onSuccess: (data) => {
-      refetch()
-      toastSuccess({
-        title: 'Withdraw succeeded',
-        txHash: data.transactionHash
-      })
-    }
+    functionName: 'withdrawPaymentForDepositor'
   })
 
-  const { write: claimDepositorPayment, isLoading: isClaimingDepositorPayment } = useContractWriteComplete({
+  const { writeAsync: claimDomainOwnerPayment, status: claimDomainOwnerPaymentStatus } = useContractWriteComplete({
     ...offerContract(address),
-    functionName: 'withdrawPaymentForDepositor',
-    description: 'Claiming payment',
-    onSuccess: (data) => {
-      refetchPaymentBalanceForDepositor()
-      toastSuccess({ title: 'Payment has been claimed', txHash: data.transactionHash })
-    },
-    onError: (error) => toastError({ title: 'Failed to withdraw the payment', description: error.details }),
-    args: []
-  })
-
-  const { write: claimDomainOwnerPayment, isLoading: isClaimingDomainOwnerPayment } = useContractWriteComplete({
-    ...offerContract(address),
-    functionName: 'withdrawPaymentForDomainOwner',
-    description: 'Claiming payment',
-    onSuccess: (data) => {
-      refetchPaymentBalanceForDomainOwner()
-      toastSuccess({ title: 'Payment has been withdrawn', txHash: data.transactionHash })
-    },
-    onError: (error) => toastError({ title: 'Failed to withdraw the payment', description: error.details }),
-    args: []
+    functionName: 'withdrawPaymentForDomainOwner'
   })
 
   const isUserActionDoing =
     isAccepting ||
-    isWithdrawing ||
+    withdrawStatus === 'pending' ||
     isDepositing ||
     isLoadingBalanceOf ||
     isLoadingLockWithdrawUntil ||
-    isClaimingDepositorPayment ||
-    isClaimingDomainOwnerPayment ||
+    claimDepositorPaymentStatus === 'pending' ||
+    claimDomainOwnerPaymentStatus === 'pending' ||
     isLoadingPaymentBalanceForDepositor ||
     isLoadingPaymentBalanceForDomainOwner
 
@@ -282,14 +218,21 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
                 max={deposits}
                 decimals={Number(destDecimals)}
                 onOkay={(amount) =>
-                  withdraw?.({ args: [amount, walletAddr] })
+                  withdraw(
+                    [amount, walletAddr],
+                    {
+                      pendingTitle: 'Withdrawing',
+                      successTitle: 'Withdraw succeded',
+                      failTitle: 'Failed to withdraw'
+                    }
+                  ).then(() => { refetch() })
                 }
               >
                 <Withdraw
                   lockWithdrawUntil={lockWithdrawUntil}
                   timestamp={timestamp}
                   disabled={isUserActionDoing}
-                  isWithdrawing={isWithdrawing}
+                  isWithdrawing={withdrawStatus === 'pending'}
                 />
               </AmountPopover>
                 )
@@ -299,8 +242,15 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
                 <ClaimPayment
               balance={paymentBalanceForDomainOwner}
               decimals={Number(destDecimals)}
-              onClick={() => claimDomainOwnerPayment?.({ args: [walletAddr] })}
-              isClaiming={isClaimingDomainOwnerPayment}
+              onClick={() => claimDomainOwnerPayment(
+                [walletAddr],
+                {
+                  pendingTitle: 'Claiming payment',
+                  successTitle: 'Payment has been claimed',
+                  failTitle: 'Failed to claim the payment'
+                }
+              ).then(() => { refetchPaymentBalanceForDomainOwner() })}
+              isClaiming={claimDomainOwnerPaymentStatus === 'pending'}
               disabled={isUserActionDoing}
             />
                 )
@@ -309,8 +259,15 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
                   <ClaimPayment
               balance={paymentBalanceForDepositor}
               decimals={Number(destDecimals)}
-              onClick={() => claimDepositorPayment?.({ args: [walletAddr] })}
-              isClaiming={isClaimingDepositorPayment}
+              onClick={() => claimDepositorPayment(
+                [walletAddr],
+                {
+                  pendingTitle: 'Claiming payment',
+                  successTitle: 'Payment has been claimed',
+                  failTitle: 'Failed to claim the payment'
+                }
+              ).then(() => { refetchPaymentBalanceForDepositor() })}
+              isClaiming={claimDepositorPaymentStatus === 'pending'}
               disabled={isUserActionDoing}
             />
                   )
@@ -320,7 +277,11 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
 
           {status === Status.Open && srcBalance !== undefined && (
             <>
-              <AmountPopover max={srcBalance as bigint} decimals={Number(srcDecimals)} onOkay={depositFund}>
+              <AmountPopover
+                max={srcBalance as bigint}
+                decimals={Number(srcDecimals)}
+                onOkay={value => depositFund(value).then(() => { refetch() })}
+              >
                 <Button isDisabled={isUserActionDoing} isLoading={isDepositing} loadingText="Deposit">
                   Deposit
                 </Button>
@@ -330,12 +291,13 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
                   {destBalance < acceptAmount && (
                     <Alert status="warning">
                       <AlertIcon />
-                      Your balance of destination asset is {round(formatUnits(destBalance, Number(destDecimals)))},
+                      Your balance of destination asset is
+                      {round(formatUnits(destBalance, Number(destDecimals)))},
                       which is not sufficient to accept the offer.
                     </Alert>
                   )}
                   <Button
-                    onClick={onAccept}
+                    onClick={() => onAccept().then(() => refetchStatus())}
                     isDisabled={isUserActionDoing || destBalance < acceptAmount}
                     isLoading={isAccepting}
                     loadingText="Accept"
@@ -347,9 +309,16 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
               )}
               {creator === walletAddr && (
                 <Button
-                  onClick={() => closeOffer?.()}
+                  onClick={() => closeOffer(
+                    [],
+                    {
+                      pendingTitle: 'Closing offer',
+                      successTitle: 'Offer has been closed',
+                      failTitle: 'Failed to close the offer'
+                    }
+                  ).then(() => refetchStatus())}
                   isDisabled={isUserActionDoing}
-                  isLoading={isClosing}
+                  isLoading={closeStatus === 'pending'}
                   loadingText="Close"
                   colorScheme="red"
                 >

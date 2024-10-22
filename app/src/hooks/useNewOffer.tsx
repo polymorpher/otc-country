@@ -3,15 +3,12 @@ import { type Address } from 'abitype'
 import { keccak256, toHex } from 'viem'
 import { useAccount, useBalance, useReadContract } from 'wagmi'
 import { idcContract, erc20Contract, otcContract } from '~/helpers/contracts'
-import useContractWriteComplete, { type SettledHandler, type SuccessHandler } from './useContractWriteComplete'
+import useContractWriteComplete from './useContractWriteComplete'
 
 interface Config {
   srcAsset: Address
   destAsset: Address
-  chainId: number
   domain: string
-  onSettled: SettledHandler
-  onSuccess: SuccessHandler
 }
 
 interface OfferData {
@@ -35,13 +32,10 @@ export interface UseNewOfferType {
   createOffer: (d: OfferData) => any
 }
 
-const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettled }: Config): UseNewOfferType => {
+const useNewOffer = ({ srcAsset, destAsset, domain }: Config): UseNewOfferType => {
   const { address } = useAccount()
 
-  const { data: balance } = useBalance({
-    address,
-    chainId
-  })
+  const { data: balance } = useBalance({ address })
 
   const { data: domainContractAddress } = useReadContract({
     ...otcContract,
@@ -88,19 +82,14 @@ const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettle
     functionName: 'decimals'
   })
 
-  const { writeAsync: approveSrcAsset, isLoading: isApproving } = useContractWriteComplete({
+  const { writeAsync: approveSrcAsset, status: approveStatus } = useContractWriteComplete({
     ...erc20Contract(srcAsset),
-    functionName: 'approve',
-    description: 'Approving deposition',
-    onSettled
+    functionName: 'approve'
   })
 
-  const { writeAsync: createOfferAsync, isLoading: isCreatingOffer } = useContractWriteComplete({
+  const { writeAsync: createOfferAsync, status: createOfferStatus } = useContractWriteComplete({
     ...otcContract,
-    functionName: 'createOffer',
-    description: 'Creating offer',
-    onSettled,
-    onSuccess
+    functionName: 'createOffer'
   })
 
   const createOffer = useCallback(
@@ -116,11 +105,21 @@ const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettle
       await refetchAllowance()
 
       if ((allowance as bigint) < depositAmount) {
-        await approveSrcAsset?.({ args: [computedOfferAddress, depositAmount] })
+        await approveSrcAsset(
+          [
+            computedOfferAddress,
+            depositAmount
+          ],
+          {
+            pendingTitle: 'Approving deposition',
+            failTitle: 'Failed to approve',
+            successTitle: 'Deposition has been approved'
+          }
+        )
       }
 
-      return createOfferAsync?.({
-        args: [
+      return createOfferAsync(
+        [
           domain,
           keccak256(toHex(Math.random().toString())),
           domainOwner,
@@ -131,8 +130,13 @@ const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettle
           commissionRate,
           lockWithdrawDuration
         ],
-        value: domainPrice as bigint
-      })
+        {
+          pendingTitle: 'Creating offer',
+          failTitle: 'Failed to create the offer',
+          successTitle: 'Offer has been approved'
+        },
+        domainPrice as bigint
+      )
     },
     [allowance, approveSrcAsset, computedOfferAddress, createOfferAsync, domain, domainPrice, refetchAllowance]
   )
@@ -143,7 +147,7 @@ const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettle
     srcDecimals: srcDecimals as bigint,
     destDecimals: destDecimals as bigint,
     domainPrice: domainPrice as bigint,
-    isCreatingOffer: isApproving || isCreatingOffer,
+    isCreatingOffer: approveStatus === 'pending' || createOfferStatus === 'pending',
     createOffer,
     domainOwner: domainOwner as Address
   }

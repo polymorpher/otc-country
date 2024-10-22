@@ -1,27 +1,24 @@
 import { useCallback } from 'react'
 import { type Address } from 'abitype'
+import type { waitForTransactionReceipt } from '@wagmi/core'
 import { useAccount, useReadContract } from 'wagmi'
 import { erc20Contract, offerContract } from '~/helpers/contracts'
-import useContractWriteComplete, { type SettledHandler, type SuccessHandler } from './useContractWriteComplete'
+import useContractWriteComplete from './useContractWriteComplete'
 
 interface Config {
   offerAddress: Address
   srcAsset: Address
-  onSettled: SettledHandler
-  onSuccess: SuccessHandler
 }
 
-const useDeposit = ({ offerAddress, srcAsset, onSuccess, onSettled }: Config): {
-  depositFund: (amount: bigint) => Promise<any>
+const useDeposit = ({ offerAddress, srcAsset }: Config): {
+  depositFund: (amount: bigint) => Promise<ReturnType<typeof waitForTransactionReceipt>>
   isDepositing: boolean
 } => {
   const { address } = useAccount()
 
-  const { writeAsync: approveSrcAsset, isLoading: isApproving } = useContractWriteComplete({
+  const { writeAsync: approveSrcAsset, status: approveStatus } = useContractWriteComplete({
     ...erc20Contract(srcAsset),
-    functionName: 'approve',
-    description: 'Approving deposition',
-    onSettled
+    functionName: 'approve'
   })
 
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
@@ -30,30 +27,41 @@ const useDeposit = ({ offerAddress, srcAsset, onSuccess, onSettled }: Config): {
     args: [address, offerAddress]
   })
 
-  const { write, isLoading: isDepositing } = useContractWriteComplete({
+  const { writeAsync: deposit, status: depositStatus } = useContractWriteComplete({
     ...offerContract(offerAddress),
-    functionName: 'deposit',
-    description: 'Depositing',
-    onSuccess,
-    onSettled
-  }) as { write: (options: any) => any, isLoading: boolean }
+    functionName: 'deposit'
+  })
 
   const depositFund = useCallback(
     async (amount: bigint) => {
       await refetchAllowance()
 
       if ((allowance as bigint) < amount) {
-        await approveSrcAsset?.({ args: [offerAddress, amount] })
+        return approveSrcAsset(
+          [offerAddress, amount],
+          {
+            pendingTitle: 'Approving deposition',
+            successTitle: 'Approve succeeded',
+            failTitle: 'Failed to approve'
+          }
+        )
       }
 
-      return write?.({ args: [amount] })
+      return deposit(
+        [amount],
+        {
+          pendingTitle: 'Depositing',
+          successTitle: 'Deposit succeeded',
+          failTitle: 'Failed to deposit'
+        }
+      )
     },
-    [allowance, approveSrcAsset, write, offerAddress, refetchAllowance]
+    [refetchAllowance, allowance, deposit, approveSrcAsset, offerAddress]
   )
 
   return {
     depositFund,
-    isDepositing: isApproving || isDepositing
+    isDepositing: approveStatus === 'pending' || depositStatus === 'pending'
   }
 }
 
