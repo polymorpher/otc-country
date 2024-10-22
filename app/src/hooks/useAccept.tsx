@@ -55,7 +55,7 @@ const useAccept = ({ offerAddress, destAsset, acceptAmount }: Config): UseAccept
       )
     }
 
-    return acceptOffer(
+    return await acceptOffer(
       [userAddress],
       {
         pendingTitle: 'Accepting offer',

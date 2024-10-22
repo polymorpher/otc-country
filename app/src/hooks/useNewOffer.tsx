@@ -118,7 +118,7 @@ const useNewOffer = ({ srcAsset, destAsset, domain }: Config): UseNewOfferType =
         )
       }
 
-      return createOfferAsync(
+      return await createOfferAsync(
         [
           domain,
           keccak256(toHex(Math.random().toString())),

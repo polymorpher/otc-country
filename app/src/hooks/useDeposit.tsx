@@ -37,7 +37,7 @@ const useDeposit = ({ offerAddress, srcAsset }: Config): {
       await refetchAllowance()
 
       if ((allowance as bigint) < amount) {
-        return approveSrcAsset(
+        return await approveSrcAsset(
           [offerAddress, amount],
           {
             pendingTitle: 'Approving deposition',
@@ -47,7 +47,7 @@ const useDeposit = ({ offerAddress, srcAsset }: Config): {
         )
       }
 
-      return deposit(
+      return await deposit(
         [amount],
         {
           pendingTitle: 'Depositing',

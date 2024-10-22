@@ -55,14 +55,16 @@ const New = () => {
 
   const [isOperator, setIsOperator] = useState<boolean>()
 
-  const { data: operatorRoleBytes } = useReadContract({
+  const { error, data: operatorRoleBytes } = useReadContract({
     ...otcContract,
-    functionName: 'OPERATOR_ROLE',
-    onError: (err) => {
-      showError({ title: 'Cannot find operators', message: err })
-      console.error(err)
-    }
+    functionName: 'OPERATOR_ROLE'
   })
+
+  useEffect(() => {
+    if (error) {
+      showError({ title: 'Cannot find operators', message: error })
+    }
+  }, [error, showError])
 
   useEffect(() => {
     if (!address) {

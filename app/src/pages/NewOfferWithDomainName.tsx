@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import { Alert, AlertIcon, Text, VStack } from '@chakra-ui/react'
 import debounce from 'lodash.debounce'
 import { readContract } from '@wagmi/core'
@@ -24,14 +24,16 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
 
   const showError = useShowError()
 
-  const { data: dcAddress } = useReadContract({
+  const { error: domainContractError, data: dcAddress } = useReadContract({
     ...otcContract,
-    functionName: 'domainContract',
-    onError: (err) => {
-      showError({ title: 'Cannot find .country contract on-chain', message: err })
-      console.error(err)
-    }
+    functionName: 'domainContract'
   })
+
+  useEffect(() => {
+    if (domainContractError) {
+      showError({ title: 'Cannot find .country contract on-chain', message: domainContractError })
+    }
+  }, [domainContractError, showError])
 
   const onDomainChange = useCallback(async (domain: string) => {
     if (!domain) {

@@ -25,7 +25,7 @@ interface Offer {
   lockWithdrawAfter: number
 }
 
-interface EventType {
+export interface EventType {
   type: 'OfferAccepted' | 'OfferCreated'
   offer: Offer
   sourceAssetPrice: number
