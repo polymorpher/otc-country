@@ -1,9 +1,26 @@
 import { Bytes, ethereum } from '@graphprotocol/graph-ts'
 import { Asset, Event } from '../types/schema'
-import { getAssetByAddress } from '../../app/src/helpers/assets'
+import { Asset as AssetType, DEPEGGED, ASSETS } from '../../app/src/helpers/assets'
 
 
-export const getOrCreateAsset = (address: string) => {
+export const getAssetByAddress = (address: string): AssetType => {
+  const assets = DEPEGGED.concat(ASSETS)
+
+  for (let i = 0; i < assets.length; i++) {
+    if (assets[i].value.toLowerCase() === address.toLowerCase()) {
+      return assets[i]
+    }
+  }
+
+  return new AssetType(
+    address,
+    'Unknown',
+    'https://icons.veryicon.com/png/o/miscellaneous/basic-icon-1/unknown-18.png',
+    '0'
+  )
+}
+
+export const getOrCreateAsset = (address: string): Asset => {
   const addr = Bytes.fromUTF8(address)
   const asset = Asset.load(addr)
 
@@ -15,13 +32,13 @@ export const getOrCreateAsset = (address: string) => {
   const val = getAssetByAddress(address)
 
   newAsset.address = Bytes.fromHexString(address)
-  newAsset.label = val ? val.label : 'Unknown'
+  newAsset.label = val.label
 
   return newAsset
 }
 
-export const generateEvent = (event: ethereum.Event) => {
-  const e = new Event(Bytes.fromUTF8(`${event.block}-${event.logIndex}`))
+export const generateEvent = (event: ethereum.Event): Event => {
+  const e = new Event(Bytes.fromUTF8(`${event.block.number}-${event.logIndex}`))
 
   e.blockNumber = event.block.number
   e.txHash = event.transaction.hash

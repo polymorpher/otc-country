@@ -7,7 +7,7 @@ const useTokenRate = (address: string): number => {
 
   const value = DEPEGGED.concat(ASSETS).find(item => item.value === address)?.rate
 
-  const fixedRate = typeof value === 'number'
+  const fixedRate = value?.startsWith('0x')
 
   useEffect(() => {
     const connection = new PriceServiceConnection('https://hermes.pyth.network', {})
@@ -27,7 +27,7 @@ const useTokenRate = (address: string): number => {
   }, [fixedRate, value])
 
   if (fixedRate) {
-    return value
+    return Number(value)
   }
 
   return rate

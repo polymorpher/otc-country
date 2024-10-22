@@ -1,15 +1,15 @@
-import { getAssetByAddress } from './assets'
+import { DEPEGGED, ASSETS } from './assets'
 
-const getPrice = async (tokenAddress: string) => {
-  const asset = getAssetByAddress(tokenAddress)
+const getPrice = async (address: string) => {
+  const asset = DEPEGGED.concat(ASSETS).find(item => item.value.toLowerCase() === address.toLowerCase())
   const rate = asset?.rate
 
   if (rate === undefined) {
     return 0
   }
 
-  if (typeof (rate) === 'number') {
-    return rate
+  if (!rate.startsWith('0x')) {
+    return Number(rate)
   }
 
   const price = await fetch(`https://hermes.pyth.network/api/latest_price_feeds?ids[]=${rate}`)

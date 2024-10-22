@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "@wagmi/connectors": "^5.2.2",
-    "@wagmi/core": "^2.13.9"
-  }
-}

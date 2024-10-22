@@ -1,4 +1,4 @@
-type Asset @entity {
+type Asset @entity(immutable: true) {
   id: Bytes!
   address: Bytes!
   decimals: Int!
@@ -17,7 +17,7 @@ type Offer @entity {
   closeAmount: BigInt!
   commissionRate: BigInt!
   lockWithdrawAfter: BigInt!
-  events: [Event!]!
+  events: [Event!]! @derivedFrom(field: "offer")
 }
 
 enum OfferEvent {
@@ -29,13 +29,13 @@ enum OfferEvent {
   PAYMENT_WITHDRAWN
 }
 
-type Event @entity {
+type Event @entity(immutable: true) {
   id: Bytes!
   type: OfferEvent!
   offer: Offer!
-  sourceAssetPrice: Int!
-  destAssetPrice: Int!
-  blockNumber: Int!
+  sourceAssetPrice: BigInt!
+  destAssetPrice: BigInt!
+  blockNumber: BigInt!
   txHash: Bytes!
-  timestamp: Int!
+  timestamp: BigInt!
 }

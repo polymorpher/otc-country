@@ -1,32 +1,23 @@
 import { Bytes } from '@graphprotocol/graph-ts'
-import { getAssetByAddress } from '../../app/src/helpers/assets'
 import { ERC20Mock as ERC20Contract } from '../types/ERC20/ERC20Mock'
 import { OfferCreated as OfferCreatedEvent } from '../types/OTC/OTC'
 import { Offer as OfferContract, OfferAccepted as OfferAcceptedEvent } from '../types/Offer/Offer'
 import { Offer } from '../types/schema'
-import { generateEvent, getOrCreateAsset } from './utils'
+import { generateEvent, getOrCreateAsset, getAssetByAddress } from './utils'
 
-enum OfferEvent {
-  CREATED = 'CREATED',
-  ASSET_DEPOSITED = 'ASSET_DEPOSITED',
-  ASSET_WITHDRAWN = 'ASSET_WITHDRAWN',
-  CLOSED = 'CLOSED',
-  ACCEPTED = 'ACCEPTED',
-  PAYMENT_WITHDRAWN = 'PAYMENT_WITHDRAWN'
-}
 
-const getPrice = (address: string) => {
+const getPrice = (address: string): i32 => {
   const asset = getAssetByAddress(address)
-  const rate = asset?.rate
+  const rate = asset.rate
 
-  if (typeof (rate) === 'number') {
-    return rate
+  if (!rate.startsWith('0x')) {
+    return i32(parseInt(rate))
   }
 
   return 0
 }
 
-export const handleOfferCreated = (event: OfferCreatedEvent) => {
+export function handleOfferCreated(event: OfferCreatedEvent): void {
   const sourceAssetAddress = event.params.srcAsset.toHexString()
   const destAssetAddress = event.params.destAsset.toHexString()
   const sourceAsset = getOrCreateAsset(sourceAssetAddress)
@@ -44,7 +35,7 @@ export const handleOfferCreated = (event: OfferCreatedEvent) => {
   const offer = new Offer(event.params.domainName)
   const e = generateEvent(event)
     
-  e.type = OfferEvent.CREATED
+  e.type = 'CREATED'
   e.offer = offer.id
   e.sourceAssetPrice = getPrice(sourceAssetAddress)
   e.destAssetPrice = getPrice(destAssetAddress)
@@ -64,7 +55,7 @@ export const handleOfferCreated = (event: OfferCreatedEvent) => {
   offer.save()
 }
 
-export const handleOfferAccepted = async (event: OfferAcceptedEvent) => {
+export function handleOfferAccepted(event: OfferAcceptedEvent): void {
   const offerContract = OfferContract.bind(event.address)
   const id = Bytes.fromUTF8(offerContract.domainName())
   const offer = Offer.load(id)
@@ -75,7 +66,7 @@ export const handleOfferAccepted = async (event: OfferAcceptedEvent) => {
 
   const e = generateEvent(event)
 
-  e.type = OfferEvent.ACCEPTED
+  e.type = 'ACCEPTED'
   e.offer = offer.id
   e.sourceAssetPrice = getPrice(offerContract.srcAsset().toHex()),
   e.destAssetPrice = getPrice(offerContract.destAsset().toHex())
