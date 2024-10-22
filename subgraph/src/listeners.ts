@@ -1,5 +1,5 @@
 import { Bytes } from '@graphprotocol/graph-ts'
-import { getPrice } from '../../app/src/helpers/assets'
+import { getAssetByAddress } from '../../app/src/helpers/assets'
 import { ERC20Mock as ERC20Contract } from '../types/ERC20/ERC20Mock'
 import { OfferCreated as OfferCreatedEvent } from '../types/OTC/OTC'
 import { Offer as OfferContract, OfferAccepted as OfferAcceptedEvent } from '../types/Offer/Offer'
@@ -15,7 +15,18 @@ enum OfferEvent {
   PAYMENT_WITHDRAWN = 'PAYMENT_WITHDRAWN'
 }
 
-export const handleOfferCreated = async (event: OfferCreatedEvent) => {
+const getPrice = (address: string) => {
+  const asset = getAssetByAddress(address)
+  const rate = asset?.rate
+
+  if (typeof (rate) === 'number') {
+    return rate
+  }
+
+  return 0
+}
+
+export const handleOfferCreated = (event: OfferCreatedEvent) => {
   const sourceAssetAddress = event.params.srcAsset.toHexString()
   const destAssetAddress = event.params.destAsset.toHexString()
   const sourceAsset = getOrCreateAsset(sourceAssetAddress)
@@ -29,19 +40,14 @@ export const handleOfferCreated = async (event: OfferCreatedEvent) => {
   sourceAsset.save()
   destAsset.save()
 
-  const [sourceAssetPrice, destAssetPrice] = await Promise.all([
-    getPrice(sourceAssetAddress),
-    getPrice(destAssetAddress),
-  ])
-
   const domainName = event.params.domainName.toString()
   const offer = new Offer(event.params.domainName)
   const e = generateEvent(event)
     
   e.type = OfferEvent.CREATED
   e.offer = offer.id
-  e.sourceAssetPrice = sourceAssetPrice
-  e.destAssetPrice = destAssetPrice
+  e.sourceAssetPrice = getPrice(sourceAssetAddress)
+  e.destAssetPrice = getPrice(destAssetAddress)
   e.save()
 
   offer.domainName = domainName
@@ -67,17 +73,12 @@ export const handleOfferAccepted = async (event: OfferAcceptedEvent) => {
     return
   }
 
-  const [sourceAssetPrice, destAssetPrice] = await Promise.all([
-    getPrice(offerContract.srcAsset().toHex()),
-    getPrice(offerContract.destAsset().toHex()),
-  ])
-
   const e = generateEvent(event)
 
   e.type = OfferEvent.ACCEPTED
   e.offer = offer.id
-  e.sourceAssetPrice = sourceAssetPrice
-  e.destAssetPrice = destAssetPrice
+  e.sourceAssetPrice = getPrice(offerContract.srcAsset().toHex()),
+  e.destAssetPrice = getPrice(offerContract.destAsset().toHex())
   e.save()
 
   offer.totalDeposits = offerContract.totalDeposits()
