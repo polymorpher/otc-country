@@ -31,7 +31,7 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
 
   useEffect(() => {
     if (domainContractError) {
-      showError({ title: 'Cannot find .country contract on-chain', message: domainContractError })
+      showError({ title: 'Cannot find .country contract on-chain', error: domainContractError })
     }
   }, [domainContractError, showError])
 

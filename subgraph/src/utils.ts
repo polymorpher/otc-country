@@ -21,7 +21,7 @@ export const getAssetByAddress = (address: string): AssetType => {
 }
 
 export const getOrCreateAsset = (address: string): Asset => {
-  const addr = Bytes.fromUTF8(address)
+  const addr = Bytes.fromHexString(address)
   const asset = Asset.load(addr)
 
   if (asset) {
@@ -31,7 +31,7 @@ export const getOrCreateAsset = (address: string): Asset => {
   const newAsset = new Asset(addr)
   const val = getAssetByAddress(address)
 
-  newAsset.address = Bytes.fromHexString(address)
+  newAsset.address = addr
   newAsset.label = val.label
 
   return newAsset

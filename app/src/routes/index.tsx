@@ -35,8 +35,8 @@ const LandingPage = () => {
       args: [sld]
     }).then(res => {
       setOfferAddress(String(res))
-    }).catch((err) => {
-      showError({ title: `Failed to get offer address of ${sld}`, message: err })
+    }).catch((error) => {
+      showError({ title: `Failed to get offer address of ${sld}`, error })
     }).finally(() => {
       setIsFetching(false)
     })

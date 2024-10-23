@@ -1,4 +1,4 @@
-specVersion: 0.0.4
+specVersion: 1.2.0
 description: >-
   A secure & decentralized way to address resources on and off the blockchain
   using simple, human-readable names. Access domains and transfer history.
@@ -11,7 +11,8 @@ dataSources:
     network: sepolia
     source:
       address: "0x012BDE70f155A2E2d0C2AF257a4d9eCdBA20653c"
-      startBlock: 6360104
+      startBlock:	6364158
+      endBlock:	6364160
       abi: OTC
     mapping:
       kind: ethereum/events
@@ -33,7 +34,8 @@ dataSources:
     network: sepolia
     source:
       abi: Offer
-      startBlock: 6360104
+      startBlock:	6364158
+      endBlock:	6364160
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -54,6 +56,7 @@ dataSources:
     network: sepolia
     source:
       abi: ERC20Mock
+      address: "0x012BDE70f155A2E2d0C2AF257a4d9eCdBA20653c" # dummy address to avoid validation
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -64,5 +67,7 @@ dataSources:
       abis:
         - name: ERC20Mock
           file: ../contract/artifacts/contracts/mocks/ERC20.sol/ERC20Mock.json
-      blockHandlers:
-        - handler: handleBlock
+      blockHandlers: # dummy handlers to avoid validation
+        - handler: handleOnce
+          filter:
+            kind: once

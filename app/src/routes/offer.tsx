@@ -28,8 +28,8 @@ const Offer: React.FC = () => {
       args: [domain]
     }).then(res => {
       setOfferAddress(String(res))
-    }).catch((err) => {
-      showError({ title: `Failed to get offer address of ${domain}`, message: err })
+    }).catch((error) => {
+      showError({ title: `Failed to get offer address of ${domain}`, error })
     }).finally(() => {
       setIsFetching(false)
     })

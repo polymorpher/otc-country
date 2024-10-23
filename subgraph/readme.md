@@ -47,4 +47,4 @@ ipfs daemon
 yarn setup:local
 ```
 
-- query data from `http://localhost:8000`
+- query data from `http://localhost:8000/subgraphs/name/otc-country`

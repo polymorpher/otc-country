@@ -14,18 +14,19 @@ import Event from '~/components/Event'
 import { otcContract } from '~/helpers/contracts'
 import useShowError from '~/hooks/useShowError'
 import { config } from '~/helpers/config'
+import { ErrorType } from '~/helpers/error'
 
 const User = () => {
   const showError = useShowError()
 
   const { data, isLoading, error } = useQuery<EventType[]>({
     queryKey: ['events', 'recent'],
-    queryFn: client.request(GET_RECENT_EVENTS, { recent: 10 })
+    queryFn: () => client.request(GET_RECENT_EVENTS, { recent: 10 })
   })
 
   useEffect(() => {
     if (error) {
-      showError({ title: 'Failed to show recent offers', message: JSON.stringify(error) })
+      showError({ title: 'Failed to show recent offers', error, type: ErrorType.QUERY })
     }
   }, [error, showError])
 
@@ -62,7 +63,7 @@ const New = () => {
 
   useEffect(() => {
     if (error) {
-      showError({ title: 'Cannot find operators', message: error })
+      showError({ title: 'Cannot find operators', error })
     }
   }, [error, showError])
 
@@ -76,9 +77,9 @@ const New = () => {
       functionName: 'hasRole',
       args: [operatorRoleBytes, address]
     }).then((res) => { setIsOperator(Boolean(res)) })
-      .catch((err) => {
-        showError({ title: 'Cannot determine if user is operator', message: err })
-        console.error(err)
+      .catch((error) => {
+        showError({ title: 'Cannot determine if user is operator', error })
+        console.error(error)
       })
   }, [address, operatorRoleBytes, showError])
 

@@ -50,8 +50,11 @@ export function handleOfferCreated(event: OfferCreatedEvent): void {
   offer.commissionRate = event.params.commissionRate
   offer.lockWithdrawAfter = event.params.lockWithdrawAfter
   offer.totalDeposits = event.params.depositAmount
-  offer.depositHistory.push(event.params.depositAmount)
-  offer.events.push(e.id)
+  
+  const depositHistory = offer.depositHistory
+  depositHistory.push(event.params.depositAmount)
+  offer.depositHistory = depositHistory
+
   offer.save()
 }
 
@@ -73,6 +76,5 @@ export function handleOfferAccepted(event: OfferAcceptedEvent): void {
   e.save()
 
   offer.totalDeposits = offerContract.totalDeposits()
-  offer.events.push(e.id)
   offer.save()
 }
