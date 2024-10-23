@@ -48,3 +48,17 @@ export const formatSeconds = (seconds: number): string => {
     .map(([val, unit]) => `${val} ${unit}`.concat(Number(val) > 1 ? 's' : ''))
     .join(' ')
 }
+
+export const abbreviateAddress = (
+  address: string,
+  startChars = 6,
+  endChars = 4
+): string => {
+  if (address.length <= startChars + endChars) {
+    return address
+  }
+
+  const start = address.slice(0, startChars)
+  const end = address.slice(-endChars)
+  return `${start}...${end}`
+}
