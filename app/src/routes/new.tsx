@@ -1,35 +1,38 @@
 import React, { useEffect, useState } from 'react'
-import { SimpleGrid, VStack } from '@chakra-ui/react'
-import { useAccount, useContractRead } from 'wagmi'
+import { SimpleGrid, Spinner, VStack } from '@chakra-ui/react'
+import { useQuery } from '@tanstack/react-query'
+import { ConnectKitButton } from 'connectkit'
+import { useAccount, useReadContract } from 'wagmi'
 import { readContract } from '@wagmi/core'
+import client from '~/graphql/client'
+import { GET_RECENT_EVENTS } from '~/graphql/queries'
 import Admin from '~/pages/Admin'
 import NewOfferWithDomainName from '~/pages/NewOfferWithDomainName'
-import MetamskConnector from '~/components/MetamaskConnector'
 import ChainDetector from '~/components/ChainDetector'
 import type { EventType } from '~/components/Event'
 import Event from '~/components/Event'
 import { otcContract } from '~/helpers/contracts'
-import * as CONFIG from '~/helpers/config'
 import useShowError from '~/hooks/useShowError'
+import { config } from '~/helpers/config'
+import { ErrorType } from '~/helpers/error'
 
 const User = () => {
-  const [events, setEvents] = useState<EventType[]>([])
-
   const showError = useShowError()
 
+  const { data, isLoading, error } = useQuery<EventType[]>({
+    queryKey: ['events', 'recent'],
+    queryFn: () => client.request(GET_RECENT_EVENTS, { recent: 10 })
+  })
+
   useEffect(() => {
-    fetch(`${CONFIG.SERVER}?pageSize=3`)
-      .then((res) => res.json())
-      .then(res => {
-        setEvents(res)
-      })
-      .catch(ex => {
-        showError({ title: 'Failed to show recent offers', message: ex })
-      })
-  }, [showError])
+    if (error) {
+      showError({ title: 'Failed to show recent offers', error, type: ErrorType.QUERY })
+    }
+  }, [error, showError])
 
   return (
     <>
+      {isLoading && <Spinner />}
       <SimpleGrid
         columns={[1, 1, 1, 3]}
         rowGap={4}
@@ -37,8 +40,8 @@ const User = () => {
         fontSize="xs"
         width={['100%', '100%', '100%', '150%', '200%']}
       >
-        {events.map((event, key) => (
-          <Event event={event} key={key} simple />
+        {data?.map((event, key) => (
+          <Event event={event} key={key} />
         ))}
       </SimpleGrid>
       <NewOfferWithDomainName />
@@ -53,34 +56,36 @@ const New = () => {
 
   const [isOperator, setIsOperator] = useState<boolean>()
 
-  const { data: operatorRoleBytes } = useContractRead({
+  const { error, data: operatorRoleBytes } = useReadContract({
     ...otcContract,
-    functionName: 'OPERATOR_ROLE',
-    onError: (err) => {
-      showError({ title: 'Cannot find operators', message: err })
-      console.error(err)
-    }
+    functionName: 'OPERATOR_ROLE'
   })
 
   useEffect(() => {
-    if (!address) {
+    if (error) {
+      showError({ title: 'Cannot find operators', error })
+    }
+  }, [error, showError])
+
+  useEffect(() => {
+    if (!address || !operatorRoleBytes) {
       return
     }
 
-    readContract({
+    readContract(config, {
       ...otcContract,
       functionName: 'hasRole',
       args: [operatorRoleBytes, address]
     }).then((res) => { setIsOperator(Boolean(res)) })
-      .catch((err) => {
-        showError({ title: 'Cannot determine if user is operator', message: err })
-        console.error(err)
+      .catch((error) => {
+        showError({ title: 'Cannot determine if user is operator', error })
+        console.error(error)
       })
   }, [address, operatorRoleBytes, showError])
 
   return (
     <VStack w="100%">
-      <MetamskConnector />
+      <ConnectKitButton />
       <ChainDetector />
       {isConnected && isOperator ? <Admin /> : <User />}
     </VStack>

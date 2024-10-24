@@ -26,10 +26,9 @@ import { formatEther, formatUnits, isAddress, parseUnits, zeroAddress } from 'vi
 import { useAccount } from 'wagmi'
 import AmountPicker from '~/components/AmountPicker'
 import AssetSelect from '~/components/AssetSelect'
-import chain from '~/helpers/chain'
 import { otcContract } from '~/helpers/contracts'
+import { config } from '~/helpers/config'
 import useNewOffer from '~/hooks/useNewOffer'
-import useToast from '~/hooks/useToast'
 import useTokenRate from '~/hooks/useTokenRate'
 import { ASSETS, DEPEGGED } from '~/helpers/assets'
 import { fmrHr, fmtNum } from '~/helpers/format'
@@ -39,8 +38,8 @@ interface NewOfferProps {
   onCreate: () => void
 }
 
-const checkAssetAvailable = async (asset: string): Promise<boolean> =>
-  await readContract({
+const checkAssetAvailable = (asset: string): Promise<boolean> =>
+  readContract(config, {
     ...otcContract,
     functionName: 'assets',
     args: [asset]
@@ -129,26 +128,10 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     }
   })
 
-  const { toastSuccess, toastError } = useToast()
-
   const { balance, domainPrice, domainOwner, srcBalance, srcDecimals, destDecimals, isCreatingOffer, createOffer } = useNewOffer({
     srcAsset: watch('srcAsset'),
     destAsset: watch('destAsset'),
-    domain,
-    chainId: chain.id,
-    onSuccess: (data) => {
-      toastSuccess({
-        title: 'Offer has been created',
-        txHash: data.transactionHash
-      })
-    },
-    onSettled: (data, err) =>
-      err &&
-      toastError({
-        title: 'Failed to create the offer',
-        description: err.details,
-        txHash: data?.transactionHash
-      })
+    domain
   })
 
   const handleOfferSubmit = useCallback(
@@ -193,7 +176,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
                 <AlertIcon />
                 Domain cost: {formatEther(domainPrice)} ONE <br/>
                 {balance > domainPrice
-                  ? 'You will own the domain. Your offer will be hosted there'
+                  ? 'You will own the domain. Your offer will be hosted there.'
                   : 'You have insufficient fund'}
               </Alert>
             )}
@@ -373,13 +356,23 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
             )}
           />
 
-          <FormErrorMessage>{errors.lockWithdrawDuration?.message?.toString()}</FormErrorMessage>
+          <FormErrorMessage>
+            {errors.lockWithdrawDuration?.message?.toString()}
+          </FormErrorMessage>
         </FormControl>
         <Alert status='info'>
           <AlertIcon />
-          Tips: You can retract the offer at any time after it is created. Other people can join your offer by depositing asset there. The domain owner earns commission if the offer is accepted by someone (who has to deposit).
+          Tips: You can retract the offer at any time after it is created.
+          Other people can join your offer by depositing asset there.
+          The domain owner earns commission if the offer is accepted by someone (who has to deposit).
         </Alert>
-        <Button type="submit" isLoading={isCreatingOffer} loadingText="Create" size='lg' isDisabled={domainOwner !== address && balance <= domainPrice}>
+        <Button
+          type="submit"
+          isLoading={isCreatingOffer}
+          loadingText="Create"
+          size='lg'
+          isDisabled={domainOwner !== address && balance <= domainPrice}
+        >
           Create
         </Button>
       </VStack>

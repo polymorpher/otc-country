@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, Text, Tooltip, type TextProps } from '@chakra-ui/react'
 import { host } from '~/helpers/chain'
-import { abbreviateAddress } from '~/helpers/address'
+import { abbreviateAddress } from '~/helpers/format'
 
 interface AddressFieldProps extends TextProps {
   children: string

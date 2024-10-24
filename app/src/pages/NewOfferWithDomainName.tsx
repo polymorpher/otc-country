@@ -1,16 +1,17 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { Alert, AlertIcon, Text, VStack } from '@chakra-ui/react'
 import debounce from 'lodash.debounce'
 import { readContract } from '@wagmi/core'
 import { type Address } from 'abitype'
 import { zeroAddress } from 'viem'
-import { useAccount, useContractRead } from 'wagmi'
+import { useAccount, useReadContract } from 'wagmi'
 import DomainInput from '~/components/DomainInput'
 import { idcContract, otcContract } from '~/helpers/contracts'
 import { newName } from '~/helpers/names'
 import NewOffer from '~/pages/NewOffer'
 import Offer from '~/pages/Offer'
 import useShowError from '~/hooks/useShowError'
+import { config } from '~/helpers/config'
 
 const NewOfferWithDomainName = (): React.JSX.Element => {
   const { isConnected, address } = useAccount()
@@ -23,14 +24,16 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
 
   const showError = useShowError()
 
-  const { data: dcAddress } = useContractRead({
+  const { error: domainContractError, data: dcAddress } = useReadContract({
     ...otcContract,
-    functionName: 'domainContract',
-    onError: (err) => {
-      showError({ title: 'Cannot find .country contract on-chain', message: err })
-      console.error(err)
-    }
+    functionName: 'domainContract'
   })
+
+  useEffect(() => {
+    if (domainContractError) {
+      showError({ title: 'Cannot find .country contract on-chain', error: domainContractError })
+    }
+  }, [domainContractError, showError])
 
   const onDomainChange = useCallback(async (domain: string) => {
     if (!domain) {
@@ -46,7 +49,7 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
     setIsFetching(true)
 
     const [isAvailableOnChain, isAvailableOffChain] = await Promise.all([
-      readContract({
+      readContract(config, {
         ...idcContract(dcAddress as Address),
         functionName: 'available',
         args: [domain]
@@ -65,7 +68,7 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
     const isAvailable = isAvailableOnChain && isAvailableOffChain
 
     if (!isAvailable) {
-      const owner = await readContract({
+      const owner = await readContract(config, {
         ...idcContract(dcAddress as Address),
         functionName: 'ownerOf',
         args: [domain]
@@ -73,6 +76,7 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
         console.log(`Domain ${domain} does not exist on-chain or is expired`)
         return undefined
       })
+
       if (!owner || owner !== address) {
         setError({ details: 'The domain is not available. Please choose another domain name' })
         setIsFetching(false)
@@ -80,7 +84,7 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
       }
     }
 
-    readContract({
+    readContract(config, {
       ...otcContract,
       functionName: 'offerAddress',
       args: [domain]
@@ -95,11 +99,15 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
     [onDomainChange]
   )
 
-  const [domain, setDomain] = useState<string>(() => {
-    const value = newName()
-    onDomainChange(value)
-    return value
-  })
+  const defaultDomain = useRef(newName())
+
+  const [domain, setDomain] = useState<string>(defaultDomain.current)
+
+  useEffect(() => {
+    if (dcAddress) {
+      onDomainChange(defaultDomain.current)
+    }
+  }, [onDomainChange, dcAddress])
 
   const handleDomainChange = useCallback(
     (value: string) => {

@@ -1,7 +1,8 @@
 import React from 'react'
 import { HStack, Image, Tooltip } from '@chakra-ui/react'
+import type { Address } from 'abitype'
 import Select, { components, type PropsValue, type OptionProps, type SingleValueProps } from 'react-select'
-import { abbreviateAddress } from '~/helpers/address'
+import { abbreviateAddress } from '~/helpers/format'
 import { type Asset } from '~/helpers/assets'
 
 interface Item {

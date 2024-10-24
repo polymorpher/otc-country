@@ -1,6 +1,5 @@
 import React from 'react'
 import { Input, InputGroup, InputRightAddon, InputRightElement, Spinner } from '@chakra-ui/react'
-import * as CONFIG from '~/helpers/config'
 
 interface DomainInputProps {
   onChange: (value: string) => void
@@ -16,7 +15,7 @@ const DomainInput: React.FC<DomainInputProps> = ({ onChange, loading, value }) =
         <Spinner />
       </InputRightElement>
     )}
-    <InputRightAddon>.{CONFIG.TLD}</InputRightAddon>
+    <InputRightAddon>.{import.meta.env.VITE_TLD}</InputRightAddon>
   </InputGroup>
 )
 
