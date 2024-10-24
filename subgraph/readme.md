@@ -27,6 +27,10 @@ cd graph-node
 cargo build
 ```
 
+- if you are on Ubuntu 22 or later, install `libssl.so.1.1` referring to the following URL
+
+https://stackoverflow.com/questions/72133316/libssl-so-1-1-cannot-open-shared-object-file-no-such-file-or-directory/72633324
+
 - run ipfs and graph-node
 
 ```

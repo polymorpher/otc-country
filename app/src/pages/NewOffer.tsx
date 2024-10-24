@@ -176,7 +176,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
                 <AlertIcon />
                 Domain cost: {formatEther(domainPrice)} ONE <br/>
                 {balance > domainPrice
-                  ? 'You will own the domain. Your offer will be hosted there'
+                  ? 'You will own the domain. Your offer will be hosted there.'
                   : 'You have insufficient fund'}
               </Alert>
             )}

@@ -7,7 +7,7 @@ export enum ErrorType {
 
 const errorMessage = (error: any, type: ErrorType = ErrorType.UNKNOWN) => {
   if (type === ErrorType.QUERY) {
-    return error.response.errors[0].message
+    return error?.response?.errors[0]?.message ?? error.message
   }
 
   if (error instanceof Error) {

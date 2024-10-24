@@ -68,7 +68,7 @@ const New = () => {
   }, [error, showError])
 
   useEffect(() => {
-    if (!address) {
+    if (!address || !operatorRoleBytes) {
       return
     }
 

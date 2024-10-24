@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react'
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { Alert, AlertIcon, Text, VStack } from '@chakra-ui/react'
 import debounce from 'lodash.debounce'
 import { readContract } from '@wagmi/core'
@@ -99,11 +99,15 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
     [onDomainChange]
   )
 
-  const [domain, setDomain] = useState<string>(() => {
-    const value = newName()
-    onDomainChange(value)
-    return value
-  })
+  const defaultDomain = useRef(newName())
+
+  const [domain, setDomain] = useState<string>(defaultDomain.current)
+
+  useEffect(() => {
+    if (dcAddress) {
+      onDomainChange(defaultDomain.current)
+    }
+  }, [onDomainChange, dcAddress])
 
   const handleDomainChange = useCallback(
     (value: string) => {
