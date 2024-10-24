@@ -71,8 +71,8 @@ export function handleOfferAccepted(event: OfferAcceptedEvent): void {
 
   e.type = 'ACCEPTED'
   e.offer = offer.id
-  e.sourceAssetPrice = getPrice(offerContract.srcAsset().toHex()),
-  e.destAssetPrice = getPrice(offerContract.destAsset().toHex())
+  e.sourceAssetPrice = getPrice(offer.sourceAsset.toHex()),
+  e.destAssetPrice = getPrice(offer.destAsset.toHex())
   e.save()
 
   offer.totalDeposits = offerContract.totalDeposits()
