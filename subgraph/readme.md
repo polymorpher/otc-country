@@ -5,7 +5,7 @@ Reference: https://github.com/graphprotocol/graph-node
 - install rust
 https://www.digitalocean.com/community/tutorials/install-rust-on-ubuntu-linux
 
-- install postgres and run
+- install postgres and run at separate directory (e.g. `~/postgres/graph`) 
 ```
 initdb -D .postgres -E UTF8 --locale=C
 pg_ctl -D .postgres -l logfile start
@@ -25,6 +25,12 @@ sudo apt-get install -y clang libpq-dev libssl-dev pkg-config
 git clone https://github.com/graphprotocol/graph-node.git
 cd graph-node
 cargo build
+```
+
+On macOS:
+
+```
+brew install protobuf
 ```
 
 - if you are on Ubuntu 22 or later, install `libssl.so.1.1` referring to the following URL
