@@ -59,7 +59,7 @@ CREATE EXTENSION "pg_stat_statements";
 
 ```
 # NOTE: must use archival node
-anvil -f https://a.api.s0.t.hmny.io/  
+anvil -f https://a.api.s0.t.hmny.io/ --fork-block-number 64603499
 
 # or, for example 
 # anvil -f https://mainnet.infura.io/v3/[YOUR_INFURA_KEY] --fork-block-number 20488727
