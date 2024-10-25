@@ -10,7 +10,7 @@ dataSources:
     name: OTC
     network: anvil
     source:
-      address: "0x012BDE70f155A2E2d0C2AF257a4d9eCdBA20653c"
+      address: "0xA15BB66138824a1c7167f5E85b957d04Dd34E468"
       startBlock: 64603499
 #      endBlock:	64604499
       abi: OTC
@@ -56,7 +56,7 @@ dataSources:
     network: anvil
     source:
       abi: ERC20Mock
-      address: "0x012BDE70f155A2E2d0C2AF257a4d9eCdBA20653c" # dummy address to avoid validation
+      address: "0xb19b36b1456E65E3A6D514D3F715f204BD59f431" # dummy address to avoid validation
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
