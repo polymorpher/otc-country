@@ -146,9 +146,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     [createOffer, destDecimals, onCreate]
   )
 
-  const srcRate = useTokenRate(watch('srcAsset'))
-
-  const destRate = useTokenRate(watch('destAsset'))
+  const [srcRate, destRate] = useTokenRate(watch('srcAsset'), watch('destAsset'))
 
   const depositAmountInBase = Number(formatUnits(BigInt(watch('depositAmount')), Number(srcDecimals)))
 
@@ -240,6 +238,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
               render={({ field }) => (
                 <AmountPicker
                   onChange={(value) => { field.onChange(value.toString()) }}
+                  value={field.value}
                   max={srcBalance}
                   decimals={Number(srcDecimals)}
                 />
