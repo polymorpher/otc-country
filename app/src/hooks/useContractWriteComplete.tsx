@@ -34,7 +34,7 @@ const useContractWriteComplete: ContractWriteComplete = data => {
       try {
         setStatus('pending')
 
-        hash = await writeContract(config, { ...data, ...args, value })
+        hash = await writeContract(config, { ...data, args, value })
 
         title?.pendingTitle && initiateNewTx({
           hash,

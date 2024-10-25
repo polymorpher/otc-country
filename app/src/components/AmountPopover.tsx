@@ -19,7 +19,12 @@ interface AmountPopoverProps extends AmountPickerProps {
   onOkay: (value: bigint) => void
 }
 
-const AmountPopover: React.FC<AmountPopoverProps> = ({ max, decimals, onOkay, children }) => {
+const AmountPopover: React.FC<AmountPopoverProps> = ({
+  max,
+  decimals,
+  onOkay,
+  children
+}) => {
   const [value, setValue] = useState(0n)
 
   const handleOkayClick = useCallback(
@@ -42,7 +47,12 @@ const AmountPopover: React.FC<AmountPopoverProps> = ({ max, decimals, onOkay, ch
               <PopoverCloseButton />
 
               <PopoverBody>
-                <AmountPicker max={max} decimals={decimals} onChange={setValue} />
+                <AmountPicker
+                  value={String(value)}
+                  max={max}
+                  decimals={decimals}
+                  onChange={setValue}
+                />
               </PopoverBody>
 
               <PopoverFooter textAlign="right">
