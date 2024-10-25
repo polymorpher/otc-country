@@ -81,7 +81,7 @@ ipfs daemon
 ./target/debug/graph-node \
   --debug \
   --postgres-url postgresql://testuser:testpassword@localhost:5432/graph-node \
-  --ethereum-rpc mainnet:http://127.0.0.1:8545 \ # or any NETWORK_NAME:[CAPABILITIES]:URL for example: sepolia:https://eth-sepolia.g.alchemy.com/v2/<token>
+  --ethereum-rpc anvil:http://127.0.0.1:8545 \ # or any NETWORK_NAME:[CAPABILITIES]:URL for example: sepolia:https://eth-sepolia.g.alchemy.com/v2/<token>
   --ipfs 127.0.0.1:5001
 ```
 
