@@ -8,6 +8,13 @@ export OTC="0xA15BB66138824a1c7167f5E85b957d04Dd34E468"
 export USER=$(cast wallet address --private-key ${PRIVATE_KEY})
 export TEST_DOMAIN="testotc"
 
+export SALT=$(chisel eval "keccak256(abi.encodePacked(\"${TEST_DOMAIN}\"))" | cut -d " " -f 3 | tail -n 1)
+export OFFER_ADDRESS=$(cast call ${OTC_FACTORY} "getAddress(bytes32)(address)" ${SALT})
+
+# type(uint256).max
+cast send ${TOKEN_A} "approve(address,uint256)" ${OFFER_ADDRESS} "115792089237316195423570985008687907853269984665640564039457584007913129639935" --private-key ${PRIVATE_KEY}
+
+
 #    function createOffer(
 #        string calldata domainName_,
 #        bytes32 secret_,
@@ -22,7 +29,10 @@ export TEST_DOMAIN="testotc"
 
 export PRICE=$(cast call ${DOMAIN_CONTRACT} "getPrice(string)(uint256)" ${TEST_DOMAIN} | cut -d " " -f 1)
 
+
 cast send ${OTC} "createOffer(string,bytes32,address,address,address,uint256,uint256,uint256,uint256)" \
   ${TEST_DOMAIN} 0x0000000000000000000000000000000000000000000000000000000000000000 ${USER} ${TOKEN_A} ${TOKEN_B} 1500000000000000000 3000000000000000000 100 3600 \
   --value ${PRICE} \
   --private-key ${PRIVATE_KEY}
+
+

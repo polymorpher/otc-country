@@ -16,12 +16,6 @@ npx hardhat deploy --network anvil --reset
 
 cast send ${TOKEN_A} "mint(address,uint256)" ${USER} 12000000000000000000 --private-key ${PRIVATE_KEY}
 
-export SALT=$(chisel eval "keccak256(abi.encodePacked(\"${TEST_DOMAIN}\"))" | cut -d " " -f 3 | tail -n 1)
-export OFFER_ADDRESS=$(cast call ${OTC_FACTORY} "getAddress(bytes32)(address)" ${SALT})
-
-# type(uint256).max
-cast send ${TOKEN_A} "approve(address,uint256)" ${OFFER_ADDRESS} "115792089237316195423570985008687907853269984665640564039457584007913129639935" --private-key ${PRIVATE_KEY}
-
 cast send ${OTC} "addAsset(address)" ${TOKEN_A} --private-key ${ADMIN_PRIVATE_KEY}
 cast send ${OTC} "addAsset(address)" ${TOKEN_B} --private-key ${ADMIN_PRIVATE_KEY}
 
