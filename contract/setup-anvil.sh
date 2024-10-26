@@ -12,7 +12,7 @@ export USER=$(cast wallet address --private-key ${PRIVATE_KEY})
 export TEST_DOMAIN="testotc"
 
 cast nonce 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720
-#npx hardhat deploy --network anvil --reset
+npx hardhat deploy --network anvil --reset
 
 cast send ${TOKEN_A} "mint(address,uint256)" ${USER} 12000000000000000000 --private-key ${PRIVATE_KEY}
 

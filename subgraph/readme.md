@@ -78,11 +78,14 @@ ipfs init
 ipfs daemon
 
 # terminal B
-./target/debug/graph-node \
+
+GRAPH_START_BLOCK=64603499 ./target/debug/graph-node \
   --debug \
   --postgres-url postgresql://testuser:testpassword@localhost:5432/graph-node \
-  --ethereum-rpc anvil:http://127.0.0.1:8545 \ # or any NETWORK_NAME:[CAPABILITIES]:URL for example: sepolia:https://eth-sepolia.g.alchemy.com/v2/<token>
+  --ethereum-rpc anvil:http://127.0.0.1:8545 \
   --ipfs 127.0.0.1:5001
+  
+# NOTE: --ethereum-rpc can be any NETWORK_NAME:[CAPABILITIES]:URL, for example: sepolia:https://eth-sepolia.g.alchemy.com/v2/<token>
 ```
 
 - run subgraph on local node
