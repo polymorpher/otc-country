@@ -113,6 +113,7 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
     (value: string) => {
       setDomain(value)
       refetch(value)
+      defaultDomain.current = value
     },
     [refetch]
   )

@@ -76,18 +76,6 @@ export const DEPEGGED: Asset[] = [
 export const ASSETS: Asset[] = [
   // https://hermes.pyth.network/api/latest_price_feeds?ids[]=0xc9d8b075a5c69303365ae23633d4e085199bf5c520a3b90fed1322a0342ffc33
   new Asset(
-    '0x9288Ad4702cF47c44dC714312498B35cd13a2C9a',
-    'Token A',
-    'https://cryptologos.cc/logos/harmony-one-logo.svg',
-    '123'
-  ),
-  new Asset(
-    '0x7D7E515fF4e4B82c5EcbD2583Cb7314f8529Bd59',
-    'Token B',
-    'https://cryptologos.cc/logos/usd-coin-usdc-logo.svg',
-    '234'
-  ),
-  new Asset(
     '0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a',
     'WONE',
     'https://cryptologos.cc/logos/harmony-one-logo.svg',
