@@ -26,7 +26,7 @@ interface Offer {
 }
 
 export interface EventType {
-  type: 'OfferAccepted' | 'OfferCreated'
+  type: 'ACCEPTED' | 'CREATED'
   offer: Offer
   sourceAssetPrice: number
   destAssetPrice: number
@@ -51,13 +51,13 @@ const Event: React.FC<EventProps> = ({ event }) => {
   })
 
   const srcAmount = Number(formatUnits(
-    event.type === 'OfferCreated' ? event.offer.depositHistory[0] : event.offer.totalDeposits,
+    event.type === 'ACCEPTED' ? event.offer.depositHistory[0] : event.offer.totalDeposits,
     event.offer.sourceAsset.decimals
   ))
 
   const destAmount = Number(formatUnits(event.offer.closeAmount, event.offer.destAsset.decimals))
 
-  const elapsed = (Date.now() - new Date(event.timestamp).getTime()) / 1000
+  const elapsed = Math.ceil(Date.now() / 1000) - Number(event.timestamp)
 
   return (
     <SimpleGrid
@@ -78,7 +78,7 @@ const Event: React.FC<EventProps> = ({ event }) => {
         Status
       </Box>
       <Box>
-        {event.type === 'OfferAccepted' ? 'Accepted' : 'Created'}
+        {event.type === 'ACCEPTED' ? 'Accepted' : 'Created'}
       </Box>
       <Box textAlign="right">
         Source Asset
@@ -104,7 +104,7 @@ const Event: React.FC<EventProps> = ({ event }) => {
       <Box>
         {fmtNum(destAmount)}
       </Box>
-      {event.type === 'OfferCreated'
+      {event.type === 'CREATED'
         ? (
           <>
             <Box textAlign="right">

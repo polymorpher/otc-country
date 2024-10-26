@@ -3,7 +3,7 @@ import { FormControl, Spinner, Text, VStack } from '@chakra-ui/react'
 import type { BoxProps } from '@chakra-ui/react'
 import { useQuery } from '@tanstack/react-query'
 import client from '~/graphql/client'
-import { GET_ALL_EVENTS, GET_EVENT_FOR_ASSET } from '~/graphql/queries'
+import { GET_ALL_EVENTS, GET_EVENTS_FOR_ASSET } from '~/graphql/queries'
 import AssetSelect from '~/components/AssetSelect'
 import Event from '~/components/Event'
 import type { EventType } from '~/components/Event'
@@ -24,10 +24,10 @@ const EventHistory: React.FC<BoxProps> = (props) => {
   const [assetAddress, setAssetAddress] = useState(ALL_ASSETS)
   const showError = useShowError()
 
-  const { data, isLoading, error } = useQuery<EventType[]>({
+  const { data, isLoading, error } = useQuery<{ events: EventType[] }>({
     queryKey: ['events', assetAddress],
     queryFn: () => client.request(
-      assetAddress === ALL_ASSETS ? GET_ALL_EVENTS : GET_EVENT_FOR_ASSET,
+      assetAddress === ALL_ASSETS ? GET_ALL_EVENTS : GET_EVENTS_FOR_ASSET,
       { asset: assetAddress }
     )
   })
@@ -49,7 +49,7 @@ const EventHistory: React.FC<BoxProps> = (props) => {
         />
       </FormControl>
       {isLoading && <Spinner />}
-      {data?.map((event, key) => (
+      {data?.events.map((event, key) => (
         <Event event={event} key={key} />
       ))}
     </VStack>

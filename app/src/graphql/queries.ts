@@ -45,12 +45,12 @@ export const GET_ALL_EVENTS = gql`
   }
 `
 
-export const GET_EVENT_FOR_ASSET = gql`
+export const GET_EVENTS_FOR_ASSET = gql`
   query GetEvent($asset: Bytes!) {
-    event(where: {
+    events(where: {
       or: [
-        { offer: { sourceAsset: { id: $asset } } },
-        { offer: { destAsset: { id: $asset } } }
+        { offer_: { sourceAsset: $asset } },
+        { offer_: { destAsset: $asset } }
       ]
     }) {
       ${EVENT_FIELDS}

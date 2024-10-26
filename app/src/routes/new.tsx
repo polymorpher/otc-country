@@ -19,7 +19,7 @@ import { ErrorType } from '~/helpers/error'
 const User = () => {
   const showError = useShowError()
 
-  const { data, isLoading, error } = useQuery<EventType[]>({
+  const { data, isLoading, error } = useQuery<{ events: EventType[] }>({
     queryKey: ['events', 'recent'],
     queryFn: () => client.request(GET_RECENT_EVENTS, { recent: 10 })
   })
@@ -40,7 +40,7 @@ const User = () => {
         fontSize="xs"
         width={['100%', '100%', '100%', '150%', '200%']}
       >
-        {data?.map((event, key) => (
+        {data?.events.map((event, key) => (
           <Event event={event} key={key} />
         ))}
       </SimpleGrid>
