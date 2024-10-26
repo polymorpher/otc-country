@@ -12,8 +12,8 @@ interface PriceData {
   }>
 }
 
-const useTokenRate = (...addresses: string[]): number[] => {
-  const [rate, setRate] = useState(Array(addresses.length).fill(0))
+const useTokenRates = (...addresses: string[]): number[] => {
+  const [rates, setRates] = useState(Array(addresses.length).fill(0))
   const es = useRef<EventSource>()
 
   const addr = JSON.stringify(addresses)
@@ -36,31 +36,35 @@ const useTokenRate = (...addresses: string[]): number[] => {
       .filter(item => item[1].rate.startsWith('0x'))
       .map(item => [item[1].rate, [item[1].value, item[0]]])
 
-    const dynamicRateMap = Object.fromEntries(dynamicRates)
-
     const fixedRates = assets
       .filter(item => !item[1].rate.startsWith('0x'))
       .map(item => [Number(item[1].rate), item[0]])
 
-    const query = Object.keys(dynamicRateMap).map(id => `ids[]=${id}`).join('&')
-    const eventSource = new EventSource(`https://hermes.pyth.network/v2/updates/price/stream?${query}`)
+    if (dynamicRates.length) {
+      const dynamicRateMap = Object.fromEntries(dynamicRates)
 
-    es.current = eventSource
+      const query = Object.keys(dynamicRateMap).map(id => `ids[]=${id}`).join('&')
+      const eventSource = new EventSource(`https://hermes.pyth.network/v2/updates/price/stream?${query}`)
 
-    eventSource.onmessage = (e) => {
-      const { parsed } = JSON.parse(e.data) as PriceData
-      const data = parsed.map(x => [
-        Number(x.price.price) * 10 ** x.price.expo,
-        dynamicRateMap[`0x${x.id}`][1]
-      ])
+      es.current = eventSource
 
-      setRate(data.concat(fixedRates).sort((a, b) => a[1] - b[1]).map(x => x[0]))
+      eventSource.onmessage = (e) => {
+        const { parsed } = JSON.parse(e.data) as PriceData
+        const data = parsed.map(x => [
+          Number(x.price.price) * 10 ** x.price.expo,
+          dynamicRateMap[`0x${x.id}`][1]
+        ])
+
+        setRates(data.concat(fixedRates).sort((a, b) => a[1] - b[1]).map(x => x[0]))
+      }
+    } else {
+      setRates(fixedRates.map(x => x[0]))
     }
 
     return () => es.current?.close()
   }, [addr])
 
-  return rate
+  return rates
 }
 
-export default useTokenRate
+export default useTokenRates

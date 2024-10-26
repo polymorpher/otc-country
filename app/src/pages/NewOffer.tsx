@@ -29,7 +29,7 @@ import AssetSelect from '~/components/AssetSelect'
 import { otcContract } from '~/helpers/contracts'
 import { config } from '~/helpers/config'
 import useNewOffer from '~/hooks/useNewOffer'
-import useTokenRate from '~/hooks/useTokenRate'
+import useTokenRates from '~/hooks/useTokenRates'
 import { ASSETS, DEPEGGED } from '~/helpers/assets'
 import { fmrHr, fmtNum } from '~/helpers/format'
 
@@ -146,7 +146,7 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     [createOffer, destDecimals, onCreate]
   )
 
-  const [srcRate, destRate] = useTokenRate(watch('srcAsset'), watch('destAsset'))
+  const [srcRate, destRate] = useTokenRates(watch('srcAsset'), watch('destAsset'))
 
   const depositAmountInBase = Number(formatUnits(BigInt(watch('depositAmount')), Number(srcDecimals)))
 
