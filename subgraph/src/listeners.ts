@@ -1,5 +1,5 @@
-import { Bytes } from '@graphprotocol/graph-ts'
-import { ERC20Mock as ERC20Contract } from '../types/ERC20/ERC20Mock'
+import {Bytes, ValueKind} from '@graphprotocol/graph-ts'
+import {ERC20Mock as ERC20Contract} from '../types/ERC20/ERC20Mock'
 import { OfferCreated as OfferCreatedEvent } from '../types/OTC/OTC'
 import { Offer as OfferContract, OfferAccepted as OfferAcceptedEvent } from '../types/Offer/Offer'
 import { Offer } from '../types/schema'
@@ -50,9 +50,10 @@ export function handleOfferCreated(event: OfferCreatedEvent): void {
   offer.commissionRate = event.params.commissionRate
   offer.lockWithdrawAfter = event.params.lockWithdrawAfter
   offer.totalDeposits = event.params.depositAmount
-  
-  const depositHistory = offer.depositHistory
+  const history = offer.get("depositHistory")
+  const depositHistory = history && history.kind !== ValueKind.NULL  ? offer.depositHistory : []
   depositHistory.push(event.params.depositAmount)
+  // offer.depositHistory = []
   offer.depositHistory = depositHistory
 
   offer.save()
@@ -78,3 +79,5 @@ export function handleOfferAccepted(event: OfferAcceptedEvent): void {
   offer.totalDeposits = offerContract.totalDeposits()
   offer.save()
 }
+
+// export function handleERC20Mock(e: ref_any): void {}
