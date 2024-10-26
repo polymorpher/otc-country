@@ -25,6 +25,10 @@ dataSources:
       abis:
         - name: OTC
           file: ../contract/artifacts/contracts/OTC.sol/OTC.json
+        - name: Offer
+          file: ../contract/artifacts/contracts/Offer.sol/Offer.json
+        - name: ERC20Mock
+          file: ../contract/artifacts/contracts/mocks/ERC20.sol/ERC20Mock.json
       eventHandlers:
         - event: "OfferCreated(indexed string,indexed address,indexed address,address,address,uint256,uint256,uint256,uint256)"
           handler: handleOfferCreated

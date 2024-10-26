@@ -10,7 +10,7 @@
     "create:prod": "graph create otc-country --node http://graph.sigmoid.one:8020",
     "create:local": "graph create otc-country --node http://127.0.0.1:8020",
     "deploy:prod": "graph deploy otc-country --ipfs http://ipfs.sigmoid.one:5001 --node http://graph.sigmoid.one:8020/ --version-label 0.0.1",
-    "deploy:local": "graph deploy otc-country subgraph.anvil.yaml --ipfs http://127.0.0.1:5001 --node http://127.0.0.1:8020/ --version-label 0.0.1",
+    "deploy:local": "graph deploy otc-country subgraph.sepolia.yaml --ipfs http://127.0.0.1:5001 --node http://127.0.0.1:8020/ --version-label 0.0.1",
     "remove:local": "graph remove otc-country --node http://127.0.0.1:8020",
     "build": "graph build",
     "deploy": "graph deploy otc-country --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
