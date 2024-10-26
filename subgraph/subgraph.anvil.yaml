@@ -26,6 +26,8 @@ dataSources:
       abis:
         - name: OTC
           file: ../contract/artifacts/contracts/OTC.sol/OTC.json
+        - name: ERC20Mock
+          file: ../contract/artifacts/contracts/mocks/ERC20.sol/ERC20Mock.json
       eventHandlers:
         - event: "OfferCreated(indexed string,indexed address,indexed address,address,address,uint256,uint256,uint256,uint256)"
           handler: handleOfferCreated
@@ -48,6 +50,8 @@ dataSources:
       abis:
         - name: Offer
           file: ../contract/artifacts/contracts/Offer.sol/Offer.json
+        - name: ERC20Mock
+          file: ../contract/artifacts/contracts/mocks/ERC20.sol/ERC20Mock.json
       eventHandlers:
         - event: "OfferAccepted(indexed address)"
           handler: handleOfferAccepted
@@ -69,6 +73,6 @@ dataSources:
 #        - name: ERC20Mock
 #          file: ../contract/artifacts/contracts/mocks/ERC20.sol/ERC20Mock.json
 #      blockHandlers: # dummy handlers to avoid validation
-#        - handler: handleOnce
+#        - handler: handleERC20Mock
 #          filter:
 #            kind: once
