@@ -46,23 +46,8 @@ dataSources:
       abis:
         - name: Offer
           file: ../contract/artifacts/contracts/Offer.sol/Offer.json
+        - name: ERC20Mock
+          file: ../contract/artifacts/contracts/mocks/ERC20.sol/ERC20Mock.json
       eventHandlers:
         - event: "OfferAccepted(indexed address)"
           handler: handleOfferAccepted
-  - kind: ethereum/contract
-    name: ERC20
-    network: harmony
-    source:
-      abi: ERC20Mock
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.6
-      language: wasm/assemblyscript
-      file: ./src/listeners.ts
-      entities:
-        - Asset
-      abis:
-        - name: ERC20Mock
-          file: ../contract/artifacts/contracts/mocks/ERC20.sol/ERC20Mock.json
-      blockHandlers:
-        - handler: handleBlock

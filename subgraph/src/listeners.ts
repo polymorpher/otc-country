@@ -24,6 +24,7 @@ export function handleOfferCreated(event: OfferCreatedEvent): void {
   const destAsset = getOrCreateAsset(destAssetAddress)
   const sourceAssetContract = ERC20Contract.bind(event.params.srcAsset)
   const destAssetContract = ERC20Contract.bind(event.params.destAsset)
+  const offerContract = OfferContract.bind(event.params.offerAddress)
 
   sourceAsset.decimals = sourceAssetContract.decimals()
   destAsset.decimals = destAssetContract.decimals()
@@ -31,8 +32,8 @@ export function handleOfferCreated(event: OfferCreatedEvent): void {
   sourceAsset.save()
   destAsset.save()
 
-  const domainName = event.params.domainName.toString()
-  const offer = new Offer(event.params.domainName)
+  const domainName = offerContract.domainName()
+  const offer = new Offer(Bytes.fromUTF8(domainName))
   const e = generateEvent(event)
     
   e.type = 'CREATED'
@@ -50,11 +51,7 @@ export function handleOfferCreated(event: OfferCreatedEvent): void {
   offer.commissionRate = event.params.commissionRate
   offer.lockWithdrawAfter = event.params.lockWithdrawAfter
   offer.totalDeposits = event.params.depositAmount
-  const history = offer.get("depositHistory")
-  const depositHistory = history && history.kind !== ValueKind.NULL  ? offer.depositHistory : []
-  depositHistory.push(event.params.depositAmount)
-  // offer.depositHistory = []
-  offer.depositHistory = depositHistory
+  offer.depositHistory = [event.params.depositAmount]
 
   offer.save()
 }

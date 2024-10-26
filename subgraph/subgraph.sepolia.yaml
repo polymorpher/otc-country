@@ -12,7 +12,6 @@ dataSources:
     source:
       address: "0x012BDE70f155A2E2d0C2AF257a4d9eCdBA20653c"
       startBlock:	6364158
-      endBlock:	6364160
       abi: OTC
     mapping:
       kind: ethereum/events
@@ -35,7 +34,6 @@ dataSources:
     source:
       abi: Offer
       startBlock:	6364158
-      endBlock:	6364160
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -48,26 +46,8 @@ dataSources:
       abis:
         - name: Offer
           file: ../contract/artifacts/contracts/Offer.sol/Offer.json
+        - name: ERC20Mock
+          file: ../contract/artifacts/contracts/mocks/ERC20.sol/ERC20Mock.json
       eventHandlers:
         - event: "OfferAccepted(indexed address)"
           handler: handleOfferAccepted
-  - kind: ethereum/contract
-    name: ERC20
-    network: sepolia
-    source:
-      abi: ERC20Mock
-      address: "0x012BDE70f155A2E2d0C2AF257a4d9eCdBA20653c" # dummy address to avoid validation
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.6
-      language: wasm/assemblyscript
-      file: ./src/listeners.ts
-      entities:
-        - Asset
-      abis:
-        - name: ERC20Mock
-          file: ../contract/artifacts/contracts/mocks/ERC20.sol/ERC20Mock.json
-      blockHandlers: # dummy handlers to avoid validation
-        - handler: handleOnce
-          filter:
-            kind: once

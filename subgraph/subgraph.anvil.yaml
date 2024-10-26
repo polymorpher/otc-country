@@ -12,7 +12,6 @@ dataSources:
     source:
       address: "0xA15BB66138824a1c7167f5E85b957d04Dd34E468"
       startBlock: 64603499
-#      endBlock:	64604499
       abi: OTC
     mapping:
       kind: ethereum/events
@@ -37,7 +36,6 @@ dataSources:
     source:
       abi: Offer
       startBlock: 64603499
-#      endBlock:	64604499
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -55,24 +53,3 @@ dataSources:
       eventHandlers:
         - event: "OfferAccepted(indexed address)"
           handler: handleOfferAccepted
-#  - kind: ethereum/contract
-#    name: ERC20
-#    network: anvil
-#    source:
-#      abi: ERC20Mock
-#      startBlock: 64603499
-#      address: "0xb19b36b1456E65E3A6D514D3F715f204BD59f431" # dummy address to avoid validation
-#    mapping:
-#      kind: ethereum/events
-#      apiVersion: 0.0.6
-#      language: wasm/assemblyscript
-#      file: ./src/listeners.ts
-#      entities:
-#        - Asset
-#      abis:
-#        - name: ERC20Mock
-#          file: ../contract/artifacts/contracts/mocks/ERC20.sol/ERC20Mock.json
-#      blockHandlers: # dummy handlers to avoid validation
-#        - handler: handleERC20Mock
-#          filter:
-#            kind: once
