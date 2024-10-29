@@ -13,9 +13,13 @@ const useBlockTimestamp = (): number | undefined => {
 
     setTimestamp(Number(data.timestamp))
 
-    const timer = setInterval(() => { setTimestamp((prev) => (prev !== undefined ? prev + 1 : undefined)) }, 1000)
+    const timer = setInterval(() => {
+      setTimestamp((prev) => (prev !== undefined ? prev + 1 : undefined))
+    }, 1000)
 
-    return () => { clearInterval(timer) }
+    return () => {
+      clearInterval(timer)
+    }
   }, [data])
 
   return timestamp

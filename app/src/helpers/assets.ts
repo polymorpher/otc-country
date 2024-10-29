@@ -2,12 +2,12 @@
  * should be defined class as it is shared in subgraph mapping (assemblyscript) doesn't support object
  */
 export class Asset {
-  constructor (
+  constructor(
     public value: string,
     public label: string,
     public icon: string,
     public rate: string
-  ) { }
+  ) {}
 }
 
 export const DEPEGGED: Asset[] = [

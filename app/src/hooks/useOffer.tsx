@@ -130,28 +130,44 @@ const useOffer = ({ address }: Config): UseOfferType => {
     refetch: refetchPaymentBalanceForDepositor,
     isFetching: isFetchingPaymentBalanceForDepositor,
     isLoading: isLoadingPaymentBalanceForDepositor
-  } = useReadContract({ ...offerContract(address), functionName: 'paymentBalanceForDepositor', args: [walletAddr] })
+  } = useReadContract({
+    ...offerContract(address),
+    functionName: 'paymentBalanceForDepositor',
+    args: [walletAddr]
+  })
 
   const {
     data: deposits,
     refetch: refetchDeposits,
     isFetching: isFetchingDeposits,
     isLoading: isLoadingDeposits
-  } = useReadContract({ ...offerContract(address), functionName: 'deposits', args: [walletAddr] })
+  } = useReadContract({
+    ...offerContract(address),
+    functionName: 'deposits',
+    args: [walletAddr]
+  })
 
   const {
     data: lockWithdrawUntil,
     refetch: refetchLockWithdrawUntil,
     isFetching: isFetchingLockWithdrawUntil,
     isLoading: isLoadingLockWithdrawUntil
-  } = useReadContract({ ...offerContract(address), functionName: 'lockWithdrawUntil', args: [walletAddr] })
+  } = useReadContract({
+    ...offerContract(address),
+    functionName: 'lockWithdrawUntil',
+    args: [walletAddr]
+  })
 
   const {
     data: balanceOf,
     refetch: refetchBalanceOf,
     isFetching: isFetchingBalanceOf,
     isLoading: isLoadingBalanceOf
-  } = useReadContract({ ...erc20Contract(srcAsset as Address), functionName: 'balanceOf', args: [walletAddr] })
+  } = useReadContract({
+    ...erc20Contract(srcAsset as Address),
+    functionName: 'balanceOf',
+    args: [walletAddr]
+  })
 
   return {
     data: {
@@ -184,10 +200,14 @@ const useOffer = ({ address }: Config): UseOfferType => {
       isLoadingStatus: isLoadingStatus || isFetchingStatus,
       isLoadingTotalDeposits: isLoadingTotalDeposits || isFetchingTotalDeposits,
       isLoadingDeposits: isLoadingDeposits || isFetchingDeposits,
-      isLoadingLockWithdrawUntil: isLoadingLockWithdrawUntil || isFetchingLockWithdrawUntil,
+      isLoadingLockWithdrawUntil:
+        isLoadingLockWithdrawUntil || isFetchingLockWithdrawUntil,
       isLoadingPaymentBalanceForDomainOwner:
-        isLoadingPaymentBalanceForDomainOwner || isFetchingPaymentBalanceForDomainOwner,
-      isLoadingPaymentBalanceForDepositor: isLoadingPaymentBalanceForDepositor || isFetchingPaymentBalanceForDepositor,
+        isLoadingPaymentBalanceForDomainOwner ||
+        isFetchingPaymentBalanceForDomainOwner,
+      isLoadingPaymentBalanceForDepositor:
+        isLoadingPaymentBalanceForDepositor ||
+        isFetchingPaymentBalanceForDepositor,
       isLoadingBalanceOf: isLoadingBalanceOf || isFetchingBalanceOf
     },
     error

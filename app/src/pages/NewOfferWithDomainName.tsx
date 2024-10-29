@@ -31,73 +31,85 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
 
   useEffect(() => {
     if (domainContractError) {
-      showError({ title: 'Cannot find .country contract on-chain', error: domainContractError })
+      showError({
+        title: 'Cannot find .country contract on-chain',
+        error: domainContractError
+      })
     }
   }, [domainContractError, showError])
 
-  const onDomainChange = useCallback(async (domain: string) => {
-    if (!domain) {
-      return
-    }
-
-    if (!dcAddress) {
-      return
-    }
-
-    setError(undefined)
-    setOfferAddress(undefined)
-    setIsFetching(true)
-
-    const [isAvailableOnChain, isAvailableOffChain] = await Promise.all([
-      readContract(config, {
-        ...idcContract(dcAddress as Address),
-        functionName: 'available',
-        args: [domain]
-      }),
-
-      fetch('https://1ns-registrar-relayer.hiddenstate.xyz/check-domain', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sld: domain })
-      }).then(async (res) => await res.json()).then(res => res.isAvailable)
-    ]).catch(ex => {
-      console.error(ex)
-      return []
-    })
-
-    const isAvailable = isAvailableOnChain && isAvailableOffChain
-
-    if (!isAvailable) {
-      const owner = await readContract(config, {
-        ...idcContract(dcAddress as Address),
-        functionName: 'ownerOf',
-        args: [domain]
-      }).catch(ex => {
-        console.log(`Domain ${domain} does not exist on-chain or is expired`)
-        return undefined
-      })
-
-      if (!owner || owner !== address) {
-        setError({ details: 'The domain is not available. Please choose another domain name' })
-        setIsFetching(false)
+  const onDomainChange = useCallback(
+    async (domain: string) => {
+      if (!domain) {
         return
       }
-    }
 
-    readContract(config, {
-      ...otcContract,
-      functionName: 'offerAddress',
-      args: [domain]
-    })
-      .then((res) => { setOfferAddress(res as Address) })
-      .catch(setError)
-      .finally(() => { setIsFetching(false) })
-  }, [address, dcAddress])
+      if (!dcAddress) {
+        return
+      }
 
-  const refetch = useMemo(
-    () => debounce(onDomainChange, 300),
-    [onDomainChange]
+      setError(undefined)
+      setOfferAddress(undefined)
+      setIsFetching(true)
+
+      const [isAvailableOnChain, isAvailableOffChain] = await Promise.all([
+        readContract(config, {
+          ...idcContract(dcAddress as Address),
+          functionName: 'available',
+          args: [domain]
+        }),
+
+        fetch('https://1ns-registrar-relayer.hiddenstate.xyz/check-domain', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sld: domain })
+        })
+          .then(async (res) => await res.json())
+          .then((res) => res.isAvailable)
+      ]).catch((ex) => {
+        console.error(ex)
+        return []
+      })
+
+      const isAvailable = isAvailableOnChain && isAvailableOffChain
+
+      if (!isAvailable) {
+        const owner = await readContract(config, {
+          ...idcContract(dcAddress as Address),
+          functionName: 'ownerOf',
+          args: [domain]
+        }).catch((ex) => {
+          console.log(`Domain ${domain} does not exist on-chain or is expired`)
+          return undefined
+        })
+
+        if (!owner || owner !== address) {
+          setError({
+            details:
+              'The domain is not available. Please choose another domain name'
+          })
+          setIsFetching(false)
+          return
+        }
+      }
+
+      readContract(config, {
+        ...otcContract,
+        functionName: 'offerAddress',
+        args: [domain]
+      })
+        .then((res) => {
+          setOfferAddress(res as Address)
+        })
+        .catch(setError)
+        .finally(() => {
+          setIsFetching(false)
+        })
+    },
+    [address, dcAddress]
   )
+
+  const refetch = useMemo(() => debounce(onDomainChange, 300), [onDomainChange])
 
   const defaultDomain = useRef(newName())
 
@@ -120,32 +132,45 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
 
   return (
     <VStack width="full">
-      <Text fontSize={24} m={8}>Create a new offer</Text>
-      <DomainInput value={domain} onChange={handleDomainChange} loading={!error && isFetching} />
+      <Text fontSize={24} m={8}>
+        Create a new offer
+      </Text>
+      <DomainInput
+        value={domain}
+        onChange={handleDomainChange}
+        loading={!error && isFetching}
+      />
       <Text>Buy a new domain, or use an existing one</Text>
-      {!domain && <Alert status="warning">
-        <AlertIcon />
-        Please select the domain name you want to purchase
-      </Alert> }
-      {!isFetching && offerAddress && offerAddress !== zeroAddress &&
-      <VStack>
-        <Alert status="error">
+      {!domain && (
+        <Alert status="warning">
           <AlertIcon />
-          There is already an offer at this domain
+          Please select the domain name you want to purchase
         </Alert>
+      )}
+      {!isFetching && offerAddress && offerAddress !== zeroAddress && (
+        <VStack>
+          <Alert status="error">
+            <AlertIcon />
+            There is already an offer at this domain
+          </Alert>
 
-        <Offer address={offerAddress} />
-      </VStack>
-      }
+          <Offer address={offerAddress} />
+        </VStack>
+      )}
       {!isFetching && offerAddress === zeroAddress && !isConnected && (
         <Alert status="info">
           <AlertIcon />
           Please connect your wallet to proceed.
         </Alert>
       )}
-      {!isFetching && offerAddress === zeroAddress && isConnected &&
-        <NewOffer domain={domain} onCreate={() => { refetch(domain) }} />
-      }
+      {!isFetching && offerAddress === zeroAddress && isConnected && (
+        <NewOffer
+          domain={domain}
+          onCreate={() => {
+            refetch(domain)
+          }}
+        />
+      )}
 
       {error && (
         <Alert status="error" wordBreak="break-word">

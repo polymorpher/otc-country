@@ -32,7 +32,11 @@ export interface UseNewOfferType {
   createOffer: (d: OfferData) => any
 }
 
-const useNewOffer = ({ srcAsset, destAsset, domain }: Config): UseNewOfferType => {
+const useNewOffer = ({
+  srcAsset,
+  destAsset,
+  domain
+}: Config): UseNewOfferType => {
   const { address } = useAccount()
 
   const { data: balance } = useBalance({ address })
@@ -82,15 +86,17 @@ const useNewOffer = ({ srcAsset, destAsset, domain }: Config): UseNewOfferType =
     functionName: 'decimals'
   })
 
-  const { writeAsync: approveSrcAsset, status: approveStatus } = useContractWriteComplete({
-    ...erc20Contract(srcAsset),
-    functionName: 'approve'
-  })
+  const { writeAsync: approveSrcAsset, status: approveStatus } =
+    useContractWriteComplete({
+      ...erc20Contract(srcAsset),
+      functionName: 'approve'
+    })
 
-  const { writeAsync: createOfferAsync, status: createOfferStatus } = useContractWriteComplete({
-    ...otcContract,
-    functionName: 'createOffer'
-  })
+  const { writeAsync: createOfferAsync, status: createOfferStatus } =
+    useContractWriteComplete({
+      ...otcContract,
+      functionName: 'createOffer'
+    })
 
   const createOffer = useCallback(
     async ({
@@ -105,17 +111,11 @@ const useNewOffer = ({ srcAsset, destAsset, domain }: Config): UseNewOfferType =
       await refetchAllowance()
 
       if ((allowance as bigint) < depositAmount) {
-        await approveSrcAsset(
-          [
-            computedOfferAddress,
-            depositAmount
-          ],
-          {
-            pendingTitle: 'Approving deposition',
-            failTitle: 'Failed to approve',
-            successTitle: 'Deposition has been approved'
-          }
-        )
+        await approveSrcAsset([computedOfferAddress, depositAmount], {
+          pendingTitle: 'Approving deposition',
+          failTitle: 'Failed to approve',
+          successTitle: 'Deposition has been approved'
+        })
       }
 
       return await createOfferAsync(
@@ -138,7 +138,15 @@ const useNewOffer = ({ srcAsset, destAsset, domain }: Config): UseNewOfferType =
         domainPrice as bigint
       )
     },
-    [allowance, approveSrcAsset, computedOfferAddress, createOfferAsync, domain, domainPrice, refetchAllowance]
+    [
+      allowance,
+      approveSrcAsset,
+      computedOfferAddress,
+      createOfferAsync,
+      domain,
+      domainPrice,
+      refetchAllowance
+    ]
   )
 
   return {
@@ -147,7 +155,8 @@ const useNewOffer = ({ srcAsset, destAsset, domain }: Config): UseNewOfferType =
     srcDecimals: srcDecimals as bigint,
     destDecimals: destDecimals as bigint,
     domainPrice: domainPrice as bigint,
-    isCreatingOffer: approveStatus === 'pending' || createOfferStatus === 'pending',
+    isCreatingOffer:
+      approveStatus === 'pending' || createOfferStatus === 'pending',
     createOffer,
     domainOwner: domainOwner as Address
   }

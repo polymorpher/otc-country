@@ -14,7 +14,9 @@ const Withdraw = React.forwardRef<HTMLButtonElement, WithdrawProps>(
   ({ lockWithdrawUntil, timestamp, disabled, isWithdrawing, onClick }, ref) => (
     <VStack textAlign="center">
       {lockWithdrawUntil > timestamp && (
-        <Text textAlign="right">Withdraw locked left: {formatSeconds(lockWithdrawUntil - timestamp)}</Text>
+        <Text textAlign="right">
+          Withdraw locked left: {formatSeconds(lockWithdrawUntil - timestamp)}
+        </Text>
       )}
       <Button
         ref={ref}

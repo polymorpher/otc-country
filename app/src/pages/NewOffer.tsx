@@ -22,7 +22,13 @@ import {
 } from '@chakra-ui/react'
 import { readContract } from '@wagmi/core'
 import { type Address } from 'abitype'
-import { formatEther, formatUnits, isAddress, parseUnits, zeroAddress } from 'viem'
+import {
+  formatEther,
+  formatUnits,
+  isAddress,
+  parseUnits,
+  zeroAddress
+} from 'viem'
 import { useAccount } from 'wagmi'
 import AmountPicker from '~/components/AmountPicker'
 import AssetSelect from '~/components/AssetSelect'
@@ -63,27 +69,32 @@ interface FormFields {
   acceptAmount: string
   commissionRate: number
   lockWithdrawDuration: number
-
 }
 
 const rules: Record<keyof FormFields, RegisterOptions> = {
   domainOwner: {
     required: 'required',
-    validate: { address: (v: string) => (isAddress(v) && v !== zeroAddress) || 'not address format' }
+    validate: {
+      address: (v: string) =>
+        (isAddress(v) && v !== zeroAddress) || 'not address format'
+    }
   },
   srcAsset: {
     required: 'required',
     validate: {
       address: (v: string) => isAddress(v) || 'not address format',
-      available: async (v: string) => (await checkAssetAvailable(v)) || 'not available'
+      available: async (v: string) =>
+        (await checkAssetAvailable(v)) || 'not available'
     }
   },
   destAsset: {
     required: 'required',
     validate: {
       address: (v: string) => isAddress(v) || 'not address format',
-      sameAsSrc: (v: string, values) => values.srcAsset !== v || 'should not be the same as source asset',
-      available: async (v: string) => (await checkAssetAvailable(v)) || 'not available'
+      sameAsSrc: (v: string, values) =>
+        values.srcAsset !== v || 'should not be the same as source asset',
+      available: async (v: string) =>
+        (await checkAssetAvailable(v)) || 'not available'
     }
   },
   depositAmount: {
@@ -128,7 +139,16 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     }
   })
 
-  const { balance, domainPrice, domainOwner, srcBalance, srcDecimals, destDecimals, isCreatingOffer, createOffer } = useNewOffer({
+  const {
+    balance,
+    domainPrice,
+    domainOwner,
+    srcBalance,
+    srcDecimals,
+    destDecimals,
+    isCreatingOffer,
+    createOffer
+  } = useNewOffer({
     srcAsset: watch('srcAsset'),
     destAsset: watch('destAsset'),
     domain
@@ -146,46 +166,62 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     [createOffer, destDecimals, onCreate]
   )
 
-  const [srcRate, destRate] = useTokenRates(watch('srcAsset'), watch('destAsset'))
+  const [srcRate, destRate] = useTokenRates(
+    watch('srcAsset'),
+    watch('destAsset')
+  )
 
-  const depositAmountInBase = Number(formatUnits(BigInt(watch('depositAmount')), Number(srcDecimals)))
+  const depositAmountInBase = Number(
+    formatUnits(BigInt(watch('depositAmount')), Number(srcDecimals))
+  )
 
   const commissionRate = Number(watch('commissionRate'))
 
-  const exchangeRate = Number(watch('acceptAmount')) * destRate / (depositAmountInBase * srcRate)
+  const exchangeRate =
+    (Number(watch('acceptAmount')) * destRate) / (depositAmountInBase * srcRate)
 
   return (
     <VStack>
-      {domainOwner === address
-        ? (
-          <Alert status='success'>
-            <AlertIcon />
-            You already own the domain
-          </Alert>
-          )
-        : (
-          <>
-            <Text fontSize="2xl" my="10">
-              Choose an available domain for your offer
-            </Text>
+      {domainOwner === address ? (
+        <Alert status="success">
+          <AlertIcon />
+          You already own the domain
+        </Alert>
+      ) : (
+        <>
+          <Text fontSize="2xl" my="10">
+            Choose an available domain for your offer
+          </Text>
 
-            {domainPrice !== undefined && (
-              <Alert status={balance > domainPrice ? 'info' : 'warning'}>
-                <AlertIcon />
-                Domain cost: {formatEther(domainPrice)} ONE <br/>
-                {balance > domainPrice
-                  ? 'You will own the domain. Your offer will be hosted there.'
-                  : 'You have insufficient fund'}
-              </Alert>
-            )}
-          </>
+          {domainPrice !== undefined && (
+            <Alert status={balance > domainPrice ? 'info' : 'warning'}>
+              <AlertIcon />
+              Domain cost: {formatEther(domainPrice)} ONE <br />
+              {balance > domainPrice
+                ? 'You will own the domain. Your offer will be hosted there.'
+                : 'You have insufficient fund'}
+            </Alert>
           )}
+        </>
+      )}
 
-      <VStack mt={16} onSubmit={handleSubmit(handleOfferSubmit)} as="form" width="full" spacing={12}>
+      <VStack
+        mt={16}
+        onSubmit={handleSubmit(handleOfferSubmit)}
+        as="form"
+        width="full"
+        spacing={12}
+      >
         <FormControl isInvalid={!!errors.domainOwner}>
           <FormLabel>Domain owner</FormLabel>
-          <Input value={`${address} (YOU)`} disabled {...register('domainOwner', rules.domainOwner)} />
-          <FormErrorMessage>{errors.domainOwner?.message?.toString()}</FormErrorMessage>
+          <Input
+            value={`${address} (YOU)`}
+            disabled
+            {...register('domainOwner', rules.domainOwner)}
+          />
+          <FormErrorMessage>
+            {errors.domainOwner?.message?.toString()}
+          </FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.srcAsset}>
@@ -202,10 +238,10 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
               />
             )}
           />
-          <FormHelperText color="green">
-            ${fmtNum(srcRate)}
-          </FormHelperText>
-          <FormErrorMessage>{errors.srcAsset?.message?.toString()}</FormErrorMessage>
+          <FormHelperText color="green">${fmtNum(srcRate)}</FormHelperText>
+          <FormErrorMessage>
+            {errors.srcAsset?.message?.toString()}
+          </FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.destAsset}>
@@ -215,17 +251,13 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
             name="destAsset"
             rules={rules.destAsset}
             render={({ field: { onChange, value } }) => (
-              <AssetSelect
-                value={value}
-                onChange={onChange}
-                list={ASSETS}
-              />
+              <AssetSelect value={value} onChange={onChange} list={ASSETS} />
             )}
           />
-          <FormHelperText color="green">
-            ${fmtNum(destRate)}
-          </FormHelperText>
-          <FormErrorMessage>{errors.destAsset?.message?.toString()}</FormErrorMessage>
+          <FormHelperText color="green">${fmtNum(destRate)}</FormHelperText>
+          <FormErrorMessage>
+            {errors.destAsset?.message?.toString()}
+          </FormErrorMessage>
         </FormControl>
 
         {srcBalance !== undefined && srcDecimals !== undefined && (
@@ -237,25 +269,27 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
               rules={rules.depositAmount}
               render={({ field }) => (
                 <AmountPicker
-                  onChange={(value) => { field.onChange(value.toString()) }}
+                  onChange={(value) => {
+                    field.onChange(value.toString())
+                  }}
                   value={field.value}
                   max={srcBalance}
                   decimals={Number(srcDecimals)}
                 />
               )}
             />
-            {BigInt(watch('depositAmount')) > srcBalance
-              ? (
-                <FormHelperText color="red">
-                  Exceed the current balance
-                </FormHelperText>
-                )
-              : (
-                <FormHelperText color="green">
-                  ${fmtNum(depositAmountInBase * srcRate)}
-                </FormHelperText>
-                )}
-            <FormErrorMessage>{errors.depositAmount?.message?.toString()}</FormErrorMessage>
+            {BigInt(watch('depositAmount')) > srcBalance ? (
+              <FormHelperText color="red">
+                Exceed the current balance
+              </FormHelperText>
+            ) : (
+              <FormHelperText color="green">
+                ${fmtNum(depositAmountInBase * srcRate)}
+              </FormHelperText>
+            )}
+            <FormErrorMessage>
+              {errors.depositAmount?.message?.toString()}
+            </FormErrorMessage>
           </FormControl>
         )}
 
@@ -265,7 +299,9 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
           <FormHelperText color="green">
             ${fmtNum(Number(watch('acceptAmount')) * destRate)}
           </FormHelperText>
-          <FormErrorMessage>{errors.acceptAmount?.message?.toString()}</FormErrorMessage>
+          <FormErrorMessage>
+            {errors.acceptAmount?.message?.toString()}
+          </FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.acceptAmount}>
@@ -277,11 +313,11 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
 
         <FormControl isInvalid={!!errors.commissionRate}>
           <FormLabel>Commission rate</FormLabel>
-          <HStack align='center'>
+          <HStack align="center">
             {[0.1, 0.5, 1].map((value, key) => (
               <Button
                 key={key}
-                colorScheme='teal'
+                colorScheme="teal"
                 variant={commissionRate === value ? 'solid' : 'outline'}
                 opacity={commissionRate === value ? 1 : 0.5}
                 width={24}
@@ -293,7 +329,9 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
                 {value}%
               </Button>
             ))}
-            <InputGroup opacity={[0.1, 0.5, 1].includes(commissionRate) ? 0.5 : 1}>
+            <InputGroup
+              opacity={[0.1, 0.5, 1].includes(commissionRate) ? 0.5 : 1}
+            >
               <Input
                 type="number"
                 step="any"
@@ -328,7 +366,9 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
                 max={24 * 7}
                 value={field.value}
                 my={8}
-                onChange={(value) => { field.onChange(value) }}
+                onChange={(value) => {
+                  field.onChange(value)
+                }}
               >
                 <SliderMark value={6} mt={2} w={12}>
                   6 hr
@@ -338,12 +378,12 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
                 </SliderMark>
                 <SliderMark
                   value={watch('lockWithdrawDuration')}
-                  textAlign='center'
-                  bg='blue.500'
-                  color='white'
-                  mt='-10'
-                  w='36'
-                  transform='translateX(-50%)'
+                  textAlign="center"
+                  bg="blue.500"
+                  color="white"
+                  mt="-10"
+                  w="36"
+                  transform="translateX(-50%)"
                 >
                   {fmrHr(watch('lockWithdrawDuration'))}
                 </SliderMark>
@@ -359,17 +399,18 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
             {errors.lockWithdrawDuration?.message?.toString()}
           </FormErrorMessage>
         </FormControl>
-        <Alert status='info'>
+        <Alert status="info">
           <AlertIcon />
-          Tips: You can retract the offer at any time after it is created.
-          Other people can join your offer by depositing asset there.
-          The domain owner earns commission if the offer is accepted by someone (who has to deposit).
+          Tips: You can retract the offer at any time after it is created. Other
+          people can join your offer by depositing asset there. The domain owner
+          earns commission if the offer is accepted by someone (who has to
+          deposit).
         </Alert>
         <Button
           type="submit"
           isLoading={isCreatingOffer}
           loadingText="Create"
-          size='lg'
+          size="lg"
           isDisabled={domainOwner !== address && balance <= domainPrice}
         >
           Create

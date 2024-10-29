@@ -13,12 +13,7 @@ import { ErrorType } from '~/helpers/error'
 
 const ALL_ASSETS = ''
 
-const ALL_ASSET_OPTION = new Asset(
-  ALL_ASSETS,
-  'All',
-  '',
-  '0'
-)
+const ALL_ASSET_OPTION = new Asset(ALL_ASSETS, 'All', '', '0')
 
 const EventHistory: React.FC<BoxProps> = (props) => {
   const [assetAddress, setAssetAddress] = useState(ALL_ASSETS)
@@ -26,15 +21,20 @@ const EventHistory: React.FC<BoxProps> = (props) => {
 
   const { data, isLoading, error } = useQuery<{ events: EventType[] }>({
     queryKey: ['events', assetAddress],
-    queryFn: () => client.request(
-      assetAddress === ALL_ASSETS ? GET_ALL_EVENTS : GET_EVENTS_FOR_ASSET,
-      { asset: assetAddress }
-    )
+    queryFn: () =>
+      client.request(
+        assetAddress === ALL_ASSETS ? GET_ALL_EVENTS : GET_EVENTS_FOR_ASSET,
+        { asset: assetAddress }
+      )
   })
 
   useEffect(() => {
     if (error) {
-      showError({ title: 'Failed to show offer history', error, type: ErrorType.QUERY })
+      showError({
+        title: 'Failed to show offer history',
+        error,
+        type: ErrorType.QUERY
+      })
     }
   }, [error, showError])
 
@@ -49,9 +49,7 @@ const EventHistory: React.FC<BoxProps> = (props) => {
         />
       </FormControl>
       {isLoading && <Spinner />}
-      {data?.events.map((event, key) => (
-        <Event event={event} key={key} />
-      ))}
+      {data?.events.map((event, key) => <Event event={event} key={key} />)}
     </VStack>
   )
 }

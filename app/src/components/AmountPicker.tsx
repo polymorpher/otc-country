@@ -23,7 +23,12 @@ export interface AmountPickerProps {
   onChange?: (value: bigint) => void
 }
 
-const AmountPicker: React.FC<AmountPickerProps> = ({ value, onChange, max, decimals }) => {
+const AmountPicker: React.FC<AmountPickerProps> = ({
+  value,
+  onChange,
+  max,
+  decimals
+}) => {
   const val = Number(formatUnits(BigInt(value), decimals))
 
   const maxVal = Number(formatUnits(max, decimals))
@@ -55,7 +60,9 @@ const AmountPicker: React.FC<AmountPickerProps> = ({ value, onChange, max, decim
         flex="1"
         focusThumbOnChange={false}
         value={maxVal === 0 ? 0 : (val * 100) / maxVal}
-        onChange={(value) => { change?.(round((maxVal * value) / 100)) }}
+        onChange={(value) => {
+          change?.(round((maxVal * value) / 100))
+        }}
       >
         <SliderMark
           value={maxVal === 0 ? 0 : Math.min((val * 100) / maxVal, 100)}
@@ -70,9 +77,9 @@ const AmountPicker: React.FC<AmountPickerProps> = ({ value, onChange, max, decim
         </SliderMark>
         <SliderMark
           value={100}
-          textAlign='center'
-          mt='8'
-          transform='translateX(-50%)'
+          textAlign="center"
+          mt="8"
+          transform="translateX(-50%)"
         >
           {fmtNum(maxVal)}
         </SliderMark>

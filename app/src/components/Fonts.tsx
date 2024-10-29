@@ -1,8 +1,9 @@
 import { Global } from '@emotion/react'
 import React from 'react'
 
-const Fonts = (): React.JSX.Element => (<Global
-        styles={`
+const Fonts = (): React.JSX.Element => (
+  <Global
+    styles={`
             @font-face {
                 font-family: 'DecimaMono';
                 src: url('./fonts/decima-mono.eot');
@@ -16,6 +17,7 @@ const Fonts = (): React.JSX.Element => (<Global
             }
 
       `}
-    />)
+  />
+)
 
 export default Fonts

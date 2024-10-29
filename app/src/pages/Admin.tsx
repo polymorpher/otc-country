@@ -24,9 +24,19 @@ const Admin: React.FC = () => {
 
   const [assetRegistered, setAssetRegistered] = useState<boolean>()
 
-  const handleDebouncedChange = useMemo(() => debounce((e) => { setAsset(e.target.value) }, debounceTimeout), [])
+  const handleDebouncedChange = useMemo(
+    () =>
+      debounce((e) => {
+        setAsset(e.target.value)
+      }, debounceTimeout),
+    []
+  )
 
-  const { data, refetch, isFetching: isChecking } = useReadContract({
+  const {
+    data,
+    refetch,
+    isFetching: isChecking
+  } = useReadContract({
     ...otcContract,
     functionName: 'assets',
     args: [asset]
@@ -41,10 +51,11 @@ const Admin: React.FC = () => {
     functionName: 'addAsset'
   })
 
-  const { writeAsync: removeAsset, status: removeStatus } = useContractWriteComplete({
-    ...otcContract,
-    functionName: 'removeAsset'
-  })
+  const { writeAsync: removeAsset, status: removeStatus } =
+    useContractWriteComplete({
+      ...otcContract,
+      functionName: 'removeAsset'
+    })
 
   useEffect(() => {
     if (asset && isAddress(asset)) {
@@ -87,14 +98,13 @@ const Admin: React.FC = () => {
           onClick={() =>
             asset &&
             isAddress(asset) &&
-            addAsset(
-              [asset],
-              {
-                pendingTitle: 'Adding asset',
-                successTitle: 'Asset has been added',
-                failTitle: 'Failed to add the asset'
-              }
-            ).then(() => { setAssetRegistered(true) })
+            addAsset([asset], {
+              pendingTitle: 'Adding asset',
+              successTitle: 'Asset has been added',
+              failTitle: 'Failed to add the asset'
+            }).then(() => {
+              setAssetRegistered(true)
+            })
           }
         >
           Add
@@ -106,14 +116,13 @@ const Admin: React.FC = () => {
           onClick={() =>
             asset &&
             isAddress(asset) &&
-            removeAsset(
-              [asset],
-              {
-                pendingTitle: 'Adding asset',
-                successTitle: 'Asset has been added',
-                failTitle: 'Failed to add the asset'
-              }
-            ).then(() => { setAssetRegistered(false) })
+            removeAsset([asset], {
+              pendingTitle: 'Adding asset',
+              successTitle: 'Asset has been added',
+              failTitle: 'Failed to add the asset'
+            }).then(() => {
+              setAssetRegistered(false)
+            })
           }
         >
           Remove

@@ -12,15 +12,18 @@ interface ErrorInfo {
 const useShowError = () => {
   const toast = useToast()
 
-  const show = useCallback((data: ErrorInfo) => {
-    toast({
-      title: data.title,
-      description: errorMessage(data.error, data.type),
-      status: 'error',
-      position: 'top-left',
-      duration: 7000
-    })
-  }, [toast])
+  const show = useCallback(
+    (data: ErrorInfo) => {
+      toast({
+        title: data.title,
+        description: errorMessage(data.error, data.type),
+        status: 'error',
+        position: 'top-left',
+        duration: 7000
+      })
+    },
+    [toast]
+  )
 
   return show
 }

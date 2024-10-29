@@ -1,16 +1,10 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { extendTheme, ChakraProvider, Container } from '@chakra-ui/react'
-import {
-  QueryClient,
-  QueryClientProvider
-} from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagmiProvider } from 'wagmi'
 import { ConnectKitProvider } from 'connectkit'
-import {
-  createBrowserRouter,
-  RouterProvider
-} from 'react-router-dom'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import LandingPage from '~/routes/index'
 import NewOffer from '~/routes/new'
 import Offer from '~/routes/offer'

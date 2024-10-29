@@ -18,7 +18,11 @@ export interface UseAcceptType {
   onAccept: () => Promise<ReturnType<typeof waitForTransactionReceipt>>
 }
 
-const useAccept = ({ offerAddress, destAsset, acceptAmount }: Config): UseAcceptType => {
+const useAccept = ({
+  offerAddress,
+  destAsset,
+  acceptAmount
+}: Config): UseAcceptType => {
   const { address: userAddress } = useAccount()
 
   const { data: destBalance } = useReadContract({
@@ -33,36 +37,40 @@ const useAccept = ({ offerAddress, destAsset, acceptAmount }: Config): UseAccept
     args: [userAddress, offerAddress]
   }) as { data: bigint }
 
-  const { writeAsync: acceptOffer, status: acceptStatus } = useContractWriteComplete({
-    ...offerContract(offerAddress),
-    functionName: 'accept'
-  })
+  const { writeAsync: acceptOffer, status: acceptStatus } =
+    useContractWriteComplete({
+      ...offerContract(offerAddress),
+      functionName: 'accept'
+    })
 
-  const { writeAsync: approveDestAsset, status: approveStatus } = useContractWriteComplete({
-    ...erc20Contract(destAsset),
-    functionName: 'approve'
-  })
+  const { writeAsync: approveDestAsset, status: approveStatus } =
+    useContractWriteComplete({
+      ...erc20Contract(destAsset),
+      functionName: 'approve'
+    })
 
   const onAccept = useCallback(async () => {
     if (allowance < acceptAmount) {
-      await approveDestAsset(
-        [offerAddress, acceptAmount],
-        {
-          pendingTitle: 'Approving deposition',
-          failTitle: 'Failed to approve',
-          successTitle: 'Deposition has been approved'
-        }
-      )
+      await approveDestAsset([offerAddress, acceptAmount], {
+        pendingTitle: 'Approving deposition',
+        failTitle: 'Failed to approve',
+        successTitle: 'Deposition has been approved'
+      })
     }
 
-    return await acceptOffer(
-      [userAddress],
-      {
-        pendingTitle: 'Accepting offer',
-        failTitle: 'Failed to deposit',
-        successTitle: 'Offer has been accepted'
-      })
-  }, [acceptAmount, acceptOffer, allowance, approveDestAsset, offerAddress, userAddress])
+    return await acceptOffer([userAddress], {
+      pendingTitle: 'Accepting offer',
+      failTitle: 'Failed to deposit',
+      successTitle: 'Offer has been accepted'
+    })
+  }, [
+    acceptAmount,
+    acceptOffer,
+    allowance,
+    approveDestAsset,
+    offerAddress,
+    userAddress
+  ])
 
   return {
     destBalance,

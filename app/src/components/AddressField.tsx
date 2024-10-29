@@ -9,11 +9,15 @@ interface AddressFieldProps extends TextProps {
   shorten?: number | boolean
 }
 
-const AddressField: React.FC<AddressFieldProps> = ({ text, children, shorten }) => (
+const AddressField: React.FC<AddressFieldProps> = ({
+  text,
+  children,
+  shorten
+}) => (
   <Link href={`https://${host}/address/${children}`} isExternal>
     <Tooltip label={children}>
       <Text>
-        {shorten === true ? abbreviateAddress(children) : text ?? children}
+        {shorten === true ? abbreviateAddress(children) : (text ?? children)}
       </Text>
     </Tooltip>
   </Link>

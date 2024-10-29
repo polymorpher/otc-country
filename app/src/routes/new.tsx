@@ -26,7 +26,11 @@ const User = () => {
 
   useEffect(() => {
     if (error) {
-      showError({ title: 'Failed to show recent offers', error, type: ErrorType.QUERY })
+      showError({
+        title: 'Failed to show recent offers',
+        error,
+        type: ErrorType.QUERY
+      })
     }
   }, [error, showError])
 
@@ -40,9 +44,7 @@ const User = () => {
         fontSize="xs"
         width={['100%', '100%', '100%', '150%', '200%']}
       >
-        {data?.events.map((event, key) => (
-          <Event event={event} key={key} />
-        ))}
+        {data?.events.map((event, key) => <Event event={event} key={key} />)}
       </SimpleGrid>
       <NewOfferWithDomainName />
     </>
@@ -76,7 +78,10 @@ const New = () => {
       ...otcContract,
       functionName: 'hasRole',
       args: [operatorRoleBytes, address]
-    }).then((res) => { setIsOperator(Boolean(res)) })
+    })
+      .then((res) => {
+        setIsOperator(Boolean(res))
+      })
       .catch((error) => {
         showError({ title: 'Cannot determine if user is operator', error })
         console.error(error)

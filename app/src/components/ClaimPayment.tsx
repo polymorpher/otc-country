@@ -11,11 +11,24 @@ interface ClaimPaymentProps {
   disabled: boolean
 }
 
-const ClaimPayment: React.FC<ClaimPaymentProps> = ({ balance, decimals, onClick, isClaiming, disabled }) => (
+const ClaimPayment: React.FC<ClaimPaymentProps> = ({
+  balance,
+  decimals,
+  onClick,
+  isClaiming,
+  disabled
+}) => (
   <VStack>
-    <Text textAlign="right">Payment balance: {round(formatUnits(balance, decimals))}</Text>
+    <Text textAlign="right">
+      Payment balance: {round(formatUnits(balance, decimals))}
+    </Text>
     {balance > 0n && (
-      <Button isDisabled={disabled} isLoading={isClaiming} loadingText="Claim payment" onClick={onClick}>
+      <Button
+        isDisabled={disabled}
+        isLoading={isClaiming}
+        loadingText="Claim payment"
+        onClick={onClick}
+      >
         Claim payment
       </Button>
     )}

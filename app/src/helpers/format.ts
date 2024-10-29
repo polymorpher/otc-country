@@ -1,4 +1,7 @@
-const numFormatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 })
+const numFormatter = new Intl.NumberFormat('en-US', {
+  maximumFractionDigits: 2,
+  minimumFractionDigits: 2
+})
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
@@ -13,7 +16,8 @@ const timeFormatter = new Intl.DateTimeFormat('en-US', {
   hour12: true
 })
 
-export const fmtNum = (value: number | string): string => numFormatter.format(Number(value))
+export const fmtNum = (value: number | string): string =>
+  numFormatter.format(Number(value))
 
 export const fmtTime = (value: string): string => {
   const date = new Date(value)

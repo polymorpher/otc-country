@@ -50,12 +50,18 @@ const Event: React.FC<EventProps> = ({ event }) => {
     queryFn: () => getPrice(event.offer.destAsset.address)
   })
 
-  const srcAmount = Number(formatUnits(
-    event.type === 'ACCEPTED' ? event.offer.depositHistory[0] : event.offer.totalDeposits,
-    event.offer.sourceAsset.decimals
-  ))
+  const srcAmount = Number(
+    formatUnits(
+      event.type === 'ACCEPTED'
+        ? event.offer.depositHistory[0]
+        : event.offer.totalDeposits,
+      event.offer.sourceAsset.decimals
+    )
+  )
 
-  const destAmount = Number(formatUnits(event.offer.closeAmount, event.offer.destAsset.decimals))
+  const destAmount = Number(
+    formatUnits(event.offer.closeAmount, event.offer.destAsset.decimals)
+  )
 
   const elapsed = Math.ceil(Date.now() / 1000) - Number(event.timestamp)
 
@@ -70,84 +76,66 @@ const Event: React.FC<EventProps> = ({ event }) => {
       border="1px"
       borderColor="gray.200"
       p="2"
-      onClick={() => { window.open(`/offer/${event.offer.domainName}`) }}
+      onClick={() => {
+        window.open(`/offer/${event.offer.domainName}`)
+      }}
       cursor="pointer"
       _hover={{ textDecor: 'none', bgColor: 'gray.100' }}
     >
-      <Box textAlign="right">
-        Status
-      </Box>
-      <Box>
-        {event.type === 'ACCEPTED' ? 'Accepted' : 'Created'}
-      </Box>
-      <Box textAlign="right">
-        Source Asset
-      </Box>
+      <Box textAlign="right">Status</Box>
+      <Box>{event.type === 'ACCEPTED' ? 'Accepted' : 'Created'}</Box>
+      <Box textAlign="right">Source Asset</Box>
       <AddressField text={event.offer.sourceAsset.label}>
         {event.offer.sourceAsset.address}
       </AddressField>
-      <Box textAlign="right">
-        Source Amount
-      </Box>
-      <Box>
-        {fmtNum(srcAmount)}
-      </Box>
-      <Box textAlign="right">
-        Destination Asset
-      </Box>
+      <Box textAlign="right">Source Amount</Box>
+      <Box>{fmtNum(srcAmount)}</Box>
+      <Box textAlign="right">Destination Asset</Box>
       <AddressField text={event.offer.destAsset.label}>
         {event.offer.destAsset.address}
       </AddressField>
-      <Box textAlign="right">
-        Accept Amount
-      </Box>
-      <Box>
-        {fmtNum(destAmount)}
-      </Box>
-      {event.type === 'CREATED'
-        ? (
-          <>
-            <Box textAlign="right">
-              Exchange Rate
-            </Box>
-            <Box>
-              {destAssetRate && srcAssetRate && fmtNum(destAssetRate * destAmount / (srcAssetRate * srcAmount))}
-            </Box>
-          </>
-          )
-        : (
-          <>
-            <Box textAlign="right">
-              Exchange Rate
-            </Box>
-            <Box />
-            <Box textAlign="right">
-              Current
-            </Box>
-            <Box>
-              {destAssetRate && srcAssetRate && fmtNum(destAssetRate * destAmount / (srcAssetRate * srcAmount))}
-            </Box>
-            <Box textAlign="right">
-              Accepted
-            </Box>
-            <Box>
-              {fmtNum(event.destAssetPrice * destAmount / (event.sourceAssetPrice * srcAmount))}
-            </Box>
-          </>
-          )}
-      <Box textAlign="right">
-        Domain Name
-      </Box>
-      <Box>
-        {event.offer.domainName ?? 'N/A'}
-      </Box>
-      <Box textAlign="right">
-        Time
-      </Box>
+      <Box textAlign="right">Accept Amount</Box>
+      <Box>{fmtNum(destAmount)}</Box>
+      {event.type === 'CREATED' ? (
+        <>
+          <Box textAlign="right">Exchange Rate</Box>
+          <Box>
+            {destAssetRate &&
+              srcAssetRate &&
+              fmtNum((destAssetRate * destAmount) / (srcAssetRate * srcAmount))}
+          </Box>
+        </>
+      ) : (
+        <>
+          <Box textAlign="right">Exchange Rate</Box>
+          <Box />
+          <Box textAlign="right">Current</Box>
+          <Box>
+            {destAssetRate &&
+              srcAssetRate &&
+              fmtNum((destAssetRate * destAmount) / (srcAssetRate * srcAmount))}
+          </Box>
+          <Box textAlign="right">Accepted</Box>
+          <Box>
+            {fmtNum(
+              (event.destAssetPrice * destAmount) /
+                (event.sourceAssetPrice * srcAmount)
+            )}
+          </Box>
+        </>
+      )}
+      <Box textAlign="right">Domain Name</Box>
+      <Box>{event.offer.domainName ?? 'N/A'}</Box>
+      <Box textAlign="right">Time</Box>
       <Box>
         {fmtTime(new Date(event.timestamp * 1000).toUTCString())}
-        <br/>
-        {elapsed < 60 ? 'A few seconds' : elapsed < 3600 ? `${Math.round(elapsed / 60)} mins` : fmrHr(Math.round(elapsed / 3600))} ago
+        <br />
+        {elapsed < 60
+          ? 'A few seconds'
+          : elapsed < 3600
+            ? `${Math.round(elapsed / 60)} mins`
+            : fmrHr(Math.round(elapsed / 3600))}{' '}
+        ago
       </Box>
     </SimpleGrid>
   )

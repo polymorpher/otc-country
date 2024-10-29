@@ -1,5 +1,13 @@
 import React, { useCallback } from 'react'
-import { Alert, AlertIcon, Box, Button, Spinner, Text, VStack } from '@chakra-ui/react'
+import {
+  Alert,
+  AlertIcon,
+  Box,
+  Button,
+  Spinner,
+  Text,
+  VStack
+} from '@chakra-ui/react'
 import { type Address } from 'abitype'
 import { formatUnits } from 'viem'
 import { useAccount, useReadContract } from 'wagmi'
@@ -80,10 +88,11 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
     functionName: 'decimals'
   })
 
-  const { writeAsync: closeOffer, status: closeStatus } = useContractWriteComplete({
-    ...offerContract(address),
-    functionName: 'close'
-  })
+  const { writeAsync: closeOffer, status: closeStatus } =
+    useContractWriteComplete({
+      ...offerContract(address),
+      functionName: 'close'
+    })
 
   const {
     destBalance,
@@ -111,19 +120,29 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
     refetchTotalDeposits
   ])
 
-  const { depositFund, isDepositing } = useDeposit({ offerAddress: address, srcAsset })
-
-  const { writeAsync: withdraw, status: withdrawStatus } = useContractWriteComplete({
-    ...offerContract(address),
-    functionName: 'withdraw'
+  const { depositFund, isDepositing } = useDeposit({
+    offerAddress: address,
+    srcAsset
   })
 
-  const { writeAsync: claimDepositorPayment, status: claimDepositorPaymentStatus } = useContractWriteComplete({
+  const { writeAsync: withdraw, status: withdrawStatus } =
+    useContractWriteComplete({
+      ...offerContract(address),
+      functionName: 'withdraw'
+    })
+
+  const {
+    writeAsync: claimDepositorPayment,
+    status: claimDepositorPaymentStatus
+  } = useContractWriteComplete({
     ...offerContract(address),
     functionName: 'withdrawPaymentForDepositor'
   })
 
-  const { writeAsync: claimDomainOwnerPayment, status: claimDomainOwnerPaymentStatus } = useContractWriteComplete({
+  const {
+    writeAsync: claimDomainOwnerPayment,
+    status: claimDomainOwnerPaymentStatus
+  } = useContractWriteComplete({
     ...offerContract(address),
     functionName: 'withdrawPaymentForDomainOwner'
   })
@@ -144,7 +163,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
       <Alert status="error">
         <AlertIcon />
         Error while fetching offer data
-        <br/>
+        <br />
         {address}
       </Alert>
     )
@@ -167,23 +186,34 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
         </Alert>
       )}
 
-      <Box display="grid" gridTemplateColumns="10em 1fr" gridRowGap="4" gridColumnGap="4">
+      <Box
+        display="grid"
+        gridTemplateColumns="10em 1fr"
+        gridRowGap="4"
+        gridColumnGap="4"
+      >
         {!isLoading && (
           <>
             <Text textAlign="right">Contract address</Text>
             <AddressField>{address}</AddressField>
 
             <Text textAlign="right">Creator</Text>
-            <AddressField text={creator === walletAddr ? 'You' : undefined}>{String(creator)}</AddressField>
+            <AddressField text={creator === walletAddr ? 'You' : undefined}>
+              {String(creator)}
+            </AddressField>
 
             <Text textAlign="right">Domain owner</Text>
-            <AddressField text={domainOwner === walletAddr ? 'You' : undefined}>{String(domainOwner)}</AddressField>
+            <AddressField text={domainOwner === walletAddr ? 'You' : undefined}>
+              {String(domainOwner)}
+            </AddressField>
 
             <Text textAlign="right">Commission rate</Text>
             <Text>{(commissionRate * 100) / commissionRateScale}%</Text>
 
             <Text textAlign="right">Accept amount</Text>
-            <Text>{round(formatUnits(acceptAmount, Number(destDecimals)))}</Text>
+            <Text>
+              {round(formatUnits(acceptAmount, Number(destDecimals)))}
+            </Text>
 
             <Text textAlign="right">Source asset</Text>
             <AddressField>{String(srcAsset)}</AddressField>
@@ -194,12 +224,20 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
         )}
 
         <Text textAlign="right">Total deposits</Text>
-        {isLoadingTotalDeposits ? <Spinner /> : <Text>{round(formatUnits(totalDeposits, Number(srcDecimals)))}</Text>}
+        {isLoadingTotalDeposits ? (
+          <Spinner />
+        ) : (
+          <Text>{round(formatUnits(totalDeposits, Number(srcDecimals)))}</Text>
+        )}
 
         {walletAddr !== undefined && (
           <>
             <Text textAlign="right">Your deposit</Text>
-            {isLoadingDeposits ? <Spinner /> : <Text>{round(formatUnits(deposits, Number(srcDecimals)))}</Text>}
+            {isLoadingDeposits ? (
+              <Spinner />
+            ) : (
+              <Text>{round(formatUnits(deposits, Number(srcDecimals)))}</Text>
+            )}
           </>
         )}
       </Box>
@@ -209,23 +247,21 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
           {status === Status.Open && deposits === 0n && (
             <Text my="5">You can deposit your funds or accept the offer</Text>
           )}
-          {status !== Status.Accepted
-            ? (
-                deposits > 0 &&
+          {status !== Status.Accepted ? (
+            deposits > 0 &&
             timestamp !== undefined &&
             !isLoadingLockWithdrawUntil && (
               <AmountPopover
                 max={deposits}
                 decimals={Number(destDecimals)}
                 onOkay={(amount) =>
-                  withdraw(
-                    [amount, walletAddr],
-                    {
-                      pendingTitle: 'Withdrawing',
-                      successTitle: 'Withdraw succeded',
-                      failTitle: 'Failed to withdraw'
-                    }
-                  ).then(() => { refetch() })
+                  withdraw([amount, walletAddr], {
+                    pendingTitle: 'Withdrawing',
+                    successTitle: 'Withdraw succeded',
+                    failTitle: 'Failed to withdraw'
+                  }).then(() => {
+                    refetch()
+                  })
                 }
               >
                 <Withdraw
@@ -235,54 +271,59 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
                   isWithdrawing={withdrawStatus === 'pending'}
                 />
               </AmountPopover>
-                )
-              )
-            : walletAddr === domainOwner
-              ? (
-                <ClaimPayment
+            )
+          ) : walletAddr === domainOwner ? (
+            <ClaimPayment
               balance={paymentBalanceForDomainOwner}
               decimals={Number(destDecimals)}
-              onClick={() => claimDomainOwnerPayment(
-                [walletAddr],
-                {
+              onClick={() =>
+                claimDomainOwnerPayment([walletAddr], {
                   pendingTitle: 'Claiming payment',
                   successTitle: 'Payment has been claimed',
                   failTitle: 'Failed to claim the payment'
-                }
-              ).then(() => { refetchPaymentBalanceForDomainOwner() })}
+                }).then(() => {
+                  refetchPaymentBalanceForDomainOwner()
+                })
+              }
               isClaiming={claimDomainOwnerPaymentStatus === 'pending'}
               disabled={isUserActionDoing}
             />
-                )
-              : deposits > 0
-                ? (
-                  <ClaimPayment
+          ) : deposits > 0 ? (
+            <ClaimPayment
               balance={paymentBalanceForDepositor}
               decimals={Number(destDecimals)}
-              onClick={() => claimDepositorPayment(
-                [walletAddr],
-                {
+              onClick={() =>
+                claimDepositorPayment([walletAddr], {
                   pendingTitle: 'Claiming payment',
                   successTitle: 'Payment has been claimed',
                   failTitle: 'Failed to claim the payment'
-                }
-              ).then(() => { refetchPaymentBalanceForDepositor() })}
+                }).then(() => {
+                  refetchPaymentBalanceForDepositor()
+                })
+              }
               isClaiming={claimDepositorPaymentStatus === 'pending'}
               disabled={isUserActionDoing}
             />
-                  )
-                : (
-                  <Text>You have no deposits</Text>
-                  )}
+          ) : (
+            <Text>You have no deposits</Text>
+          )}
 
           {status === Status.Open && srcBalance !== undefined && (
             <>
               <AmountPopover
                 max={srcBalance as bigint}
                 decimals={Number(srcDecimals)}
-                onOkay={value => depositFund(value).then(() => { refetch() })}
+                onOkay={(value) =>
+                  depositFund(value).then(() => {
+                    refetch()
+                  })
+                }
               >
-                <Button isDisabled={isUserActionDoing} isLoading={isDepositing} loadingText="Deposit">
+                <Button
+                  isDisabled={isUserActionDoing}
+                  isLoading={isDepositing}
+                  loadingText="Deposit"
+                >
                   Deposit
                 </Button>
               </AmountPopover>
@@ -309,14 +350,13 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
               )}
               {creator === walletAddr && (
                 <Button
-                  onClick={() => closeOffer(
-                    [],
-                    {
+                  onClick={() =>
+                    closeOffer([], {
                       pendingTitle: 'Closing offer',
                       successTitle: 'Offer has been closed',
                       failTitle: 'Failed to close the offer'
-                    }
-                  ).then(() => refetchStatus())}
+                    }).then(() => refetchStatus())
+                  }
                   isDisabled={isUserActionDoing}
                   isLoading={closeStatus === 'pending'}
                   loadingText="Close"
