@@ -1,41 +1,16 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { extendTheme, ChakraProvider, Container } from '@chakra-ui/react'
-import { WagmiConfig, createConfig, configureChains } from 'wagmi'
-import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
-import {
-  createBrowserRouter,
-  RouterProvider
-} from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { WagmiProvider } from 'wagmi'
+import { ConnectKitProvider } from 'connectkit'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import LandingPage from '~/routes/index'
 import NewOffer from '~/routes/new'
-import Offer from './routes/offer'
+import Offer from '~/routes/offer'
 import PendingTransactionsProvider from '~/providers/PendingTransactionsProvider'
-import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
-import chain from '~/helpers/chain'
-import { RPC, WS } from '~/helpers/config'
 import Intro from '~/components/Intro'
-
-const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [chain],
-  // [alchemyProvider({ apiKey: CONFIG.alchemyApiKey }), publicProvider()],
-  [
-    jsonRpcProvider({
-      rpc: () => ({
-        http: RPC,
-        ws: WS
-      })
-    })
-  ]
-)
-
-export const connector = new MetaMaskConnector({ chains })
-
-const config = createConfig({
-  autoConnect: true,
-  publicClient,
-  webSocketPublicClient
-})
+import { config } from '~/helpers/config'
 
 const theme = extendTheme({
   fonts: {
@@ -53,8 +28,6 @@ const theme = extendTheme({
   }
 })
 
-export default theme
-
 const router = createBrowserRouter([
   {
     path: '/',
@@ -70,15 +43,21 @@ const router = createBrowserRouter([
   }
 ])
 
+const queryClient = new QueryClient()
+
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <ChakraProvider theme={theme}>
     <Container my="10" maxW="container.sm">
-      <WagmiConfig config={config}>
-        <PendingTransactionsProvider>
-          <Intro/>
-          <RouterProvider router={router} />
-        </PendingTransactionsProvider>
-      </WagmiConfig>
+      <WagmiProvider config={config}>
+        <QueryClientProvider client={queryClient}>
+          <ConnectKitProvider>
+            <PendingTransactionsProvider>
+              <Intro />
+              <RouterProvider router={router} />
+            </PendingTransactionsProvider>
+          </ConnectKitProvider>
+        </QueryClientProvider>
+      </WagmiProvider>
     </Container>
   </ChakraProvider>
 )

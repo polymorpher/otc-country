@@ -1,0 +1,57 @@
+specVersion: 1.2.0
+description: >-
+  A secure & decentralized way to address resources on and off the blockchain
+  using simple, human-readable names. Access domains and transfer history.
+repository: "https://github.com/polymorpher/otc-country"
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: OTC
+    network: anvil
+    source:
+      address: "0xA15BB66138824a1c7167f5E85b957d04Dd34E468"
+      startBlock: 64603499
+      abi: OTC
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      file: ./src/listeners.ts
+      entities:
+        - Event
+        - Offer
+        - Asset
+      abis:
+        - name: OTC
+          file: ../contract/artifacts/contracts/OTC.sol/OTC.json
+        - name: Offer
+          file: ../contract/artifacts/contracts/Offer.sol/Offer.json
+        - name: ERC20Mock
+          file: ../contract/artifacts/contracts/mocks/ERC20.sol/ERC20Mock.json
+      eventHandlers:
+        - event: "OfferCreated(indexed string,indexed address,indexed address,address,address,uint256,uint256,uint256,uint256)"
+          handler: handleOfferCreated
+  - kind: ethereum/contract
+    name: Offer
+    network: anvil
+    source:
+      abi: Offer
+      startBlock: 64603499
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      file: ./src/listeners.ts
+      entities:
+        - Event
+        - Offer
+        - Asset
+      abis:
+        - name: Offer
+          file: ../contract/artifacts/contracts/Offer.sol/Offer.json
+        - name: ERC20Mock
+          file: ../contract/artifacts/contracts/mocks/ERC20.sol/ERC20Mock.json
+      eventHandlers:
+        - event: "OfferAccepted(indexed address)"
+          handler: handleOfferAccepted

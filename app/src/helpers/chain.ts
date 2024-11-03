@@ -1,18 +1,10 @@
-import { harmonyOne } from '@wagmi/core/chains'
-import { type Chain } from '@wagmi/core'
+import { harmonyOne, sepolia } from 'wagmi/chains'
 
-const harmonyChain: Chain = {
-  ...harmonyOne,
-  rpcUrls: {
-    public: { http: ['https://rpc.ankr.com/harmony'] },
-    default: { http: ['https://rpc.ankr.com/harmony'] }
-  }
-}
+const chain = import.meta.env.VITE_TEST ? sepolia : harmonyOne
 
-// const chain = CONFIG.prod ? harmonyChain : localhost
-const chain = harmonyChain
-
-export const host = 'explorer.harmony.one'
+export const host = import.meta.env.VITE_TEST
+  ? 'sepolia.etherscan.io'
+  : 'explorer.harmony.one'
 
 export const hashLink = (hash: string): string => `https://${host}/tx/${hash}`
 

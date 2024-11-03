@@ -1,0 +1,41 @@
+type Asset @entity(immutable: true) {
+  id: Bytes!
+  address: Bytes!
+  decimals: Int!
+  label: String!
+}
+
+type Offer @entity {
+  id: Bytes!
+  domainName: String!
+  sourceAsset: Asset!
+  destAsset: Asset!
+  offerAddress: Bytes!
+  domainOwner: Bytes!
+  depositHistory: [BigInt!]!
+  totalDeposits: BigInt!
+  closeAmount: BigInt!
+  commissionRate: BigInt!
+  lockWithdrawAfter: BigInt!
+  events: [Event!]! @derivedFrom(field: "offer")
+}
+
+enum OfferEvent {
+  CREATED
+  ASSET_DEPOSITED
+  ASSET_WITHDRAWN
+  CLOSED
+  ACCEPTED
+  PAYMENT_WITHDRAWN
+}
+
+type Event @entity(immutable: true) {
+  id: Bytes!
+  type: OfferEvent!
+  offer: Offer!
+  sourceAssetPrice: Int!
+  destAssetPrice: Int!
+  blockNumber: BigInt!
+  txHash: Bytes!
+  timestamp: BigInt!
+}

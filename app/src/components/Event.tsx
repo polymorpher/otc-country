@@ -1,80 +1,69 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { Box, SimpleGrid } from '@chakra-ui/react'
-import { type Address, useContractRead } from 'wagmi'
+import { useQuery } from '@tanstack/react-query'
 import { formatUnits } from 'viem'
-import { getPrice, getAssetByAddress } from '~/helpers/assets'
+import getPrice from '~/helpers/price'
 import AddressField from '~/components/AddressField'
 import { fmrHr, fmtNum, fmtTime } from '~/helpers/format'
-import { erc20Contract, offerContract } from '~/helpers/contracts'
-import useShowError from '~/hooks/useShowError'
+
+interface Asset {
+  address: string
+  decimals: number
+  label: string
+}
+
+interface Offer {
+  domainName: string
+  sourceAsset: Asset
+  destAsset: Asset
+  offerAddress: string
+  domainOwner: string
+  depositHistory: bigint[]
+  totalDeposits: bigint
+  closeAmount: bigint
+  commissionRate: number
+  lockWithdrawAfter: number
+}
 
 export interface EventType {
-  event_name: 'OfferCreated' | 'OfferAccepted'
-  domain_name: string
-  src_asset: string
-  dest_asset: string
-  offer_address: string
-  domain_owner: string
-  close_amount: string
-  total_deposits: string
-  src_price: string
-  dest_price: string
-  time: string
+  type: 'ACCEPTED' | 'CREATED'
+  offer: Offer
+  sourceAssetPrice: number
+  destAssetPrice: number
+  blockNumber: number
+  txHash: string
+  timestamp: number
 }
 
 interface EventProps {
   event: EventType
-  simple?: boolean
 }
 
-const Event: React.FC<EventProps> = ({ event, simple }) => {
-  const showError = useShowError()
-
-  const { data: srcDecimals } = useContractRead({
-    ...erc20Contract(event.src_asset as Address),
-    functionName: 'decimals',
-    onError: (err) => {
-      !simple && showError({ title: 'Cannot get source asset decimals', message: err })
-      console.error('[Event][src][decimals]', err)
-    }
+const Event: React.FC<EventProps> = ({ event }) => {
+  const { data: srcAssetRate } = useQuery<number>({
+    queryKey: ['rate', event.offer.sourceAsset.address],
+    queryFn: () => getPrice(event.offer.sourceAsset.address)
   })
 
-  const { data: destDecimals } = useContractRead({
-    ...erc20Contract(event.dest_asset as Address),
-    functionName: 'decimals',
-    onError: (err) => {
-      !simple && showError({ title: 'Cannot get dest asset decimals', message: err })
-      console.error('[Event][dest][decimals]', err)
-    }
+  const { data: destAssetRate } = useQuery<number>({
+    queryKey: ['rate', event.offer.destAsset.address],
+    queryFn: () => getPrice(event.offer.destAsset.address)
   })
 
-  const { data: domainName } = useContractRead({
-    ...offerContract(event.offer_address as Address),
-    functionName: 'domainName',
-    onError: (err) => {
-      !simple && showError({ title: 'Cannot get domain name', message: err })
-      console.error('[Event][domainName]', err)
-    }
-  })
+  const srcAmount = Number(
+    formatUnits(
+      event.type === 'ACCEPTED'
+        ? event.offer.depositHistory[0]
+        : event.offer.totalDeposits,
+      event.offer.sourceAsset.decimals
+    )
+  )
 
-  const srcAsset = getAssetByAddress(event.src_asset)
+  const destAmount = Number(
+    formatUnits(event.offer.closeAmount, event.offer.destAsset.decimals)
+  )
 
-  const destAsset = getAssetByAddress(event.dest_asset)
-
-  const [srcAssetRate, setSrcAssetRate] = useState<number>()
-
-  const [destAssetRate, setDestAssetRate] = useState<number>()
-
-  useEffect(() => {
-    getPrice(srcAsset!.value).then(setSrcAssetRate)
-    getPrice(destAsset!.value).then(setDestAssetRate)
-  }, [destAsset, srcAsset, event])
-
-  const srcAmount = Number(formatUnits(BigInt(event.total_deposits), Number(srcDecimals)))
-
-  const destAmount = Number(formatUnits(BigInt(event.close_amount), Number(destDecimals)))
-
-  const elapsed = (Date.now() - new Date(event.time).getTime()) / 1000
+  const elapsed = Math.ceil(Date.now() / 1000) - Number(event.timestamp)
 
   return (
     <SimpleGrid
@@ -87,84 +76,66 @@ const Event: React.FC<EventProps> = ({ event, simple }) => {
       border="1px"
       borderColor="gray.200"
       p="2"
-      onClick={() => { window.open(`/offer/${event.domain_name}`) }}
+      onClick={() => {
+        window.open(`/offer/${event.offer.domainName}`)
+      }}
       cursor="pointer"
       _hover={{ textDecor: 'none', bgColor: 'gray.100' }}
     >
-      <Box textAlign="right">
-        Status
-      </Box>
-      <Box>
-        {event.event_name === 'OfferAccepted' ? 'Accepted' : 'Created'}
-      </Box>
-      <Box textAlign="right">
-        Source Asset
-      </Box>
-      <AddressField text={srcAsset?.label}>
-        {event.src_asset}
+      <Box textAlign="right">Status</Box>
+      <Box>{event.type === 'ACCEPTED' ? 'Accepted' : 'Created'}</Box>
+      <Box textAlign="right">Source Asset</Box>
+      <AddressField text={event.offer.sourceAsset.label}>
+        {event.offer.sourceAsset.address}
       </AddressField>
-      <Box textAlign="right">
-        Source Amount
-      </Box>
-      <Box>
-        {fmtNum(srcAmount)}
-      </Box>
-      <Box textAlign="right">
-        Destination Asset
-      </Box>
-      <AddressField text={destAsset?.label}>
-        {event.dest_asset}
+      <Box textAlign="right">Source Amount</Box>
+      <Box>{fmtNum(srcAmount)}</Box>
+      <Box textAlign="right">Destination Asset</Box>
+      <AddressField text={event.offer.destAsset.label}>
+        {event.offer.destAsset.address}
       </AddressField>
-      <Box textAlign="right">
-        Accept Amount
-      </Box>
+      <Box textAlign="right">Accept Amount</Box>
+      <Box>{fmtNum(destAmount)}</Box>
+      {event.type === 'CREATED' ? (
+        <>
+          <Box textAlign="right">Exchange Rate</Box>
+          <Box>
+            {destAssetRate &&
+              srcAssetRate &&
+              fmtNum((destAssetRate * destAmount) / (srcAssetRate * srcAmount))}
+          </Box>
+        </>
+      ) : (
+        <>
+          <Box textAlign="right">Exchange Rate</Box>
+          <Box />
+          <Box textAlign="right">Current</Box>
+          <Box>
+            {destAssetRate &&
+              srcAssetRate &&
+              fmtNum((destAssetRate * destAmount) / (srcAssetRate * srcAmount))}
+          </Box>
+          <Box textAlign="right">Accepted</Box>
+          <Box>
+            {fmtNum(
+              (event.destAssetPrice * destAmount) /
+                (event.sourceAssetPrice * srcAmount)
+            )}
+          </Box>
+        </>
+      )}
+      <Box textAlign="right">Domain Name</Box>
+      <Box>{event.offer.domainName ?? 'N/A'}</Box>
+      <Box textAlign="right">Time</Box>
       <Box>
-        {fmtNum(destAmount)}
-      </Box>
-      {event.event_name === 'OfferCreated'
-        ? (
-          <>
-            <Box textAlign="right">
-              Exchange Rate
-            </Box>
-            <Box>
-              {destAssetRate && srcAssetRate && fmtNum(destAssetRate * destAmount / (srcAssetRate * srcAmount))}
-            </Box>
-          </>
-          )
-        : (
-          <>
-            <Box textAlign="right">
-              Exchange Rate
-            </Box>
-            <Box />
-            <Box textAlign="right">
-              Current
-            </Box>
-            <Box>
-              {destAssetRate && srcAssetRate && fmtNum(destAssetRate * destAmount / (srcAssetRate * srcAmount))}
-            </Box>
-            <Box textAlign="right">
-              Accepted
-            </Box>
-            <Box>
-              {fmtNum(Number(event.dest_price) * destAmount / (Number(event.src_price) * srcAmount))}
-            </Box>
-          </>
-          )}
-      <Box textAlign="right">
-        Domain Name
-      </Box>
-      <Box>
-        {domainName ? String(domainName) : 'N/A'}
-      </Box>
-      <Box textAlign="right">
-        Time
-      </Box>
-      <Box>
-        {fmtTime(event.time)}
-        <br/>
-        {elapsed < 60 ? 'A few seconds' : elapsed < 3600 ? `${Math.round(elapsed / 60)} mins` : fmrHr(Math.round(elapsed / 3600))} ago
+        {fmtTime(new Date(event.timestamp * 1000).toUTCString())}
+        <br />
+        {elapsed < 60
+          ? 'A few seconds'
+          : elapsed < 3600
+            ? `${Math.round(elapsed / 60)} mins`
+            : fmrHr(Math.round(elapsed / 3600))}{' '}
+        ago
       </Box>
     </SimpleGrid>
   )

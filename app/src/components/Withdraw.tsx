@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button, Text, VStack } from '@chakra-ui/react'
-import { formatSeconds } from '~/helpers/time'
+import { formatSeconds } from '~/helpers/format'
 
 interface WithdrawProps {
   lockWithdrawUntil: number
@@ -14,7 +14,9 @@ const Withdraw = React.forwardRef<HTMLButtonElement, WithdrawProps>(
   ({ lockWithdrawUntil, timestamp, disabled, isWithdrawing, onClick }, ref) => (
     <VStack textAlign="center">
       {lockWithdrawUntil > timestamp && (
-        <Text textAlign="right">Withdraw locked left: {formatSeconds(lockWithdrawUntil - timestamp)}</Text>
+        <Text textAlign="right">
+          Withdraw locked left: {formatSeconds(lockWithdrawUntil - timestamp)}
+        </Text>
       )}
       <Button
         ref={ref}

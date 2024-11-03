@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import {
   Flex,
   NumberDecrementStepper,
@@ -18,18 +18,26 @@ import { fmtNum } from '~/helpers/format'
 
 export interface AmountPickerProps {
   max: bigint
+  value: string
   decimals: number
   onChange?: (value: bigint) => void
 }
 
-const AmountPicker: React.FC<AmountPickerProps> = ({ onChange, max, decimals }) => {
-  const [value, setValue] = useState(0)
+const AmountPicker: React.FC<AmountPickerProps> = ({
+  value,
+  onChange,
+  max,
+  decimals
+}) => {
+  const val = Number(formatUnits(BigInt(value), decimals))
 
   const maxVal = Number(formatUnits(max, decimals))
 
-  useEffect(() => {
-    onChange?.(parseUnits(`${value}`, decimals))
-  }, [value, decimals, onChange])
+  const change = onChange
+    ? (value: string | number) => {
+        onChange(parseUnits(`${value}`, decimals))
+      }
+    : undefined
 
   return (
     <Flex>
@@ -38,8 +46,8 @@ const AmountPicker: React.FC<AmountPickerProps> = ({ onChange, max, decimals }) 
         mr="2rem"
         min={0}
         max={maxVal}
-        value={value}
-        onChange={(value) => { setValue(Number(value)) }}
+        value={val}
+        onChange={change}
       >
         <NumberInputField />
         <NumberInputStepper>
@@ -51,30 +59,32 @@ const AmountPicker: React.FC<AmountPickerProps> = ({ onChange, max, decimals }) 
       <Slider
         flex="1"
         focusThumbOnChange={false}
-        value={maxVal === 0 ? 0 : (value * 100) / maxVal}
-        onChange={(value) => { setValue(round((maxVal * value) / 100)) }}
+        value={maxVal === 0 ? 0 : (val * 100) / maxVal}
+        onChange={(value) => {
+          change?.(round((maxVal * value) / 100))
+        }}
       >
         <SliderMark
-          value={maxVal === 0 ? 0 : Math.min((value * 100) / maxVal, 100)}
+          value={maxVal === 0 ? 0 : Math.min((val * 100) / maxVal, 100)}
           textAlign="center"
-          bg={value <= maxVal ? 'blue.500' : 'red.500'}
+          bg={val <= maxVal ? 'blue.500' : 'red.500'}
           color="white"
           mt="-6"
           transform="translateX(-50%)"
           px="1"
         >
-          {maxVal === 0 ? 0 : Math.round((value * 100) / maxVal)}%
+          {maxVal === 0 ? 0 : Math.round((val * 100) / maxVal)}%
         </SliderMark>
         <SliderMark
           value={100}
-          textAlign='center'
-          mt='8'
-          transform='translateX(-50%)'
+          textAlign="center"
+          mt="8"
+          transform="translateX(-50%)"
         >
           {fmtNum(maxVal)}
         </SliderMark>
         <SliderTrack>
-          <SliderFilledTrack bg={value <= maxVal ? 'blue.500' : 'red.500'} />
+          <SliderFilledTrack bg={val <= maxVal ? 'blue.500' : 'red.500'} />
         </SliderTrack>
         <SliderThumb />
       </Slider>

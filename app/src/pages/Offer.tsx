@@ -1,8 +1,16 @@
 import React, { useCallback } from 'react'
-import { Alert, AlertIcon, Box, Button, Spinner, Text, VStack } from '@chakra-ui/react'
+import {
+  Alert,
+  AlertIcon,
+  Box,
+  Button,
+  Spinner,
+  Text,
+  VStack
+} from '@chakra-ui/react'
 import { type Address } from 'abitype'
 import { formatUnits } from 'viem'
-import { useAccount, useContractRead } from 'wagmi'
+import { useAccount, useReadContract } from 'wagmi'
 import AddressField from '~/components/AddressField'
 import AmountPopover from '~/components/AmountPopover'
 import ClaimPayment from '~/components/ClaimPayment'
@@ -16,7 +24,6 @@ import useBlockTimestamp from '~/hooks/useBlockTimestamp'
 import useContractWriteComplete from '~/hooks/useContractWriteComplete'
 import useDeposit from '~/hooks/useDeposit'
 import useOffer from '~/hooks/useOffer'
-import useToast from '~/hooks/useToast'
 
 interface OfferProps {
   address: Address
@@ -65,36 +72,27 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
 
   const timestamp = useBlockTimestamp()
 
-  const { toastSuccess, toastError } = useToast()
-
-  const { data: srcDecimals } = useContractRead({
+  const { data: srcDecimals } = useReadContract({
     ...erc20Contract(srcAsset),
     functionName: 'decimals'
   })
 
-  const { data: srcBalance } = useContractRead({
+  const { data: srcBalance } = useReadContract({
     ...erc20Contract(srcAsset),
     functionName: 'balanceOf',
     args: [walletAddr]
   })
 
-  const { data: destDecimals } = useContractRead({
+  const { data: destDecimals } = useReadContract({
     ...erc20Contract(destAsset),
     functionName: 'decimals'
   })
 
-  const { write: closeOffer, isLoading: isClosing } = useContractWriteComplete({
-    ...offerContract(address),
-    functionName: 'close',
-    description: 'Closing offer',
-    onSuccess: (data) => {
-      refetchStatus()
-      toastSuccess({
-        title: 'Offer has been closed',
-        txHash: data.transactionHash
-      })
-    }
-  })
+  const { writeAsync: closeOffer, status: closeStatus } =
+    useContractWriteComplete({
+      ...offerContract(address),
+      functionName: 'close'
+    })
 
   const {
     destBalance,
@@ -103,21 +101,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
   } = useAccept({
     offerAddress: address,
     acceptAmount,
-    destAsset,
-    onSettled: (data, err) =>
-      err &&
-      toastError({
-        title: 'Failed to deposit',
-        description: err.details,
-        txHash: data?.transactionHash
-      }),
-    onSuccess: (data) => {
-      refetchStatus()
-      toastSuccess({
-        title: 'Offer has been accepted',
-        txHash: data.transactionHash
-      })
-    }
+    destAsset
   })
 
   const refetch = useCallback(() => {
@@ -138,68 +122,39 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
 
   const { depositFund, isDepositing } = useDeposit({
     offerAddress: address,
-    srcAsset,
-    onSuccess: (data) => {
-      refetch()
-      toastSuccess({
-        title: 'Deposit succeeded',
-        txHash: data.transactionHash
-      })
-    },
-    onSettled: (data, err) =>
-      err &&
-      toastError({
-        title: 'Failed to deposit',
-        description: err.details,
-        txHash: data?.transactionHash
-      })
+    srcAsset
   })
 
-  const { write: withdraw, isLoading: isWithdrawing } = useContractWriteComplete({
+  const { writeAsync: withdraw, status: withdrawStatus } =
+    useContractWriteComplete({
+      ...offerContract(address),
+      functionName: 'withdraw'
+    })
+
+  const {
+    writeAsync: claimDepositorPayment,
+    status: claimDepositorPaymentStatus
+  } = useContractWriteComplete({
     ...offerContract(address),
-    functionName: 'withdraw',
-    description: 'Withdrawing',
-    onSuccess: (data) => {
-      refetch()
-      toastSuccess({
-        title: 'Withdraw succeeded',
-        txHash: data.transactionHash
-      })
-    }
+    functionName: 'withdrawPaymentForDepositor'
   })
 
-  const { write: claimDepositorPayment, isLoading: isClaimingDepositorPayment } = useContractWriteComplete({
+  const {
+    writeAsync: claimDomainOwnerPayment,
+    status: claimDomainOwnerPaymentStatus
+  } = useContractWriteComplete({
     ...offerContract(address),
-    functionName: 'withdrawPaymentForDepositor',
-    description: 'Claiming payment',
-    onSuccess: (data) => {
-      refetchPaymentBalanceForDepositor()
-      toastSuccess({ title: 'Payment has been claimed', txHash: data.transactionHash })
-    },
-    onError: (error) => toastError({ title: 'Failed to withdraw the payment', description: error.details }),
-    args: []
-  })
-
-  const { write: claimDomainOwnerPayment, isLoading: isClaimingDomainOwnerPayment } = useContractWriteComplete({
-    ...offerContract(address),
-    functionName: 'withdrawPaymentForDomainOwner',
-    description: 'Claiming payment',
-    onSuccess: (data) => {
-      refetchPaymentBalanceForDomainOwner()
-      toastSuccess({ title: 'Payment has been withdrawn', txHash: data.transactionHash })
-    },
-    onError: (error) => toastError({ title: 'Failed to withdraw the payment', description: error.details }),
-    args: []
+    functionName: 'withdrawPaymentForDomainOwner'
   })
 
   const isUserActionDoing =
     isAccepting ||
-    isWithdrawing ||
+    withdrawStatus === 'pending' ||
     isDepositing ||
     isLoadingBalanceOf ||
     isLoadingLockWithdrawUntil ||
-    isClaimingDepositorPayment ||
-    isClaimingDomainOwnerPayment ||
+    claimDepositorPaymentStatus === 'pending' ||
+    claimDomainOwnerPaymentStatus === 'pending' ||
     isLoadingPaymentBalanceForDepositor ||
     isLoadingPaymentBalanceForDomainOwner
 
@@ -208,7 +163,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
       <Alert status="error">
         <AlertIcon />
         Error while fetching offer data
-        <br/>
+        <br />
         {address}
       </Alert>
     )
@@ -231,23 +186,34 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
         </Alert>
       )}
 
-      <Box display="grid" gridTemplateColumns="10em 1fr" gridRowGap="4" gridColumnGap="4">
+      <Box
+        display="grid"
+        gridTemplateColumns="10em 1fr"
+        gridRowGap="4"
+        gridColumnGap="4"
+      >
         {!isLoading && (
           <>
             <Text textAlign="right">Contract address</Text>
             <AddressField>{address}</AddressField>
 
             <Text textAlign="right">Creator</Text>
-            <AddressField text={creator === walletAddr ? 'You' : undefined}>{String(creator)}</AddressField>
+            <AddressField text={creator === walletAddr ? 'You' : undefined}>
+              {String(creator)}
+            </AddressField>
 
             <Text textAlign="right">Domain owner</Text>
-            <AddressField text={domainOwner === walletAddr ? 'You' : undefined}>{String(domainOwner)}</AddressField>
+            <AddressField text={domainOwner === walletAddr ? 'You' : undefined}>
+              {String(domainOwner)}
+            </AddressField>
 
             <Text textAlign="right">Commission rate</Text>
             <Text>{(commissionRate * 100) / commissionRateScale}%</Text>
 
             <Text textAlign="right">Accept amount</Text>
-            <Text>{round(formatUnits(acceptAmount, Number(destDecimals)))}</Text>
+            <Text>
+              {round(formatUnits(acceptAmount, Number(destDecimals)))}
+            </Text>
 
             <Text textAlign="right">Source asset</Text>
             <AddressField>{String(srcAsset)}</AddressField>
@@ -258,12 +224,20 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
         )}
 
         <Text textAlign="right">Total deposits</Text>
-        {isLoadingTotalDeposits ? <Spinner /> : <Text>{round(formatUnits(totalDeposits, Number(srcDecimals)))}</Text>}
+        {isLoadingTotalDeposits ? (
+          <Spinner />
+        ) : (
+          <Text>{round(formatUnits(totalDeposits, Number(srcDecimals)))}</Text>
+        )}
 
         {walletAddr !== undefined && (
           <>
             <Text textAlign="right">Your deposit</Text>
-            {isLoadingDeposits ? <Spinner /> : <Text>{round(formatUnits(deposits, Number(srcDecimals)))}</Text>}
+            {isLoadingDeposits ? (
+              <Spinner />
+            ) : (
+              <Text>{round(formatUnits(deposits, Number(srcDecimals)))}</Text>
+            )}
           </>
         )}
       </Box>
@@ -273,55 +247,83 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
           {status === Status.Open && deposits === 0n && (
             <Text my="5">You can deposit your funds or accept the offer</Text>
           )}
-          {status !== Status.Accepted
-            ? (
-                deposits > 0 &&
+          {status !== Status.Accepted ? (
+            deposits > 0 &&
             timestamp !== undefined &&
             !isLoadingLockWithdrawUntil && (
               <AmountPopover
                 max={deposits}
                 decimals={Number(destDecimals)}
                 onOkay={(amount) =>
-                  withdraw?.({ args: [amount, walletAddr] })
+                  withdraw([amount, walletAddr], {
+                    pendingTitle: 'Withdrawing',
+                    successTitle: 'Withdraw succeded',
+                    failTitle: 'Failed to withdraw'
+                  }).then(() => {
+                    refetch()
+                  })
                 }
               >
                 <Withdraw
                   lockWithdrawUntil={lockWithdrawUntil}
                   timestamp={timestamp}
                   disabled={isUserActionDoing}
-                  isWithdrawing={isWithdrawing}
+                  isWithdrawing={withdrawStatus === 'pending'}
                 />
               </AmountPopover>
-                )
-              )
-            : walletAddr === domainOwner
-              ? (
-                <ClaimPayment
+            )
+          ) : walletAddr === domainOwner ? (
+            <ClaimPayment
               balance={paymentBalanceForDomainOwner}
               decimals={Number(destDecimals)}
-              onClick={() => claimDomainOwnerPayment?.({ args: [walletAddr] })}
-              isClaiming={isClaimingDomainOwnerPayment}
+              onClick={() =>
+                claimDomainOwnerPayment([walletAddr], {
+                  pendingTitle: 'Claiming payment',
+                  successTitle: 'Payment has been claimed',
+                  failTitle: 'Failed to claim the payment'
+                }).then(() => {
+                  refetchPaymentBalanceForDomainOwner()
+                })
+              }
+              isClaiming={claimDomainOwnerPaymentStatus === 'pending'}
               disabled={isUserActionDoing}
             />
-                )
-              : deposits > 0
-                ? (
-                  <ClaimPayment
+          ) : deposits > 0 ? (
+            <ClaimPayment
               balance={paymentBalanceForDepositor}
               decimals={Number(destDecimals)}
-              onClick={() => claimDepositorPayment?.({ args: [walletAddr] })}
-              isClaiming={isClaimingDepositorPayment}
+              onClick={() =>
+                claimDepositorPayment([walletAddr], {
+                  pendingTitle: 'Claiming payment',
+                  successTitle: 'Payment has been claimed',
+                  failTitle: 'Failed to claim the payment'
+                }).then(() => {
+                  refetchPaymentBalanceForDepositor()
+                })
+              }
+              isClaiming={claimDepositorPaymentStatus === 'pending'}
               disabled={isUserActionDoing}
             />
-                  )
-                : (
-                  <Text>You have no deposits</Text>
-                  )}
+          ) : (
+            <Text>You have no deposits</Text>
+          )}
 
           {status === Status.Open && srcBalance !== undefined && (
             <>
-              <AmountPopover max={srcBalance as bigint} decimals={Number(srcDecimals)} onOkay={async (amount) => await depositFund(amount)}>
-                <Button isDisabled={isUserActionDoing} isLoading={isDepositing} loadingText="Deposit">
+              <AmountPopover
+                max={srcBalance as bigint}
+                decimals={Number(srcDecimals)}
+                onOkay={(value) =>
+                  depositFund(value).then(() => {
+                    refetch()
+                  })
+                }
+              >
+                <Button
+                  isDisabled={isUserActionDoing}
+                  isLoading={isDepositing}
+                  loadingText="Deposit"
+                >
                   Deposit
                 </Button>
               </AmountPopover>
@@ -330,12 +332,13 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
                   {destBalance < acceptAmount && (
                     <Alert status="warning">
                       <AlertIcon />
-                      Your balance of destination asset is {round(formatUnits(destBalance, Number(destDecimals)))},
+                      Your balance of destination asset is
+                      {round(formatUnits(destBalance, Number(destDecimals)))},
                       which is not sufficient to accept the offer.
                     </Alert>
                   )}
                   <Button
-                    onClick={onAccept}
+                    onClick={() => onAccept().then(() => refetchStatus())}
                     isDisabled={isUserActionDoing || destBalance < acceptAmount}
                     isLoading={isAccepting}
                     loadingText="Accept"
@@ -347,9 +350,15 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
               )}
               {creator === walletAddr && (
                 <Button
-                  onClick={() => closeOffer?.()}
+                  onClick={() =>
+                    closeOffer([], {
+                      pendingTitle: 'Closing offer',
+                      successTitle: 'Offer has been closed',
+                      failTitle: 'Failed to close the offer'
+                    }).then(() => refetchStatus())
+                  }
                   isDisabled={isUserActionDoing}
-                  isLoading={isClosing}
+                  isLoading={closeStatus === 'pending'}
                   loadingText="Close"
                   colorScheme="red"
                 >

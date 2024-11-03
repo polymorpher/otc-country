@@ -1,5 +1,5 @@
 import { type Address } from 'abitype'
-import { useAccount, useContractRead, useContractReads } from 'wagmi'
+import { useAccount, useReadContract, useReadContracts } from 'wagmi'
 import { erc20Contract, offerContract, otcContract } from '~/helpers/contracts'
 import { type Status } from '~/helpers/types'
 
@@ -53,7 +53,7 @@ const useOffer = ({ address }: Config): UseOfferType => {
     data: info,
     error,
     isLoading: isLoadingInfo
-  } = useContractReads({
+  } = useReadContracts({
     contracts: [
       {
         ...offerContract(address),
@@ -100,7 +100,7 @@ const useOffer = ({ address }: Config): UseOfferType => {
     refetch: refetchStatus,
     isFetching: isFetchingStatus,
     isLoading: isLoadingStatus
-  } = useContractRead({
+  } = useReadContract({
     ...offerContract(address),
     functionName: 'status'
   })
@@ -110,7 +110,7 @@ const useOffer = ({ address }: Config): UseOfferType => {
     refetch: refetchTotalDeposits,
     isFetching: isFetchingTotalDeposits,
     isLoading: isLoadingTotalDeposits
-  } = useContractRead({
+  } = useReadContract({
     ...offerContract(address),
     functionName: 'totalDeposits'
   })
@@ -120,7 +120,7 @@ const useOffer = ({ address }: Config): UseOfferType => {
     refetch: refetchPaymentBalanceForDomainOwner,
     isFetching: isFetchingPaymentBalanceForDomainOwner,
     isLoading: isLoadingPaymentBalanceForDomainOwner
-  } = useContractRead({
+  } = useReadContract({
     ...offerContract(address),
     functionName: 'paymentBalanceForDomainOwner'
   })
@@ -130,28 +130,44 @@ const useOffer = ({ address }: Config): UseOfferType => {
     refetch: refetchPaymentBalanceForDepositor,
     isFetching: isFetchingPaymentBalanceForDepositor,
     isLoading: isLoadingPaymentBalanceForDepositor
-  } = useContractRead({ ...offerContract(address), functionName: 'paymentBalanceForDepositor', args: [walletAddr] })
+  } = useReadContract({
+    ...offerContract(address),
+    functionName: 'paymentBalanceForDepositor',
+    args: [walletAddr]
+  })
 
   const {
     data: deposits,
     refetch: refetchDeposits,
     isFetching: isFetchingDeposits,
     isLoading: isLoadingDeposits
-  } = useContractRead({ ...offerContract(address), functionName: 'deposits', args: [walletAddr] })
+  } = useReadContract({
+    ...offerContract(address),
+    functionName: 'deposits',
+    args: [walletAddr]
+  })
 
   const {
     data: lockWithdrawUntil,
     refetch: refetchLockWithdrawUntil,
     isFetching: isFetchingLockWithdrawUntil,
     isLoading: isLoadingLockWithdrawUntil
-  } = useContractRead({ ...offerContract(address), functionName: 'lockWithdrawUntil', args: [walletAddr] })
+  } = useReadContract({
+    ...offerContract(address),
+    functionName: 'lockWithdrawUntil',
+    args: [walletAddr]
+  })
 
   const {
     data: balanceOf,
     refetch: refetchBalanceOf,
     isFetching: isFetchingBalanceOf,
     isLoading: isLoadingBalanceOf
-  } = useContractRead({ ...erc20Contract(srcAsset as Address), functionName: 'balanceOf', args: [walletAddr] })
+  } = useReadContract({
+    ...erc20Contract(srcAsset as Address),
+    functionName: 'balanceOf',
+    args: [walletAddr]
+  })
 
   return {
     data: {
@@ -184,10 +200,14 @@ const useOffer = ({ address }: Config): UseOfferType => {
       isLoadingStatus: isLoadingStatus || isFetchingStatus,
       isLoadingTotalDeposits: isLoadingTotalDeposits || isFetchingTotalDeposits,
       isLoadingDeposits: isLoadingDeposits || isFetchingDeposits,
-      isLoadingLockWithdrawUntil: isLoadingLockWithdrawUntil || isFetchingLockWithdrawUntil,
+      isLoadingLockWithdrawUntil:
+        isLoadingLockWithdrawUntil || isFetchingLockWithdrawUntil,
       isLoadingPaymentBalanceForDomainOwner:
-        isLoadingPaymentBalanceForDomainOwner || isFetchingPaymentBalanceForDomainOwner,
-      isLoadingPaymentBalanceForDepositor: isLoadingPaymentBalanceForDepositor || isFetchingPaymentBalanceForDepositor,
+        isLoadingPaymentBalanceForDomainOwner ||
+        isFetchingPaymentBalanceForDomainOwner,
+      isLoadingPaymentBalanceForDepositor:
+        isLoadingPaymentBalanceForDepositor ||
+        isFetchingPaymentBalanceForDepositor,
       isLoadingBalanceOf: isLoadingBalanceOf || isFetchingBalanceOf
     },
     error

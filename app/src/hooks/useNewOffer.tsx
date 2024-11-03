@@ -1,17 +1,14 @@
 import { useCallback } from 'react'
 import { type Address } from 'abitype'
 import { keccak256, toHex } from 'viem'
-import { useAccount, useBalance, useContractRead } from 'wagmi'
+import { useAccount, useBalance, useReadContract } from 'wagmi'
 import { idcContract, erc20Contract, otcContract } from '~/helpers/contracts'
-import useContractWriteComplete, { type SettledHandler, type SuccessHandler } from './useContractWriteComplete'
+import useContractWriteComplete from './useContractWriteComplete'
 
 interface Config {
   srcAsset: Address
   destAsset: Address
-  chainId: number
   domain: string
-  onSettled: SettledHandler
-  onSuccess: SuccessHandler
 }
 
 interface OfferData {
@@ -35,73 +32,71 @@ export interface UseNewOfferType {
   createOffer: (d: OfferData) => any
 }
 
-const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettled }: Config): UseNewOfferType => {
+const useNewOffer = ({
+  srcAsset,
+  destAsset,
+  domain
+}: Config): UseNewOfferType => {
   const { address } = useAccount()
 
-  const { data: balance } = useBalance({
-    address,
-    chainId
-  })
+  const { data: balance } = useBalance({ address })
 
-  const { data: domainContractAddress } = useContractRead({
+  const { data: domainContractAddress } = useReadContract({
     ...otcContract,
     functionName: 'domainContract'
   })
 
-  const { data: domainPrice } = useContractRead({
+  const { data: domainPrice } = useReadContract({
     ...idcContract(domainContractAddress as Address),
     functionName: 'getPrice',
     args: [domain]
   })
 
-  const { data: domainOwner } = useContractRead({
+  const { data: domainOwner } = useReadContract({
     ...idcContract(domainContractAddress as Address),
     functionName: 'ownerOf',
     args: [domain]
   })
 
-  const { data: srcBalance } = useContractRead({
+  const { data: srcBalance } = useReadContract({
     ...erc20Contract(srcAsset),
     functionName: 'balanceOf',
     args: [address]
   })
 
-  const { data: computedOfferAddress } = useContractRead({
+  const { data: computedOfferAddress } = useReadContract({
     ...otcContract,
     functionName: 'computedOfferAddress',
     args: [domain]
   })
 
-  const { data: allowance, refetch: refetchAllowance } = useContractRead({
+  const { data: allowance, refetch: refetchAllowance } = useReadContract({
     ...erc20Contract(srcAsset),
     functionName: 'allowance',
     args: [address, computedOfferAddress]
   })
 
-  const { data: srcDecimals } = useContractRead({
+  const { data: srcDecimals } = useReadContract({
     ...erc20Contract(srcAsset),
     functionName: 'decimals'
   })
 
-  const { data: destDecimals } = useContractRead({
+  const { data: destDecimals } = useReadContract({
     ...erc20Contract(destAsset),
     functionName: 'decimals'
   })
 
-  const { writeAsync: approveSrcAsset, isLoading: isApproving } = useContractWriteComplete({
-    ...erc20Contract(srcAsset),
-    functionName: 'approve',
-    description: 'Approving deposition',
-    onSettled
-  })
+  const { writeAsync: approveSrcAsset, status: approveStatus } =
+    useContractWriteComplete({
+      ...erc20Contract(srcAsset),
+      functionName: 'approve'
+    })
 
-  const { writeAsync: createOfferAsync, isLoading: isCreatingOffer } = useContractWriteComplete({
-    ...otcContract,
-    functionName: 'createOffer',
-    description: 'Creating offer',
-    onSettled,
-    onSuccess
-  })
+  const { writeAsync: createOfferAsync, status: createOfferStatus } =
+    useContractWriteComplete({
+      ...otcContract,
+      functionName: 'createOffer'
+    })
 
   const createOffer = useCallback(
     async ({
@@ -116,11 +111,15 @@ const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettle
       await refetchAllowance()
 
       if ((allowance as bigint) < depositAmount) {
-        await approveSrcAsset?.({ args: [computedOfferAddress, depositAmount] })
+        await approveSrcAsset([computedOfferAddress, depositAmount], {
+          pendingTitle: 'Approving deposition',
+          failTitle: 'Failed to approve',
+          successTitle: 'Deposition has been approved'
+        })
       }
 
-      return await createOfferAsync?.({
-        args: [
+      return await createOfferAsync(
+        [
           domain,
           keccak256(toHex(Math.random().toString())),
           domainOwner,
@@ -131,10 +130,23 @@ const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettle
           commissionRate,
           lockWithdrawDuration
         ],
-        value: domainPrice as bigint
-      })
+        {
+          pendingTitle: 'Creating offer',
+          failTitle: 'Failed to create the offer',
+          successTitle: 'Offer has been approved'
+        },
+        domainPrice as bigint
+      )
     },
-    [allowance, approveSrcAsset, computedOfferAddress, createOfferAsync, domain, domainPrice, refetchAllowance]
+    [
+      allowance,
+      approveSrcAsset,
+      computedOfferAddress,
+      createOfferAsync,
+      domain,
+      domainPrice,
+      refetchAllowance
+    ]
   )
 
   return {
@@ -143,7 +155,8 @@ const useNewOffer = ({ srcAsset, destAsset, domain, chainId, onSuccess, onSettle
     srcDecimals: srcDecimals as bigint,
     destDecimals: destDecimals as bigint,
     domainPrice: domainPrice as bigint,
-    isCreatingOffer: isApproving || isCreatingOffer,
+    isCreatingOffer:
+      approveStatus === 'pending' || createOfferStatus === 'pending',
     createOffer,
     domainOwner: domainOwner as Address
   }

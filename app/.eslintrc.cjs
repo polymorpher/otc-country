@@ -2,7 +2,7 @@ module.exports = {
   env: {
     browser: true,
     node: false,
-    es2020: true,
+    es2020: true
   },
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -17,14 +17,15 @@ module.exports = {
     'eslint:recommended',
     'plugin:react/recommended',
     'plugin:@typescript-eslint/recommended',
+    'plugin:prettier/recommended'
   ],
-  plugins: ['compat', 'react', 'react-hooks'],
+  plugins: ['compat', 'react', 'react-hooks', 'prettier'],
   settings: {
     react: {
       // Tells eslint-plugin-react to automatically detect the version of React to use.
-      version: 'detect',
+      version: 'detect'
     },
-    'import/parsers': { '@typescript-eslint/parser': ['.ts', '.tsx'] },
+    'import/parsers': { '@typescript-eslint/parser': ['.ts', '.tsx'] }
     // // Tells eslint how to resolve imports
     // 'import/resolver': {
     //   typescript: {},
@@ -40,6 +41,8 @@ module.exports = {
     // },
   },
   rules: {
+    'prettier/prettier': 'error',
+    semi: 0,
     'no-await-in-loop': 0,
     'no-underscore-dangle': 0,
     'import/prefer-default-export': 0,
@@ -62,8 +65,14 @@ module.exports = {
     'react/prop-types': [0],
     'react/button-has-type': 'off',
     'react/jsx-props-no-spreading': [0],
-    'react/jsx-filename-extension': [2, { extensions: ['.js', '.jsx', '.ts', '.tsx'] }],
-    'react/function-component-definition': [2, { namedComponents: 'arrow-function' }],
+    'react/jsx-filename-extension': [
+      2,
+      { extensions: ['.js', '.jsx', '.ts', '.tsx'] }
+    ],
+    'react/function-component-definition': [
+      2,
+      { namedComponents: 'arrow-function' }
+    ],
     'react-hooks/rules-of-hooks': 'error', // Checks rules of Hooks
     'react-hooks/exhaustive-deps': 'error', // Checks effect dependencies
     '@typescript-eslint/no-explicit-any': 0,
@@ -71,5 +80,5 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/promise-function-async': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off'
-  },
+  }
 }

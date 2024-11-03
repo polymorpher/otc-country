@@ -6,6 +6,7 @@ import { Alert, AlertIcon, Box, Spinner } from '@chakra-ui/react'
 import { otcContract } from '~/helpers/contracts'
 import OfferPage from '~/pages/Offer'
 import useShowError from '~/hooks/useShowError'
+import { config } from '~/helpers/config'
 
 const Offer: React.FC = () => {
   const { domain } = useParams()
@@ -21,17 +22,20 @@ const Offer: React.FC = () => {
       return
     }
 
-    readContract({
+    readContract(config, {
       ...otcContract,
       functionName: 'offerAddress',
       args: [domain]
-    }).then(res => {
-      setOfferAddress(String(res))
-    }).catch((err) => {
-      showError({ title: `Failed to get offer address of ${domain}`, message: err })
-    }).finally(() => {
-      setIsFetching(false)
     })
+      .then((res) => {
+        setOfferAddress(String(res))
+      })
+      .catch((error) => {
+        showError({ title: `Failed to get offer address of ${domain}`, error })
+      })
+      .finally(() => {
+        setIsFetching(false)
+      })
   }, [domain, showError])
 
   if (!domain) {
@@ -48,7 +52,11 @@ const Offer: React.FC = () => {
   }
 
   if (isFetching) {
-    return <Box textAlign="center"><Spinner /></Box>
+    return (
+      <Box textAlign="center">
+        <Spinner />
+      </Box>
+    )
   }
 
   if (offerAddress === zeroAddress) {
