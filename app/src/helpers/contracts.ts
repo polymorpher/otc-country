@@ -8,6 +8,7 @@ import offerAbi from '~/../../contract/artifacts/contracts/Offer.sol/Offer.json'
 import idcAbi from '~/../../contract/artifacts/contracts/externals/IDC.sol/IDC.json' assert { type: 'json' }
 // eslint-disable-next-line import/no-extraneous-dependencies
 import erc20Abi from '~/../../contract/artifacts/contracts/mocks/ERC20.sol/ERC20Mock.json' assert { type: 'json' }
+import * as config from '~/helpers/config'
 
 export interface ContractType {
   address: `0x${string}`
@@ -15,7 +16,7 @@ export interface ContractType {
 }
 
 export const otcContract: ContractType = {
-  address: import.meta.env.VITE_OTC_ADDRESS,
+  address: config.OTC_ADDRESS,
   abi: otcAbi.abi as Abi
 }
 

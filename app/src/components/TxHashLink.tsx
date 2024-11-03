@@ -1,7 +1,7 @@
 import React from 'react'
 import { FiExternalLink } from 'react-icons/fi'
 import { Link, Icon } from '@chakra-ui/react'
-import { hashLink } from '~/helpers/chain'
+import { hashLink } from '~/helpers/link'
 
 interface TxHashLinkProps {
   hash: string

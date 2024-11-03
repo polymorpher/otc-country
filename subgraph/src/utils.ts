@@ -20,7 +20,7 @@ export const getAssetByAddress = (address: string): AssetType => {
   )
 }
 
-export const getOrCreateAsset = (address: string): Asset => {
+export const getOrCreateAsset = (address: string, decimals: i32): Asset => {
   const addr = Bytes.fromHexString(address)
   const asset = Asset.load(addr)
 
@@ -33,6 +33,8 @@ export const getOrCreateAsset = (address: string): Asset => {
 
   newAsset.address = addr
   newAsset.label = val.label
+  newAsset.decimals = decimals
+  newAsset.save()
 
   return newAsset
 }

@@ -20,17 +20,11 @@ const getPrice = (address: string): i32 => {
 export function handleOfferCreated(event: OfferCreatedEvent): void {
   const sourceAssetAddress = event.params.srcAsset.toHexString()
   const destAssetAddress = event.params.destAsset.toHexString()
-  const sourceAsset = getOrCreateAsset(sourceAssetAddress)
-  const destAsset = getOrCreateAsset(destAssetAddress)
   const sourceAssetContract = ERC20Contract.bind(event.params.srcAsset)
   const destAssetContract = ERC20Contract.bind(event.params.destAsset)
+  const sourceAsset = getOrCreateAsset(sourceAssetAddress, sourceAssetContract.decimals())
+  const destAsset = getOrCreateAsset(destAssetAddress, destAssetContract.decimals())
   const offerContract = OfferContract.bind(event.params.offerAddress)
-
-  sourceAsset.decimals = sourceAssetContract.decimals()
-  destAsset.decimals = destAssetContract.decimals()
-  
-  sourceAsset.save()
-  destAsset.save()
 
   const domainName = offerContract.domainName()
   const offer = new Offer(Bytes.fromUTF8(domainName))
