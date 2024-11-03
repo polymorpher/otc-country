@@ -14,14 +14,12 @@ import OfferPage from '~/pages/Offer'
 import EventHistory from '~/pages/EventHistory'
 import { otcContract } from '~/helpers/contracts'
 import useShowError from '~/hooks/useShowError'
-import { config } from '~/helpers/config'
+import * as config from '~/helpers/config'
 
 const hostname = location.hostname.toLowerCase()
 
-const tld = import.meta.env.VITE_TLD
-
 const deployedOnDomain =
-  hostname.endsWith(`.${tld}`) && hostname !== `otc.${tld}`
+  hostname.endsWith(`.${config.TLD}`) && hostname !== `otc.${config.TLD}`
 
 const LandingPage = () => {
   const [offerAddress, setOfferAddress] = useState<string>()
@@ -37,7 +35,7 @@ const LandingPage = () => {
 
     const [sld] = hostname.split('.')
 
-    readContract(config, {
+    readContract(config.config, {
       ...otcContract,
       functionName: 'offerAddress',
       args: [sld]

@@ -15,7 +15,7 @@ import {
 import debounce from 'lodash/debounce'
 import { isAddress } from 'viem'
 import { useReadContract } from 'wagmi'
-import { debounceTimeout } from '~/helpers/config'
+import * as config from '~/helpers/config'
 import { otcContract } from '~/helpers/contracts'
 import useContractWriteComplete from '~/hooks/useContractWriteComplete'
 
@@ -28,7 +28,7 @@ const Admin: React.FC = () => {
     () =>
       debounce((e) => {
         setAsset(e.target.value)
-      }, debounceTimeout),
+      }, config.debounceTimeout),
     []
   )
 

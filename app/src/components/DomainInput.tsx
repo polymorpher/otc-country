@@ -6,6 +6,7 @@ import {
   InputRightElement,
   Spinner
 } from '@chakra-ui/react'
+import * as config from '~/helpers/config'
 
 interface DomainInputProps {
   onChange: (value: string) => void
@@ -31,7 +32,7 @@ const DomainInput: React.FC<DomainInputProps> = ({
         <Spinner />
       </InputRightElement>
     )}
-    <InputRightAddon>.{import.meta.env.VITE_TLD}</InputRightAddon>
+    <InputRightAddon>.{config.TLD}</InputRightAddon>
   </InputGroup>
 )
 
