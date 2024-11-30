@@ -1,5 +1,5 @@
 import { Bytes } from '@graphprotocol/graph-ts'
-import {ERC20Mock as ERC20Contract} from '../types/ERC20/ERC20Mock'
+import {ERC20Mock as ERC20Contract} from '../types/OTC/ERC20Mock'
 import { OfferCreated as OfferCreatedEvent } from '../types/OTC/OTC'
 import { Offer as OfferContract, OfferAccepted as OfferAcceptedEvent } from '../types/Offer/Offer'
 import { Offer } from '../types/schema'
