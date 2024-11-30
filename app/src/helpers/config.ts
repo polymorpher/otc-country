@@ -10,8 +10,6 @@ export const TLD = import.meta.env.VITE_TLD
 
 export const THEGRAPH = import.meta.env.VITE_THEGRAPH
 
-export const TEST = import.meta.env.VITE_TEST
-
 export const OTC_ADDRESS = import.meta.env.VITE_OTC_ADDRESS
 
 export const chain = import.meta.env.VITE_TEST ? sepolia : harmonyOne
