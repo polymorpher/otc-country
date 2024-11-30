@@ -149,8 +149,8 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     isCreatingOffer,
     createOffer
   } = useNewOffer({
-    srcAsset: watch('srcAsset'),
-    destAsset: watch('destAsset'),
+    srcAsset: watch('srcAsset') as Address,
+    destAsset: watch('destAsset') as Address,
     domain
   })
 

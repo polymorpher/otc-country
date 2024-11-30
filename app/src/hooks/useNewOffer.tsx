@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { type Address } from 'abitype'
-import { keccak256, toHex } from 'viem'
+import { type Hex, keccak256, toHex } from 'viem'
 import { useAccount, useBalance, useReadContract } from 'wagmi'
 import { idcContract, erc20Contract, otcContract } from '~/helpers/contracts'
 import useContractWriteComplete from './useContractWriteComplete'
@@ -30,6 +30,9 @@ export interface UseNewOfferType {
   isCreatingOffer: boolean
   domainOwner: Address
   createOffer: (d: OfferData) => any
+  registerWeb2Domain: (txHash: Hex, address: Address, domain: string) => any
+  setDns: (txHash: Hex, domain: string) => any
+  generateMetadata: (domain: string) => any
 }
 
 const useNewOffer = ({
@@ -98,6 +101,54 @@ const useNewOffer = ({
       functionName: 'createOffer'
     })
 
+  const generateMetadata = useCallback(async (domain: string) => {
+    return await fetch('https://1ns-registrar-relayer.hiddenstate.xyz/gen', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ domain })
+    })
+      .then(async (res) => await res.json())
+      .then((res) => ({
+        success: res.generated as boolean,
+        error: res.error ? (res.error as string) : undefined
+      }))
+  }, [])
+
+  const registerWeb2Domain = useCallback(
+    async (txHash: Hex, address: Address, domain: string) => {
+      return await fetch(
+        'https://1ns-registrar-relayer.hiddenstate.xyz/purchase',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ domain, address, txHash, fast: true })
+        }
+      )
+        .then(async (res) => await res.json())
+        .then((res) => ({
+          success: res.success as boolean,
+          error: res.error ? (res.error as string) : undefined
+        }))
+    },
+    []
+  )
+
+  const setDns = useCallback(async (txHash: Hex, domain: string) => {
+    return await fetch(
+      'https://1ns-registrar-relayer.hiddenstate.xyz/app/otc',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain, txHash })
+      }
+    )
+      .then(async (res) => await res.json())
+      .then((res) => ({
+        success: res.success as boolean,
+        error: res.error ? (res.error as string) : undefined
+      }))
+  }, [])
+
   const createOffer = useCallback(
     async ({
       domainOwner,
@@ -158,6 +209,9 @@ const useNewOffer = ({
     isCreatingOffer:
       approveStatus === 'pending' || createOfferStatus === 'pending',
     createOffer,
+    registerWeb2Domain,
+    generateMetadata,
+    setDns,
     domainOwner: domainOwner as Address
   }
 }
