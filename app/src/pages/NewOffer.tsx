@@ -38,6 +38,7 @@ import useNewOffer from '~/hooks/useNewOffer'
 import useTokenRates from '~/hooks/useTokenRates'
 import { ASSETS, DEPEGGED } from '~/helpers/assets'
 import { fmrHr, fmtNum } from '~/helpers/format'
+import useToast from '~/hooks/useToast'
 
 interface NewOfferProps {
   domain: string
@@ -51,16 +52,6 @@ const checkAssetAvailable = (asset: string): Promise<boolean> =>
     args: [asset]
   }).then((res) => !!res)
 
-const defaultValues = {
-  domainOwner: '' as Address,
-  srcAsset: DEPEGGED[0].value,
-  destAsset: ASSETS[0].value,
-  depositAmount: '',
-  acceptAmount: '',
-  commissionRate: 0.5,
-  lockWithdrawDuration: 6
-}
-
 interface FormFields {
   domainOwner: Address
   srcAsset: Address
@@ -69,6 +60,16 @@ interface FormFields {
   acceptAmount: string
   commissionRate: number
   lockWithdrawDuration: number
+}
+
+const defaultValues: FormFields = {
+  domainOwner: '' as Address,
+  srcAsset: DEPEGGED[0].value as Address,
+  destAsset: ASSETS[0].value as Address,
+  depositAmount: '',
+  acceptAmount: '',
+  commissionRate: 0.5,
+  lockWithdrawDuration: 6
 }
 
 const rules: Record<keyof FormFields, RegisterOptions> = {
@@ -123,7 +124,7 @@ const rules: Record<keyof FormFields, RegisterOptions> = {
 
 const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
   const { address } = useAccount()
-
+  const { toastError } = useToast()
   const {
     register,
     handleSubmit,
@@ -152,8 +153,8 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     generateMetadata,
     setDns
   } = useNewOffer({
-    srcAsset: watch('srcAsset') as Address,
-    destAsset: watch('destAsset') as Address,
+    srcAsset: watch('srcAsset'),
+    destAsset: watch('destAsset'),
     domain
   })
 
@@ -167,13 +168,28 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
         lockWithdrawDuration: BigInt(data.lockWithdrawDuration * 3600)
       })
       const address = data.domainOwner
-      // TODO: handle errors
-      await registerWeb2Domain(txHash, address, domain)
-      await generateMetadata(domain)
-      await setDns(txHash, domain)
-      onCreate()
+      try {
+        await registerWeb2Domain(txHash, address, domain)
+        await generateMetadata(domain)
+        await setDns(txHash, domain)
+        onCreate()
+      } catch (ex: any) {
+        toastError({
+          title: 'Domain registration error',
+          description: ex.toString()
+        })
+      }
     },
-    [createOffer, destDecimals, onCreate]
+    [
+      toastError,
+      domain,
+      setDns,
+      registerWeb2Domain,
+      generateMetadata,
+      createOffer,
+      destDecimals,
+      onCreate
+    ]
   )
 
   const [srcRate, destRate] = useTokenRates(
