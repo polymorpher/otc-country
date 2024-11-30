@@ -10,7 +10,7 @@ dataSources:
     name: OTC
     network: harmony
     source:
-      address: "0x476126aCa96ff0c771973601BfA7d6D7a469201c"
+      address: "0x2ff387Faa49baf6280a6d104Ac5FcF6d429a834A"
       # startBlock: ???
       abi: OTC
     mapping:
