@@ -147,7 +147,10 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
     srcDecimals,
     destDecimals,
     isCreatingOffer,
-    createOffer
+    createOffer,
+    registerWeb2Domain,
+    generateMetadata,
+    setDns
   } = useNewOffer({
     srcAsset: watch('srcAsset') as Address,
     destAsset: watch('destAsset') as Address,
@@ -155,14 +158,21 @@ const NewOffer: React.FC<NewOfferProps> = ({ domain, onCreate }) => {
   })
 
   const handleOfferSubmit = useCallback(
-    (data: FormFields) =>
-      createOffer({
+    async (data: FormFields) => {
+      const { transactionHash: txHash } = await createOffer({
         ...data,
         depositAmount: BigInt(data.depositAmount),
         acceptAmount: parseUnits(data.acceptAmount, Number(destDecimals)),
         commissionRate: BigInt(Math.round(data.commissionRate * 1000)),
         lockWithdrawDuration: BigInt(data.lockWithdrawDuration * 3600)
-      }).then(onCreate),
+      })
+      const address = data.domainOwner
+      // TODO: handle errors
+      await registerWeb2Domain(txHash, address, domain)
+      await generateMetadata(domain)
+      await setDns(txHash, domain)
+      onCreate()
+    },
     [createOffer, destDecimals, onCreate]
   )
 
