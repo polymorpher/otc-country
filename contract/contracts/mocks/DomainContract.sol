@@ -16,7 +16,7 @@ contract DomainContract is IDC {
      * should be view, not pure, to be the same abi as
      * https://github.com/polymorpher/dot-country/blob/main/contracts/contracts/DC.sol#L101
      */
-    function available(string memory name) public pure returns (bool) {
+    function available(string memory name) public view returns (bool) {
         return bytes(name).length > 3 && ownerLookup[keccak256(abi.encodePacked(name))] == address(0);
     }
 
@@ -24,7 +24,7 @@ contract DomainContract is IDC {
         price = 54321;
     }
 
-    function ownerOf(string calldata name) external pure returns (address owner) {
+    function ownerOf(string calldata name) external view returns (address owner) {
         return ownerLookup[keccak256(abi.encodePacked(name))];
     }
 
