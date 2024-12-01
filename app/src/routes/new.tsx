@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { SimpleGrid, Spinner, VStack } from '@chakra-ui/react'
+import { Box, Text, HStack, Spinner, VStack } from '@chakra-ui/react'
 import { useQuery } from '@tanstack/react-query'
 import { ConnectKitButton } from 'connectkit'
 import { useAccount, useReadContract } from 'wagmi'
@@ -35,19 +35,18 @@ const User = () => {
   }, [error, showError])
 
   return (
-    <>
+    <Box mt={8}>
       {isLoading && <Spinner />}
-      <SimpleGrid
-        columns={[1, 1, 1, 3]}
-        rowGap={4}
-        columnGap={4}
-        fontSize="xs"
-        width={['100%', '100%', '100%', '150%', '200%']}
-      >
+      <Text textAlign={'center'} fontSize={20}>
+        Recent Offers
+      </Text>
+      <HStack justifyContent={'center'} gap={8} mt={4}>
         {data?.events.map((event, key) => <Event event={event} key={key} />)}
-      </SimpleGrid>
+        {data?.events.map((event, key) => <Event event={event} key={key} />)}
+        {data?.events.map((event, key) => <Event event={event} key={key} />)}
+      </HStack>
       <NewOfferWithDomainName />
-    </>
+    </Box>
   )
 }
 

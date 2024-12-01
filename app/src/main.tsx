@@ -47,7 +47,7 @@ const queryClient = new QueryClient()
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <ChakraProvider theme={theme}>
-    <Container my="10" maxW="container.xl">
+    <Container my="8" maxW="container.xl">
       <WagmiProvider config={config}>
         <QueryClientProvider client={queryClient}>
           <ConnectKitProvider>

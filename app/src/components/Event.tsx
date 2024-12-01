@@ -223,12 +223,13 @@ const Event: React.FC<EventProps> = ({ event, asTableRow }) => {
   }
   return (
     <Link
+      width={60}
       href={target}
       target={'_blank'}
       rel={'noreferrer'}
       _hover={{ textDecoration: 'none' }}
     >
-      <VStack width={60} gap={0}>
+      <VStack gap={0}>
         <Box
           width={'100%'}
           borderRadius={'8px 8px 0 0'}
