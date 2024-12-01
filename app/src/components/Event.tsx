@@ -223,6 +223,17 @@ const Event: React.FC<EventProps> = ({ event, asTableRow }) => {
   }
   return (
     <VStack width={60} gap={0}>
+      <Box
+        width={'100%'}
+        borderRadius={'8px 8px 0 0'}
+        paddingY={1}
+        paddingX={2}
+        textAlign={'center'}
+        background={event.type === 'ACCEPTED' ? 'grey' : 'lightgreen'}
+        color={event.type === 'ACCEPTED' ? 'white' : 'auto'}
+      >
+        <Text>{event.type === 'ACCEPTED' ? 'Filled' : 'Open Offer'}</Text>
+      </Box>
       <Box flex={1} width={'100%'} flexDirection={'column'} display={'flex'}>
         <CoinWithAmount
           amountTextSize={'1rem'}
@@ -233,6 +244,7 @@ const Event: React.FC<EventProps> = ({ event, asTableRow }) => {
           }
           {...event.offer.sourceAsset}
           noRoundBottom
+          noRoundTop
         />
       </Box>
       <Box
@@ -257,6 +269,7 @@ const Event: React.FC<EventProps> = ({ event, asTableRow }) => {
       <Box flex={1} width={'100%'}>
         <CoinWithAmount
           noRoundTop
+          noRoundBottom
           amountTextSize={'1rem'}
           amount={event.offer.closeAmount}
           {...event.offer.destAsset}
