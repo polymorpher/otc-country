@@ -66,7 +66,13 @@ const CoinWithAmount: React.FC<CoinWithAmountProps> = ({
         <Text color={'black'} fontSize={amountTextSize}>
           {amountFormatted}
         </Text>
-        <Coin size={coinTextSize} address={address} label={label} icon={icon} />
+        <Coin
+          transform={'translateY(8px)'}
+          size={coinTextSize}
+          address={address}
+          label={label}
+          icon={icon}
+        />
       </Box>
       {!noEstimatedDollarValue && (
         <Text color={'#888'} fontSize={'9px'} mt={2}>
