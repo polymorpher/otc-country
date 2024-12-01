@@ -222,75 +222,82 @@ const Event: React.FC<EventProps> = ({ event, asTableRow }) => {
     )
   }
   return (
-    <VStack width={60} gap={0}>
-      <Box
-        width={'100%'}
-        borderRadius={'8px 8px 0 0'}
-        paddingY={1}
-        paddingX={2}
-        textAlign={'center'}
-        background={event.type === 'ACCEPTED' ? 'grey' : 'lightgreen'}
-        color={event.type === 'ACCEPTED' ? 'white' : 'auto'}
-      >
-        <Text>{event.type === 'ACCEPTED' ? 'Filled' : 'Open Offer'}</Text>
-      </Box>
-      <Box flex={1} width={'100%'} flexDirection={'column'} display={'flex'}>
-        <CoinWithAmount
-          amountTextSize={'1rem'}
-          amount={
-            event.type === 'ACCEPTED'
-              ? event.offer.depositHistory[0]
-              : event.offer.totalDeposits
-          }
-          {...event.offer.sourceAsset}
-          noRoundBottom
-          noRoundTop
-        />
-      </Box>
-      <Box
-        flex={1}
-        width={'100%'}
-        display={'flex'}
-        justifyContent={'center'}
-        background={'#fff'}
-      >
-        <Box height={'2px'}></Box>
+    <Link
+      href={target}
+      target={'_blank'}
+      rel={'noreferrer'}
+      _hover={{ textDecoration: 'none' }}
+    >
+      <VStack width={60} gap={0}>
         <Box
-          position={'absolute'}
-          transform={'translate(-50%,-50%)'}
-          background={'white'}
-          paddingY={0.5}
-          paddingX={1}
-          borderRadius={'8px'}
+          width={'100%'}
+          borderRadius={'8px 8px 0 0'}
+          paddingY={1}
+          paddingX={2}
+          textAlign={'center'}
+          background={event.type === 'ACCEPTED' ? 'grey' : 'lightgreen'}
+          color={event.type === 'ACCEPTED' ? 'white' : 'auto'}
         >
-          <ArrowDownIcon width={4} height={4} />
+          <Text>{event.type === 'ACCEPTED' ? 'Filled' : 'Open Offer'}</Text>
         </Box>
-      </Box>
-      <Box flex={1} width={'100%'}>
-        <CoinWithAmount
-          noRoundTop
-          noRoundBottom
-          amountTextSize={'1rem'}
-          amount={event.offer.closeAmount}
-          {...event.offer.destAsset}
-        />
-      </Box>
-      <HStack
-        width={'100%'}
-        background={'#bbb'}
-        borderRadius={'0 0 8px 8px'}
-        paddingX={2}
-        paddingY={1}
-        justifyContent={'space-between'}
-      >
-        <Text color={'#fff'} fontSize={'12px'}>
-          Rate: {rate}
-        </Text>
-        <Text color={'#fff'} fontSize={'8px'}>
-          {timeAbbr} ago
-        </Text>
-      </HStack>
-    </VStack>
+        <Box flex={1} width={'100%'} flexDirection={'column'} display={'flex'}>
+          <CoinWithAmount
+            amountTextSize={'1rem'}
+            amount={
+              event.type === 'ACCEPTED'
+                ? event.offer.depositHistory[0]
+                : event.offer.totalDeposits
+            }
+            {...event.offer.sourceAsset}
+            noRoundBottom
+            noRoundTop
+          />
+        </Box>
+        <Box
+          flex={1}
+          width={'100%'}
+          display={'flex'}
+          justifyContent={'center'}
+          background={'#fff'}
+        >
+          <Box height={'2px'}></Box>
+          <Box
+            position={'absolute'}
+            transform={'translate(-50%,-50%)'}
+            background={'white'}
+            paddingY={0.5}
+            paddingX={1}
+            borderRadius={'8px'}
+          >
+            <ArrowDownIcon width={4} height={4} />
+          </Box>
+        </Box>
+        <Box flex={1} width={'100%'}>
+          <CoinWithAmount
+            noRoundTop
+            noRoundBottom
+            amountTextSize={'1rem'}
+            amount={event.offer.closeAmount}
+            {...event.offer.destAsset}
+          />
+        </Box>
+        <HStack
+          width={'100%'}
+          background={'#bbb'}
+          borderRadius={'0 0 8px 8px'}
+          paddingX={2}
+          paddingY={1}
+          justifyContent={'space-between'}
+        >
+          <Text color={'#fff'} fontSize={'12px'}>
+            Rate: {rate}
+          </Text>
+          <Text color={'#fff'} fontSize={'8px'}>
+            {timeAbbr} ago
+          </Text>
+        </HStack>
+      </VStack>
+    </Link>
   )
 }
 
