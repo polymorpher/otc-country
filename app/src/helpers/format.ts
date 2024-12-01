@@ -32,10 +32,14 @@ export const fmrHr = (value: number): string => {
   }
 
   if (value % 24 === 0) {
-    return `${Math.floor(value / 24)} day`
+    return `${Math.floor(value / 24)} days`
   }
 
-  return `${Math.floor(value / 24)} day ${value % 24} hr`
+  if (value < 72) {
+    return `${Math.floor(value / 24)} day ${value % 24} hr`
+  }
+
+  return `${Math.round(value / 24)} days`
 }
 
 export const formatSeconds = (seconds: number): string => {

@@ -13,14 +13,15 @@ const AddressField: React.FC<AddressFieldProps> = ({
   text,
   children,
   shorten
-}) => (
-  <Link href={`https://${host}/address/${children}`} isExternal>
-    <Tooltip label={children}>
-      <Text>
-        {shorten === true ? abbreviateAddress(children) : (text ?? children)}
-      </Text>
-    </Tooltip>
-  </Link>
-)
+}) => {
+  const displayAddr = shorten === true ? abbreviateAddress(children) : children
+  return (
+    <Link href={`https://${host}/address/${children}`} isExternal>
+      <Tooltip label={children}>
+        <Text>{text ?? displayAddr}</Text>
+      </Tooltip>
+    </Link>
+  )
+}
 
 export default AddressField

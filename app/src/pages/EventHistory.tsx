@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from 'react'
-import { FormControl, Spinner, Text, VStack } from '@chakra-ui/react'
+import {
+  FormControl,
+  Spinner,
+  Table,
+  TableContainer,
+  Tbody,
+  Th,
+  Text,
+  Thead,
+  Tr,
+  VStack
+} from '@chakra-ui/react'
 import type { BoxProps } from '@chakra-ui/react'
 import { useQuery } from '@tanstack/react-query'
 import client from '~/graphql/client.js'
@@ -49,7 +60,25 @@ const EventHistory: React.FC<BoxProps> = (props) => {
         />
       </FormControl>
       {isLoading && <Spinner />}
-      {data?.events.map((event, key) => <Event event={event} key={key} />)}
+      <TableContainer>
+        <Table>
+          <Thead>
+            <Tr>
+              <Th>Open?</Th>
+              <Th>From</Th>
+              <Th>To</Th>
+              <Th>Rate</Th>
+              <Th>Domain</Th>
+              <Th>Time</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {data?.events.map((event, key) => (
+              <Event event={event} key={key} />
+            ))}
+          </Tbody>
+        </Table>
+      </TableContainer>
     </VStack>
   )
 }

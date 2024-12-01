@@ -8,6 +8,7 @@ export const debounceTimeout = 500
 export const mantisaPrecision = 3
 
 export const TLD = import.meta.env.VITE_TLD
+export const LOCAL_TARGET = import.meta.env.VITE_LOCAL_TARGET === '1'
 
 export const THEGRAPH = import.meta.env.VITE_THEGRAPH
 
