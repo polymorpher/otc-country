@@ -1,7 +1,7 @@
 import React from 'react'
 import { Alert, AlertIcon } from '@chakra-ui/react'
 import { useAccount } from 'wagmi'
-import { Status } from '~/helpers/types'
+import { Status } from '~/helpers/types.js'
 
 interface OfferStatusProps {
   status: Status

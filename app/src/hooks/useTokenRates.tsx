@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { ASSETS, DEPEGGED } from '~/helpers/assets'
-import type { Asset } from '~/helpers/assets'
+import { ASSETS, DEPEGGED } from '~/helpers/assets.js'
+import type { Asset } from '~/helpers/assets.js'
 
 interface PriceData {
   parsed: Array<{

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button, Text, VStack } from '@chakra-ui/react'
-import { formatSeconds } from '~/helpers/format'
+import { formatSeconds } from '~/helpers/format.js'
 
 interface WithdrawProps {
   lockWithdrawUntil: number

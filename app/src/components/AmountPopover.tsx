@@ -12,9 +12,9 @@ import {
   PopoverTrigger,
   Portal
 } from '@chakra-ui/react'
-import AmountPicker, { type AmountPickerProps } from './AmountPicker'
+import AmountPicker, { type AmountPickerProps } from './AmountPicker.js'
 
-interface AmountPopoverProps extends AmountPickerProps {
+interface AmountPopoverProps extends Omit<AmountPickerProps, 'value'> {
   children: JSX.Element
   onOkay: (value: bigint) => void
 }

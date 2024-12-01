@@ -30,15 +30,15 @@ import {
   zeroAddress
 } from 'viem'
 import { useAccount } from 'wagmi'
-import AmountPicker from '~/components/AmountPicker'
-import AssetSelect from '~/components/AssetSelect'
-import { otcContract } from '~/helpers/contracts'
-import { config } from '~/helpers/config'
-import useNewOffer from '~/hooks/useNewOffer'
-import useTokenRates from '~/hooks/useTokenRates'
-import { ASSETS, DEPEGGED } from '~/helpers/assets'
-import { fmrHr, fmtNum } from '~/helpers/format'
-import useToast from '~/hooks/useToast'
+import AmountPicker from '~/components/AmountPicker.js'
+import AssetSelect from '~/components/AssetSelect.js'
+import { otcContract } from '~/helpers/contracts.js'
+import { config } from '~/helpers/config.js'
+import useNewOffer from '~/hooks/useNewOffer.js'
+import useTokenRates from '~/hooks/useTokenRates.js'
+import { ASSETS, DEPEGGED } from '~/helpers/assets.js'
+import { fmrHr, fmtNum } from '~/helpers/format.js'
+import useToast from '~/hooks/useToast.js'
 
 interface NewOfferProps {
   domain: string

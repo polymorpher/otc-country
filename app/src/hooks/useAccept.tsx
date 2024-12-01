@@ -2,8 +2,8 @@ import { useCallback } from 'react'
 import { type Address } from 'abitype'
 import type { waitForTransactionReceipt } from '@wagmi/core'
 import { useAccount, useReadContract } from 'wagmi'
-import { erc20Contract, offerContract } from '~/helpers/contracts'
-import useContractWriteComplete from './useContractWriteComplete'
+import { erc20Contract, offerContract } from '~/helpers/contracts.js'
+import useContractWriteComplete from './useContractWriteComplete.js'
 
 interface Config {
   offerAddress: Address
@@ -49,7 +49,9 @@ const useAccept = ({
       functionName: 'approve'
     })
 
-  const onAccept = useCallback(async () => {
+  const onAccept = useCallback(async (): Promise<
+    ReturnType<typeof waitForTransactionReceipt>
+  > => {
     if (allowance < acceptAmount) {
       await approveDestAsset([offerAddress, acceptAmount], {
         pendingTitle: 'Approving deposition',

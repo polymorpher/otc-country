@@ -2,9 +2,9 @@ import React from 'react'
 import { Box, SimpleGrid } from '@chakra-ui/react'
 import { useQuery } from '@tanstack/react-query'
 import { formatUnits } from 'viem'
-import getPrice from '~/helpers/price'
-import AddressField from '~/components/AddressField'
-import { fmrHr, fmtNum, fmtTime } from '~/helpers/format'
+import getPrice from '~/helpers/price.js'
+import AddressField from '~/components/AddressField.js'
+import { fmrHr, fmtNum, fmtTime } from '~/helpers/format.js'
 
 interface Asset {
   address: string

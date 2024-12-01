@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useToast } from '@chakra-ui/react'
-import errorMessage from '~/helpers/error'
-import type { ErrorType } from '~/helpers/error'
+import errorMessage from '~/helpers/error.js'
+import type { ErrorType } from '~/helpers/error.js'
 
 interface ErrorInfo {
   title: string

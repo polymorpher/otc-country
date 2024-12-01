@@ -3,7 +3,7 @@ import {
   useToast as useChakraToast,
   type UseToastOptions
 } from '@chakra-ui/react'
-import TxHashLink from '~/components/TxHashLink'
+import TxHashLink from '~/components/TxHashLink.js'
 
 type ToastOptions = UseToastOptions & {
   txHash?: string

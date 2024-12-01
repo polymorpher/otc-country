@@ -6,7 +6,7 @@ import {
   InputRightElement,
   Spinner
 } from '@chakra-ui/react'
-import * as config from '~/helpers/config'
+import * as config from '~/helpers/config.js'
 
 interface DomainInputProps {
   onChange: (value: string) => void

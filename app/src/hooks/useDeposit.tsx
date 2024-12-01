@@ -2,8 +2,8 @@ import { useCallback } from 'react'
 import { type Address } from 'abitype'
 import type { waitForTransactionReceipt } from '@wagmi/core'
 import { useAccount, useReadContract } from 'wagmi'
-import { erc20Contract, offerContract } from '~/helpers/contracts'
-import useContractWriteComplete from './useContractWriteComplete'
+import { erc20Contract, offerContract } from '~/helpers/contracts.js'
+import useContractWriteComplete from './useContractWriteComplete.js'
 
 interface Config {
   offerAddress: Address
@@ -40,7 +40,9 @@ const useDeposit = ({
     })
 
   const depositFund = useCallback(
-    async (amount: bigint) => {
+    async (
+      amount: bigint
+    ): Promise<ReturnType<typeof waitForTransactionReceipt>> => {
       await refetchAllowance()
 
       if ((allowance as bigint) < amount) {

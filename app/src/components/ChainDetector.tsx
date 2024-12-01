@@ -11,7 +11,7 @@ import {
   VStack
 } from '@chakra-ui/react'
 import { useAccount, useSwitchChain } from 'wagmi'
-import { chain } from '~/helpers/config'
+import { chain } from '~/helpers/config.js'
 
 const ChainDetector = (): React.JSX.Element | null => {
   const { isConnected, chain: currentChain } = useAccount()

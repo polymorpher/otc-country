@@ -3,10 +3,10 @@ import { useParams } from 'react-router-dom'
 import { readContract } from '@wagmi/core'
 import { type Address, isAddress, zeroAddress } from 'viem'
 import { Alert, AlertIcon, Box, Spinner } from '@chakra-ui/react'
-import { otcContract } from '~/helpers/contracts'
-import OfferPage from '~/pages/Offer'
-import useShowError from '~/hooks/useShowError'
-import { config } from '~/helpers/config'
+import { otcContract } from '~/helpers/contracts.js'
+import OfferPage from '~/pages/Offer.js'
+import useShowError from '~/hooks/useShowError.js'
+import { config } from '~/helpers/config.js'
 
 const Offer: React.FC = () => {
   const { domain } = useParams()

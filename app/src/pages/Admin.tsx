@@ -12,12 +12,12 @@ import {
   Text,
   VStack
 } from '@chakra-ui/react'
-import debounce from 'lodash/debounce'
+import debounce from 'lodash/debounce.js'
 import { isAddress } from 'viem'
 import { useReadContract } from 'wagmi'
-import * as config from '~/helpers/config'
-import { otcContract } from '~/helpers/contracts'
-import useContractWriteComplete from '~/hooks/useContractWriteComplete'
+import * as config from '~/helpers/config.js'
+import { otcContract } from '~/helpers/contracts.js'
+import useContractWriteComplete from '~/hooks/useContractWriteComplete.js'
 
 const Admin: React.FC = () => {
   const [asset, setAsset] = useState<string>()

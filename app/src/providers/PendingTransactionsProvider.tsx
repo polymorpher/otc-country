@@ -8,7 +8,7 @@ import {
   useToast,
   VStack
 } from '@chakra-ui/react'
-import TxHashLink from '~/components/TxHashLink'
+import TxHashLink from '~/components/TxHashLink.js'
 
 interface TxToastDataBase {
   hash: string

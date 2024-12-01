@@ -7,8 +7,8 @@ import Select, {
   type OptionProps,
   type SingleValueProps
 } from 'react-select'
-import { abbreviateAddress } from '~/helpers/format'
-import { type Asset } from '~/helpers/assets'
+import { abbreviateAddress } from '~/helpers/format.js'
+import { type Asset } from '~/helpers/assets.js'
 
 interface Item {
   value: string

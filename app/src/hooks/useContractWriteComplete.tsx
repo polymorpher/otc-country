@@ -5,9 +5,9 @@ import {
   waitForTransactionReceipt,
   type WriteContractParameters
 } from '@wagmi/core'
-import { usePendingTransactions } from '~/providers/PendingTransactionsProvider'
-import { config } from '~/helpers/config'
-import useToast from '~/hooks/useToast'
+import { usePendingTransactions } from '~/providers/PendingTransactionsProvider.js'
+import { config } from '~/helpers/config.js'
+import useToast from '~/hooks/useToast.js'
 
 export type ErrorHandler = (error: any) => void
 
@@ -25,7 +25,7 @@ type ContractWriteComplete = (data: {
       failTitle?: string
     },
     value?: bigint
-  ) => ReturnType<typeof waitForTransactionReceipt>
+  ) => Promise<ReturnType<typeof waitForTransactionReceipt>>
 }
 
 const useContractWriteComplete: ContractWriteComplete = (data) => {
@@ -38,7 +38,11 @@ const useContractWriteComplete: ContractWriteComplete = (data) => {
 
   const writeAsync: ReturnType<ContractWriteComplete>['writeAsync'] =
     useCallback(
-      async (args, title, value) => {
+      async (
+        args,
+        title,
+        value
+      ): Promise<ReturnType<typeof waitForTransactionReceipt>> => {
         let hash
 
         try {

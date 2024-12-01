@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button, Text, VStack } from '@chakra-ui/react'
 import { formatUnits } from 'viem'
-import { round } from '~/helpers/mantisa'
+import { round } from '~/helpers/mantisa.js'
 
 interface ClaimPaymentProps {
   balance: bigint

@@ -2,8 +2,8 @@ import { useCallback } from 'react'
 import { type Address } from 'abitype'
 import { type Hex, keccak256, toHex } from 'viem'
 import { useAccount, useBalance, useReadContract } from 'wagmi'
-import { idcContract, erc20Contract, otcContract } from '~/helpers/contracts'
-import useContractWriteComplete from './useContractWriteComplete'
+import { idcContract, erc20Contract, otcContract } from '~/helpers/contracts.js'
+import useContractWriteComplete from './useContractWriteComplete.js'
 
 interface Config {
   srcAsset: Address

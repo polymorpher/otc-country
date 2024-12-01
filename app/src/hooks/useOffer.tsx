@@ -1,7 +1,11 @@
 import { type Address } from 'abitype'
 import { useAccount, useReadContract, useReadContracts } from 'wagmi'
-import { erc20Contract, offerContract, otcContract } from '~/helpers/contracts'
-import { type Status } from '~/helpers/types'
+import {
+  erc20Contract,
+  offerContract,
+  otcContract
+} from '~/helpers/contracts.js'
+import { type Status } from '~/helpers/types.js'
 
 interface Config {
   address: Address

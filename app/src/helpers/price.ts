@@ -1,4 +1,4 @@
-import { DEPEGGED, ASSETS } from './assets'
+import { DEPEGGED, ASSETS } from './assets.js'
 
 const getPrice = async (address: string) => {
   const asset = DEPEGGED.concat(ASSETS).find(

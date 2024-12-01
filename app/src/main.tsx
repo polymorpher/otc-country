@@ -5,12 +5,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagmiProvider } from 'wagmi'
 import { ConnectKitProvider } from 'connectkit'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import LandingPage from '~/routes/index'
-import NewOffer from '~/routes/new'
-import Offer from '~/routes/offer'
-import PendingTransactionsProvider from '~/providers/PendingTransactionsProvider'
-import Intro from '~/components/Intro'
-import { config } from '~/helpers/config'
+import LandingPage from '~/routes/index.js'
+import NewOffer from '~/routes/new.js'
+import Offer from '~/routes/offer.js'
+import PendingTransactionsProvider from '~/providers/PendingTransactionsProvider.js'
+import Intro from '~/components/Intro.js'
+import { config } from '~/helpers/config.js'
 
 const theme = extendTheme({
   fonts: {

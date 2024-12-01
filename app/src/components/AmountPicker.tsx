@@ -13,8 +13,8 @@ import {
   SliderTrack
 } from '@chakra-ui/react'
 import { formatUnits, parseUnits } from 'viem'
-import { round } from '~/helpers/mantisa'
-import { fmtNum } from '~/helpers/format'
+import { round } from '~/helpers/mantisa.js'
+import { fmtNum } from '~/helpers/format.js'
 
 export interface AmountPickerProps {
   max: bigint

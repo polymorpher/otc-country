@@ -10,11 +10,11 @@ import {
 import { readContract } from '@wagmi/core'
 import { type Address, zeroAddress } from 'viem'
 import { Link } from 'react-router-dom'
-import OfferPage from '~/pages/Offer'
-import EventHistory from '~/pages/EventHistory'
-import { otcContract } from '~/helpers/contracts'
-import useShowError from '~/hooks/useShowError'
-import * as config from '~/helpers/config'
+import OfferPage from '~/pages/Offer.js'
+import EventHistory from '~/pages/EventHistory.js'
+import { otcContract } from '~/helpers/contracts.js'
+import useShowError from '~/hooks/useShowError.js'
+import * as config from '~/helpers/config.js'
 
 const hostname = location.hostname.toLowerCase()
 
