@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Link, Td, Tr } from '@chakra-ui/react'
+import { Box, HStack, Link, Td, Tr, VStack, Text } from '@chakra-ui/react'
 import { useQuery } from '@tanstack/react-query'
 import { formatUnits } from 'viem'
 import getPrice from '~/helpers/price.js'
@@ -8,6 +8,8 @@ import { fmrHr, fmtNum, fmtTime } from '~/helpers/format.js'
 import { TLD, RESOLVE_UNKNOWN_ASSET, LOCAL_TARGET } from '~/helpers/config.js'
 import cloneDeep from 'lodash/cloneDeep.js'
 import { type Address } from 'abitype'
+import CoinWithAmount from '~/components/CoinWithAmount.js'
+import { ArrowDownIcon } from '@chakra-ui/icons'
 
 interface Asset {
   address: string
@@ -40,6 +42,7 @@ export interface EventType {
 
 interface EventProps {
   event: EventType
+  asTableRow?: boolean
 }
 
 function resolveUnknownAsset(e0: EventType): EventType {
@@ -61,7 +64,7 @@ function resolveUnknownAsset(e0: EventType): EventType {
   return e
 }
 
-const Event: React.FC<EventProps> = ({ event }) => {
+const Event: React.FC<EventProps> = ({ event, asTableRow }) => {
   event = resolveUnknownAsset(event)
   const { data: srcAssetRate } = useQuery<number>({
     queryKey: ['rate', event.offer.sourceAsset.address],
@@ -183,38 +186,98 @@ const Event: React.FC<EventProps> = ({ event }) => {
   //   </SimpleGrid>
   // )
 
-  return (
-    <Tr
-      bgColor={event.type === 'ACCEPTED' ? '#eee' : '#efe'}
-      color={event.type === 'ACCEPTED' ? 'grey' : 'auto'}
-    >
-      <Td>
-        <Link href={target} target={'_blank'} rel={'noreferrer'}>
-          {event.type === 'ACCEPTED' ? 'No' : 'Yes'}
-        </Link>
-      </Td>
-      <Td minWidth={'200px'}>
-        {fmtNum(srcAmount)}
-        <AddressField text={event.offer.sourceAsset.label} shorten>
-          {event.offer.sourceAsset.address}
-        </AddressField>
-      </Td>
-      <Td minWidth={'200px'}>
-        <Box>
-          {fmtNum(destAmount)}
-          <AddressField text={event.offer.destAsset.label} shorten>
-            {event.offer.destAsset.address}
+  if (asTableRow) {
+    return (
+      <Tr
+        bgColor={event.type === 'ACCEPTED' ? '#eee' : '#efe'}
+        color={event.type === 'ACCEPTED' ? 'grey' : 'auto'}
+      >
+        <Td>
+          <Link href={target} target={'_blank'} rel={'noreferrer'}>
+            {event.type === 'ACCEPTED' ? 'No' : 'Yes'}
+          </Link>
+        </Td>
+        <Td minWidth={'200px'}>
+          {fmtNum(srcAmount)}
+          <AddressField text={event.offer.sourceAsset.label} shorten>
+            {event.offer.sourceAsset.address}
           </AddressField>
+        </Td>
+        <Td minWidth={'200px'}>
+          <Box>
+            {fmtNum(destAmount)}
+            <AddressField text={event.offer.destAsset.label} shorten>
+              {event.offer.destAsset.address}
+            </AddressField>
+          </Box>
+        </Td>
+        <Td>{rate}</Td>
+        <Td wordBreak={'break-all'} fontSize={'xs'}>
+          <Link href={target} target={'_blank'} rel={'noreferrer'}>
+            {`${event.offer.domainName}.${TLD}` ?? 'N/A'}
+          </Link>
+        </Td>
+        <Td>{timeAbbr}</Td>
+      </Tr>
+    )
+  }
+  return (
+    <VStack width={60} gap={0}>
+      <Box flex={1} width={'100%'} flexDirection={'column'} display={'flex'}>
+        <CoinWithAmount
+          amountTextSize={'1rem'}
+          amount={
+            event.type === 'ACCEPTED'
+              ? event.offer.depositHistory[0]
+              : event.offer.totalDeposits
+          }
+          {...event.offer.sourceAsset}
+          noRoundBottom
+        />
+      </Box>
+      <Box
+        flex={1}
+        width={'100%'}
+        display={'flex'}
+        justifyContent={'center'}
+        background={'#fff'}
+      >
+        <Box height={'2px'}></Box>
+        <Box
+          position={'absolute'}
+          transform={'translate(-50%,-50%)'}
+          background={'white'}
+          paddingY={0.5}
+          paddingX={1}
+          borderRadius={'8px'}
+        >
+          <ArrowDownIcon width={4} height={4} />
         </Box>
-      </Td>
-      <Td>{rate}</Td>
-      <Td wordBreak={'break-all'} fontSize={'xs'}>
-        <Link href={target} target={'_blank'} rel={'noreferrer'}>
-          {`${event.offer.domainName}.${TLD}` ?? 'N/A'}
-        </Link>
-      </Td>
-      <Td>{timeAbbr}</Td>
-    </Tr>
+      </Box>
+      <Box flex={1} width={'100%'}>
+        <CoinWithAmount
+          noRoundTop
+          amountTextSize={'1rem'}
+          amount={event.offer.closeAmount}
+          {...event.offer.destAsset}
+        />
+      </Box>
+      <HStack
+        width={'100%'}
+        background={'#bbb'}
+        borderRadius={'0 0 8px 8px'}
+        paddingX={2}
+        paddingY={1}
+        justifyContent={'space-between'}
+      >
+        <Text color={'#fff'} fontSize={'12px'}>
+          Rate: {rate}
+        </Text>
+        <Text color={'#fff'} fontSize={'8px'}>
+          {timeAbbr} ago
+        </Text>
+      </HStack>
+    </VStack>
   )
 }
 

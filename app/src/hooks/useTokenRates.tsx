@@ -13,6 +13,7 @@ interface PriceData {
 }
 
 const useTokenRates = (...addresses: string[]): number[] => {
+  addresses = addresses.map((e) => e.toLowerCase())
   const [rates, setRates] = useState(Array(addresses.length).fill(0))
   const es = useRef<EventSource>()
 
@@ -28,7 +29,7 @@ const useTokenRates = (...addresses: string[]): number[] => {
     const addresses = JSON.parse(addr)
 
     const assets: Array<[number, Asset]> = DEPEGGED.concat(ASSETS)
-      .filter((item) => addresses.includes(item.value))
+      .filter((item) => addresses.includes(item.value.toLowerCase()))
       .map((x, key) => [key, x])
 
     const dynamicRates = assets

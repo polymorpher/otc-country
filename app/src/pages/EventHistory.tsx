@@ -69,12 +69,12 @@ const EventHistory: React.FC<BoxProps> = (props) => {
               <Th>To</Th>
               <Th>Rate</Th>
               <Th>Domain</Th>
-              <Th>Time</Th>
+              <Th>When</Th>
             </Tr>
           </Thead>
           <Tbody>
             {data?.events.map((event, key) => (
-              <Event event={event} key={key} />
+              <Event event={event} key={key} asTableRow />
             ))}
           </Tbody>
         </Table>
