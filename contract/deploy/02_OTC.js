@@ -4,17 +4,20 @@ module.exports = async ({ getNamedAccounts, deployments, ...other }) => {
 
   const offerFactory = await deployments.get('OfferFactory')
 
-  let domainContract = {
-    address: process.env.DOMAIN_CONTRACT
-  }
-
-  if (process.env.DEPLOY_MAINNET === '0') {
-    domainContract = await deployments.get('DomainContract')
+  let domainContractAddress = process.env.DOMAIN_CONTRACT
+  if (!domainContractAddress) {
+    console.log('Cannot find DOMAIN_CONTRACT. Deploying mock domain contract...')
+    const c = await deploy('DomainContract', {
+      from: deployer,
+      args: [],
+      log: true
+    })
+    domainContractAddress = c.address
   }
   await deploy('OTC', {
     from: deployer,
     args: [
-      domainContract.address,
+      domainContractAddress,
       offerFactory.address,
       process.env.ADMIN_ACCOUNT,
       process.env.OPERATOR_ACCOUNT,

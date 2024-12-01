@@ -1,5 +1,6 @@
 module.exports = async ({ getNamedAccounts, deployments }) => {
-  if (process.env.DEPLOY_MAINNET === '1') {
+  if (!process.env.DEPLOY_TEST_TOKENS) {
+    console.log('Skipping deploying test tokens. It can be enabled with DEPLOY_TEST_TOKENS=1')
     return
   }
 
@@ -14,12 +15,6 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
       log: true
     })
   }
-
-  await deploy('DomainContract', {
-    from: deployer,
-    args: [],
-    log: true
-  })
 }
 
 module.exports.tags = ['TestContracts']
