@@ -332,7 +332,7 @@ const Offer: React.FC<OfferProps> = ({ address }) => {
                   {destBalance < acceptAmount && (
                     <Alert status="warning">
                       <AlertIcon />
-                      Your balance of destination asset is
+                      Your balance of destination asset is{' '}
                       {round(formatUnits(destBalance, Number(destDecimals)))},
                       which is not sufficient to accept the offer.
                     </Alert>

@@ -1,5 +1,6 @@
 import { http, createConfig } from 'wagmi'
 import { harmonyOne, sepolia, anvil } from 'wagmi/chains'
+import { type Address } from 'abitype'
 
 export const debounceTimeout = 500
 
@@ -28,3 +29,14 @@ export const config = createConfig({
 export const ADDITIONAL_ASSETS = JSON.parse(
   import.meta.env.VITE_ADDITIONAL_ASSETS || '[]'
 )
+export const RESOLVE_UNKNOWN_ASSET: Record<
+  Address,
+  { decimals: number; name: string }
+> = JSON.parse(import.meta.env.VITE_RESOLVE_UNKNOWN_ASSET || '{}')
+
+for (const [address, value] of Object.entries(RESOLVE_UNKNOWN_ASSET)) {
+  RESOLVE_UNKNOWN_ASSET[address.toLowerCase() as Address] = value as {
+    decimals: number
+    name: string
+  }
+}

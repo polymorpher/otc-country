@@ -5,6 +5,9 @@ import { formatUnits } from 'viem'
 import getPrice from '~/helpers/price.js'
 import AddressField from '~/components/AddressField.js'
 import { fmrHr, fmtNum, fmtTime } from '~/helpers/format.js'
+import { RESOLVE_UNKNOWN_ASSET } from '~/helpers/config.js'
+import cloneDeep from 'lodash/cloneDeep.js'
+import { type Address } from 'abitype'
 
 interface Asset {
   address: string
@@ -39,7 +42,27 @@ interface EventProps {
   event: EventType
 }
 
+function resolveUnknownAsset(e0: EventType): EventType {
+  const e = cloneDeep(e0)
+  if (e0.offer.sourceAsset.label === 'Unknown') {
+    const addr = e0.offer.sourceAsset.address.toLowerCase() as Address
+    if (RESOLVE_UNKNOWN_ASSET[addr]) {
+      e.offer.sourceAsset.label = RESOLVE_UNKNOWN_ASSET[addr].name
+      e.offer.sourceAsset.decimals = RESOLVE_UNKNOWN_ASSET[addr].decimals
+    }
+  }
+  if (e0.offer.destAsset.label === 'Unknown') {
+    const addr = e0.offer.destAsset.address.toLowerCase() as Address
+    if (RESOLVE_UNKNOWN_ASSET[addr]) {
+      e.offer.destAsset.label = RESOLVE_UNKNOWN_ASSET[addr].name
+      e.offer.destAsset.decimals = RESOLVE_UNKNOWN_ASSET[addr].decimals
+    }
+  }
+  return e
+}
+
 const Event: React.FC<EventProps> = ({ event }) => {
+  event = resolveUnknownAsset(event)
   const { data: srcAssetRate } = useQuery<number>({
     queryKey: ['rate', event.offer.sourceAsset.address],
     queryFn: () => getPrice(event.offer.sourceAsset.address)
