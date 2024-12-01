@@ -1,3 +1,5 @@
+import { ADDITIONAL_ASSETS } from '~/helpers/config.js'
+
 /**
  * should be defined class as it is shared in subgraph mapping (assemblyscript) doesn't support object
  */
@@ -112,3 +114,7 @@ export const ASSETS: Asset[] = [
     '0x2b89b9dc8fdf9f34709a5b106b472f0f39bb6ca9ce04b0fd7f2e971688e2e53b'
   )
 ]
+
+for (const [address, name, icon, rate] of ADDITIONAL_ASSETS) {
+  ASSETS.push(new Asset(address, name, icon, rate))
+}

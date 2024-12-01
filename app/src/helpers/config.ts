@@ -24,3 +24,7 @@ export const config = createConfig({
     [anvil.id]: http('http://127.0.0.1:8545')
   }
 })
+
+export const ADDITIONAL_ASSETS = JSON.parse(
+  import.meta.env.VITE_ADDITIONAL_ASSETS || '[]'
+)
