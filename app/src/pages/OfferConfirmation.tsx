@@ -121,7 +121,7 @@ const OfferConfirmation: React.FC<OfferConfirmationProps> = ({
     <VStack
       onSubmit={handleSubmit(handleOfferSubmit)}
       as="form"
-      width="full"
+      width="600px"
       spacing={12}
     >
       <FormControl isInvalid={!!errors.commissionRate}>

@@ -126,7 +126,7 @@ const OfferDomainInput: React.FC<OfferDomainInputProps> = ({
   }, [domainContractError, showError])
 
   return (
-    <>
+    <VStack width="600px">
       <DomainInput
         value={domain}
         onChange={setDomain}
@@ -188,7 +188,7 @@ const OfferDomainInput: React.FC<OfferDomainInputProps> = ({
           )}
         </>
       )}
-    </>
+    </VStack>
   )
 }
 

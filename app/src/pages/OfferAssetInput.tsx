@@ -13,8 +13,11 @@ import {
   FormErrorMessage,
   FormHelperText,
   FormLabel,
+  HStack,
   Input,
-  VStack
+  VStack,
+  Text,
+  Box
 } from '@chakra-ui/react'
 import { formatUnits } from 'viem'
 import { useAccount } from 'wagmi'
@@ -59,46 +62,17 @@ const OfferAssetInput: React.FC<OfferAssetInputProps> = ({
 
   return (
     <VStack>
-      <VStack width="480px" spacing={12}>
-        <FormControl isInvalid={!!errors.srcAsset}>
-          <FormLabel>Source asset</FormLabel>
-          <Controller
-            control={control}
-            name="srcAsset"
-            rules={rules.srcAsset}
-            render={({ field: { onChange, value } }) => (
-              <AssetSelect
-                value={value}
-                onChange={onChange}
-                list={DEPEGGED.concat(ASSETS)}
-              />
-            )}
-          />
-          <FormHelperText color="green">${fmtNum(srcRate)}</FormHelperText>
-          <FormErrorMessage>
-            {errors.srcAsset?.message?.toString()}
-          </FormErrorMessage>
-        </FormControl>
-
-        <FormControl isInvalid={!!errors.destAsset}>
-          <FormLabel>Destination asset</FormLabel>
-          <Controller
-            control={control}
-            name="destAsset"
-            rules={rules.destAsset}
-            render={({ field: { onChange, value } }) => (
-              <AssetSelect value={value} onChange={onChange} list={ASSETS} />
-            )}
-          />
-          <FormHelperText color="green">${fmtNum(destRate)}</FormHelperText>
-          <FormErrorMessage>
-            {errors.destAsset?.message?.toString()}
-          </FormErrorMessage>
-        </FormControl>
-
-        {srcBalance !== undefined && srcDecimals !== undefined && (
-          <FormControl isInvalid={!!errors.depositAmount}>
-            <FormLabel>Deposit amount</FormLabel>
+      <VStack width="600px">
+        <Text
+          color={'grey'}
+          fontSize={'12px'}
+          width={'100%'}
+          textAlign={'left'}
+        >
+          Deposit
+        </Text>
+        <HStack width="100%">
+          <FormControl flex={1} isInvalid={!!errors.depositAmount}>
             <Controller
               control={control}
               name="depositAmount"
@@ -109,36 +83,89 @@ const OfferAssetInput: React.FC<OfferAssetInputProps> = ({
                     field.onChange(value.toString())
                   }}
                   value={field.value}
-                  max={srcBalance}
-                  decimals={Number(srcDecimals)}
+                  max={srcBalance ?? 0n}
+                  decimals={Number(srcDecimals ?? 0)}
                 />
               )}
             />
-            {BigInt(watch('depositAmount')) > srcBalance ? (
-              <FormHelperText color="red">
-                Exceed the current balance
-              </FormHelperText>
-            ) : (
-              <FormHelperText color="green">
-                ${fmtNum(depositAmountInBase * srcRate)}
-              </FormHelperText>
-            )}
-            <FormErrorMessage>
-              {errors.depositAmount?.message?.toString()}
-            </FormErrorMessage>
           </FormControl>
-        )}
-
-        <FormControl isInvalid={!!errors.acceptAmount}>
-          <FormLabel>Accept amount</FormLabel>
-          <Input {...register('acceptAmount', rules.acceptAmount)} />
-          <FormHelperText color="green">
-            ${fmtNum(Number(watch('acceptAmount')) * destRate)}
-          </FormHelperText>
-          <FormErrorMessage>
-            {errors.acceptAmount?.message?.toString()}
-          </FormErrorMessage>
-        </FormControl>
+          <FormControl flex={2} isInvalid={!!errors.srcAsset}>
+            <Controller
+              control={control}
+              name="srcAsset"
+              rules={rules.srcAsset}
+              render={({ field: { onChange, value } }) => (
+                <AssetSelect
+                  value={value}
+                  onChange={onChange}
+                  list={DEPEGGED.concat(ASSETS)}
+                />
+              )}
+            />
+          </FormControl>
+        </HStack>
+        <HStack justifyContent={'space-between'} width="100%">
+          <Box>
+            {BigInt(watch('depositAmount')) > srcBalance ? (
+              <Text color="red">Exceed the current balance</Text>
+            ) : (
+              <Text color="green">
+                ${fmtNum(depositAmountInBase * srcRate)}
+              </Text>
+            )}
+            <Text color="red">{errors.depositAmount?.message?.toString()}</Text>
+          </Box>
+          <Box>
+            <Text color="green"> value = ${fmtNum(srcRate)}</Text>
+            <Text>{errors.srcAsset?.message?.toString()}</Text>
+          </Box>
+        </HStack>
+        <Text
+          mt={6}
+          color={'grey'}
+          fontSize={'12px'}
+          width={'100%'}
+          textAlign={'left'}
+        >
+          Accept
+        </Text>
+        <HStack width="100%">
+          <FormControl flex={1} isInvalid={!!errors.acceptAmount}>
+            <Input
+              width={'10em'}
+              mr={2}
+              borderRadius={0}
+              border={'none'}
+              borderBottom={'1px solid'}
+              _focus={{ boxShadow: 'none' }}
+              {...register('acceptAmount', rules.acceptAmount)}
+            />
+          </FormControl>
+          <FormControl flex={2} isInvalid={!!errors.destAsset}>
+            <Controller
+              control={control}
+              name="destAsset"
+              rules={rules.destAsset}
+              render={({ field: { onChange, value } }) => (
+                <AssetSelect value={value} onChange={onChange} list={ASSETS} />
+              )}
+            />
+          </FormControl>
+        </HStack>
+        <HStack justifyContent={'space-between'} width="100%">
+          <VStack>
+            <Text color="green">
+              ${fmtNum(Number(watch('acceptAmount')) * destRate)}
+            </Text>
+            <Text color={'red'}>
+              {errors.acceptAmount?.message?.toString()}
+            </Text>
+          </VStack>
+          <VStack>
+            <Text color="green">${fmtNum(destRate)}</Text>
+            <Text color={'red'}>{errors.destAsset?.message?.toString()}</Text>
+          </VStack>
+        </HStack>
 
         <FormControl isInvalid={!!errors.acceptAmount}>
           <FormLabel>Exchange Rate</FormLabel>
