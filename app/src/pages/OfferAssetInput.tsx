@@ -59,7 +59,7 @@ const OfferAssetInput: React.FC<OfferAssetInputProps> = ({
 
   return (
     <VStack>
-      <VStack mt={16} width="full" spacing={12}>
+      <VStack width="480px" spacing={12}>
         <FormControl isInvalid={!!errors.srcAsset}>
           <FormLabel>Source asset</FormLabel>
           <Controller

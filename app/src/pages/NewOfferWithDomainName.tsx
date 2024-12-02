@@ -15,7 +15,6 @@ import { zeroAddress } from 'viem'
 import { useAccount } from 'wagmi'
 import { newName } from '~/helpers/names.js'
 import OfferAssetInput from '~/pages/OfferAssetInput.js'
-import useShowError from '~/hooks/useShowError.js'
 import { useForm } from 'react-hook-form'
 import OfferDomainInput from '~/pages/OfferDomainInput.js'
 import OfferConfirmation from '~/pages/OfferConfirmation.js'
@@ -28,7 +27,7 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
   const [domain, setDomain] = useState<string>(newName())
   const [error, setError] = useState<any>()
 
-  const showError = useShowError()
+  // const showError = useShowError()
 
   const {
     register,
@@ -46,15 +45,15 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
   })
 
   return (
-    <VStack width="full" maxW={'container.sm'}>
-      <Text fontSize={24} m={8}>
+    <VStack width="full">
+      <Text fontSize={20} m={8}>
         Create a new offer
       </Text>
-      <Tabs>
-        <TabList>
-          <Tab>Choose asset and amount</Tab>
-          <Tab>Choose domain name</Tab>
-          <Tab>Confirm</Tab>
+      <Tabs orientation={'vertical'}>
+        <TabList gap={'16px'} alignItems={'start'} width={'240px'}>
+          <Tab textAlign={'left'}>1. Choose assets</Tab>
+          <Tab textAlign={'left'}>2. Setup domain</Tab>
+          <Tab textAlign={'left'}>3. Confirm</Tab>
         </TabList>
         <TabPanels>
           <TabPanel>
