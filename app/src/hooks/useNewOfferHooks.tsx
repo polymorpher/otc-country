@@ -5,12 +5,16 @@ import { useAccount, useBalance, useReadContract } from 'wagmi'
 import { idcContract, erc20Contract, otcContract } from '~/helpers/contracts.js'
 import useContractWriteComplete from './useContractWriteComplete.js'
 
-interface Config {
+interface NewOfferAssets {
   srcAsset: Address
   destAsset: Address
-  domain: string
 }
 
+interface UseNewOfferProps {
+  srcAsset: Address
+  domain: string
+  domainPrice: bigint
+}
 interface OfferData {
   domainOwner: Address
   srcAsset: Address
@@ -21,85 +25,48 @@ interface OfferData {
   lockWithdrawDuration: bigint
 }
 
-export interface UseNewOfferType {
-  balance: bigint
-  srcBalance: bigint
-  srcDecimals: bigint
-  destDecimals: bigint
-  domainPrice: bigint
+export interface UseNewOfferInfo {
   isCreatingOffer: boolean
-  domainOwner: Address
   createOffer: (d: OfferData) => any
+}
+export interface UseNewDomainInfo {
+  dcAddress: Address
+  domainContractError: any
+  domainPrice: bigint
+  balance: bigint
+  domainOwner: Address
   registerWeb2Domain: (txHash: Hex, address: Address, domain: string) => any
   setDns: (txHash: Hex, domain: string) => any
   generateMetadata: (domain: string) => any
 }
+export interface UseAssetInfo {
+  srcAsset: Address
+  destAsset: Address
+  srcBalance: bigint
+  destBalance: bigint
+  srcDecimals: bigint
+  destDecimals: bigint
+}
 
-const useNewOffer = ({
-  srcAsset,
-  destAsset,
-  domain
-}: Config): UseNewOfferType => {
+export const useNewDomain = (domain: string): UseNewDomainInfo => {
   const { address } = useAccount()
-
   const { data: balance } = useBalance({ address })
-
-  const { data: domainContractAddress } = useReadContract({
+  const { error: domainContractError, data: dcAddress } = useReadContract({
     ...otcContract,
     functionName: 'domainContract'
   })
 
   const { data: domainPrice } = useReadContract({
-    ...idcContract(domainContractAddress as Address),
+    ...idcContract(dcAddress as Address),
     functionName: 'getPrice',
     args: [domain]
   })
 
   const { data: domainOwner } = useReadContract({
-    ...idcContract(domainContractAddress as Address),
+    ...idcContract(dcAddress as Address),
     functionName: 'ownerOf',
     args: [domain]
   })
-
-  const { data: srcBalance } = useReadContract({
-    ...erc20Contract(srcAsset),
-    functionName: 'balanceOf',
-    args: [address]
-  })
-
-  const { data: computedOfferAddress } = useReadContract({
-    ...otcContract,
-    functionName: 'computedOfferAddress',
-    args: [domain]
-  })
-
-  const { data: allowance, refetch: refetchAllowance } = useReadContract({
-    ...erc20Contract(srcAsset),
-    functionName: 'allowance',
-    args: [address, computedOfferAddress]
-  })
-
-  const { data: srcDecimals } = useReadContract({
-    ...erc20Contract(srcAsset),
-    functionName: 'decimals'
-  })
-
-  const { data: destDecimals } = useReadContract({
-    ...erc20Contract(destAsset),
-    functionName: 'decimals'
-  })
-
-  const { writeAsync: approveSrcAsset, status: approveStatus } =
-    useContractWriteComplete({
-      ...erc20Contract(srcAsset),
-      functionName: 'approve'
-    })
-
-  const { writeAsync: createOfferAsync, status: createOfferStatus } =
-    useContractWriteComplete({
-      ...otcContract,
-      functionName: 'createOffer'
-    })
 
   const generateMetadata = useCallback(async (domain: string) => {
     return await fetch('https://1ns-registrar-relayer.hiddenstate.xyz/gen', {
@@ -149,6 +116,83 @@ const useNewOffer = ({
       }))
   }, [])
 
+  return {
+    balance: balance?.value as bigint,
+    domainPrice: domainPrice as bigint,
+    domainOwner: domainOwner as Address,
+    domainContractError,
+    dcAddress: dcAddress as Address,
+    registerWeb2Domain,
+    generateMetadata,
+    setDns
+  }
+}
+export const useAssets = ({
+  srcAsset,
+  destAsset
+}: NewOfferAssets): UseAssetInfo => {
+  const { address } = useAccount()
+
+  const { data: srcBalance } = useReadContract({
+    ...erc20Contract(srcAsset),
+    functionName: 'balanceOf',
+    args: [address]
+  })
+  const { data: destBalance } = useReadContract({
+    ...erc20Contract(destAsset),
+    functionName: 'balanceOf',
+    args: [address]
+  })
+
+  const { data: srcDecimals } = useReadContract({
+    ...erc20Contract(srcAsset),
+    functionName: 'decimals'
+  })
+
+  const { data: destDecimals } = useReadContract({
+    ...erc20Contract(destAsset),
+    functionName: 'decimals'
+  })
+  return {
+    srcAsset,
+    destAsset,
+    srcBalance: srcBalance as bigint,
+    destBalance: destBalance as bigint,
+    srcDecimals: srcDecimals as bigint,
+    destDecimals: destDecimals as bigint
+  }
+}
+export const useNewOffer = ({
+  srcAsset,
+  domain,
+  domainPrice
+}: UseNewOfferProps): UseNewOfferInfo => {
+  const { data: computedOfferAddress } = useReadContract({
+    ...otcContract,
+    functionName: 'computedOfferAddress',
+    args: [domain]
+  })
+
+  const { address } = useAccount()
+
+  const { writeAsync: approveSrcAsset, status: approveStatus } =
+    useContractWriteComplete({
+      ...erc20Contract(srcAsset),
+      functionName: 'approve'
+    })
+
+  const { writeAsync: createOfferAsync, status: createOfferStatus } =
+    useContractWriteComplete({
+      ...otcContract,
+      functionName: 'createOffer'
+    })
+
+  const { data: allowance, refetch: refetchAllowance } = useReadContract({
+    ...erc20Contract(srcAsset),
+    functionName: 'allowance',
+    args: [address, computedOfferAddress]
+  })
+
   const createOffer = useCallback(
     async ({
       domainOwner,
@@ -186,7 +230,7 @@ const useNewOffer = ({
           failTitle: 'Failed to create the offer',
           successTitle: 'Offer has been approved'
         },
-        domainPrice as bigint
+        domainPrice
       )
     },
     [
@@ -201,19 +245,8 @@ const useNewOffer = ({
   )
 
   return {
-    balance: balance?.value as bigint,
-    srcBalance: srcBalance as bigint,
-    srcDecimals: srcDecimals as bigint,
-    destDecimals: destDecimals as bigint,
-    domainPrice: domainPrice as bigint,
     isCreatingOffer:
       approveStatus === 'pending' || createOfferStatus === 'pending',
-    createOffer,
-    registerWeb2Domain,
-    generateMetadata,
-    setDns,
-    domainOwner: domainOwner as Address
+    createOffer
   }
 }
-
-export default useNewOffer
