@@ -23,7 +23,7 @@ import { useAssets } from '~/hooks/useNewOfferHooks.js'
 import useTokenRates from '~/hooks/useTokenRates.js'
 import { ASSETS, DEPEGGED } from '~/helpers/assets.js'
 import { fmtNum, tryBigInt } from '~/helpers/format.js'
-import { type FormFields, rules } from '~/pages/OfferCommon.js'
+import { type FormFields, rules } from '~/pages/NewOffer/OfferCommon.js'
 
 interface OfferAssetInputProps {
   control: Control<FormFields>

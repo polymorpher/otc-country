@@ -7,7 +7,7 @@ import { readContract } from '@wagmi/core'
 import client from '~/graphql/client.js'
 import { GET_RECENT_EVENTS } from '~/graphql/queries.js'
 import Admin from '~/pages/Admin.js'
-import NewOfferWithDomainName from '~/pages/NewOfferWithDomainName.js'
+import NewOffer from '~/pages/NewOffer.js'
 import ChainDetector from '~/components/ChainDetector.js'
 import type { EventType } from '~/components/Event.js'
 import Event from '~/components/Event.js'
@@ -45,7 +45,7 @@ const User = () => {
         {data?.events.map((event, key) => <Event event={event} key={key} />)}
         {data?.events.map((event, key) => <Event event={event} key={key} />)}
       </HStack>
-      <NewOfferWithDomainName />
+      <NewOffer />
     </Box>
   )
 }

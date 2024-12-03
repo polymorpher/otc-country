@@ -34,7 +34,7 @@ import {
   type UseFormHandleSubmit
 } from 'react-hook-form'
 import { fmrHr } from '~/helpers/format.js'
-import { type FormFields, rules } from '~/pages/OfferCommon.js'
+import { type FormFields, rules } from '~/pages/NewOffer/OfferCommon.js'
 import useToast from '~/hooks/useToast.js'
 import { useAccount } from 'wagmi'
 import { VisuallyHidden } from '@chakra-ui/icons'

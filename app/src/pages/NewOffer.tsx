@@ -8,21 +8,19 @@ import {
   TabList,
   TabPanels,
   Tab,
-  TabPanel,
-  Button,
-  HStack
+  TabPanel
 } from '@chakra-ui/react'
 import { type Address } from 'abitype'
 import { zeroAddress } from 'viem'
 import { useAccount } from 'wagmi'
 import { newName } from '~/helpers/names.js'
-import OfferAssetInput from '~/pages/OfferAssetInput.js'
+import OfferAssetInput from '~/pages/NewOffer/OfferAssetInput.js'
 import { useForm } from 'react-hook-form'
-import OfferDomainInput from '~/pages/OfferDomainInput.js'
-import OfferConfirmation from '~/pages/OfferConfirmation.js'
-import { defaultValues } from '~/pages/OfferCommon.js'
+import OfferDomainInput from '~/pages/NewOffer/OfferDomainInput.js'
+import OfferConfirmation from '~/pages/NewOffer/OfferConfirmation.js'
+import { defaultValues } from '~/pages/NewOffer/OfferCommon.js'
 
-const NewOfferWithDomainName = (): React.JSX.Element => {
+const NewOffer = (): React.JSX.Element => {
   const { isConnected, address } = useAccount()
   const [isFetching, setIsFetching] = useState<boolean>(false)
   const [offerAddress, setOfferAddress] = useState<Address>()
@@ -128,4 +126,4 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
   )
 }
 
-export default NewOfferWithDomainName
+export default NewOffer
