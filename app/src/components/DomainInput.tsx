@@ -21,11 +21,15 @@ const DomainInput: React.FC<DomainInputProps> = ({
 }) => (
   <InputGroup>
     <Input
+      borderRadius={'0'}
+      border={'none'}
+      borderBottom={'1px solid'}
       value={value}
       placeholder="my-offer"
       onChange={(e) => {
         onChange(e.target.value)
       }}
+      mr={4}
     />
     {loading && (
       <InputRightElement right="7.7em">

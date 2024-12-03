@@ -22,7 +22,7 @@ import AssetSelect from '~/components/AssetSelect.js'
 import { useAssets } from '~/hooks/useNewOfferHooks.js'
 import useTokenRates from '~/hooks/useTokenRates.js'
 import { ASSETS, DEPEGGED } from '~/helpers/assets.js'
-import { fmtNum } from '~/helpers/format.js'
+import { fmtNum, tryBigInt } from '~/helpers/format.js'
 import { type FormFields, rules } from '~/pages/OfferCommon.js'
 
 interface OfferAssetInputProps {
@@ -40,23 +40,19 @@ const OfferAssetInput: React.FC<OfferAssetInputProps> = ({
   register,
   onNext
 }) => {
-  const { srcBalance, srcDecimals, srcSymbol, destSymbol, srcInfo, destInfo } =
-    useAssets({
-      srcAsset: watch('srcAsset'),
-      destAsset: watch('destAsset')
-    })
+  const { srcBalance, srcSymbol, destSymbol, srcInfo, destInfo } = useAssets({
+    srcAsset: watch('srcAsset'),
+    destAsset: watch('destAsset')
+  })
 
   const [srcRate, destRate] = useTokenRates(
     watch('srcAsset'),
     watch('destAsset')
   )
 
-  const depositAmountInBase = Number(
-    formatUnits(BigInt(watch('depositAmount')), Number(srcDecimals))
-  )
-
   const exchangeRate =
-    (Number(watch('acceptAmount')) * destRate) / (depositAmountInBase * srcRate)
+    (Number(watch('acceptAmount')) * destRate) /
+    (Number(watch('depositAmount')) * srcRate)
 
   return (
     <VStack>
@@ -71,21 +67,30 @@ const OfferAssetInput: React.FC<OfferAssetInputProps> = ({
         </Text>
         <HStack width="100%">
           <FormControl flex={1} isInvalid={!!errors.depositAmount}>
-            <Controller
-              control={control}
-              name="depositAmount"
-              rules={rules.depositAmount}
-              render={({ field }) => (
-                <AmountPicker
-                  onChange={(value) => {
-                    field.onChange(value.toString())
-                  }}
-                  value={field.value}
-                  max={srcBalance ?? 0n}
-                  decimals={Number(srcDecimals ?? 0)}
-                />
-              )}
+            <Input
+              width={'10em'}
+              mr={2}
+              borderRadius={0}
+              border={'none'}
+              borderBottom={'1px solid'}
+              _focus={{ boxShadow: 'none' }}
+              {...register('depositAmount', rules.depositAmount)}
             />
+            {/* <Controller */}
+            {/*  control={control} */}
+            {/*  name="depositAmount" */}
+            {/*  rules={rules.depositAmount} */}
+            {/*  render={({ field }) => ( */}
+            {/*    <AmountPicker */}
+            {/*      onChange={(value) => { */}
+            {/*        field.onChange(value.toString()) */}
+            {/*      }} */}
+            {/*      value={field.value} */}
+            {/*      max={srcBalance ?? 0n} */}
+            {/*      decimals={Number(srcDecimals ?? 6)} */}
+            {/*    /> */}
+            {/*  )} */}
+            {/* /> */}
           </FormControl>
           <FormControl flex={2} isInvalid={!!errors.srcAsset}>
             <Controller
@@ -104,8 +109,10 @@ const OfferAssetInput: React.FC<OfferAssetInputProps> = ({
         </HStack>
         <HStack fontSize={10} justifyContent={'space-between'} width="100%">
           <HStack>
-            <Text color="grey">${fmtNum(depositAmountInBase * srcRate)}</Text>
-            {BigInt(watch('depositAmount')) > srcBalance && (
+            <Text color="grey">
+              ${fmtNum(Number(watch('depositAmount')) * srcRate)}
+            </Text>
+            {(tryBigInt(watch('depositAmount')) ?? 0n) > srcBalance && (
               <Text color="red">(Insufficient balance)</Text>
             )}
             <Text color="red">{errors.depositAmount?.message?.toString()}</Text>

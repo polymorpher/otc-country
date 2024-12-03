@@ -20,6 +20,7 @@ import {
   SliderMark,
   SliderThumb,
   SliderTrack,
+  Text,
   VStack
 } from '@chakra-ui/react'
 import {
@@ -36,6 +37,7 @@ import { fmrHr } from '~/helpers/format.js'
 import { type FormFields, rules } from '~/pages/OfferCommon.js'
 import useToast from '~/hooks/useToast.js'
 import { useAccount } from 'wagmi'
+import { VisuallyHidden } from '@chakra-ui/icons'
 interface OfferConfirmationProps {
   domain: string
 
@@ -46,7 +48,7 @@ interface OfferConfirmationProps {
   setValue: UseFormSetValue<FormFields>
   setFocus: UseFormSetFocus<FormFields>
   handleSubmit: UseFormHandleSubmit<FormFields>
-
+  onPrev: () => any
   onCreate?: () => any
 }
 
@@ -122,8 +124,17 @@ const OfferConfirmation: React.FC<OfferConfirmationProps> = ({
       onSubmit={handleSubmit(handleOfferSubmit)}
       as="form"
       width="600px"
-      spacing={12}
+      spacing={4}
     >
+      <VisuallyHidden>
+        <Input
+          hidden
+          value={`${address} (YOU)`}
+          disabled
+          {...register('domainOwner', rules.domainOwner)}
+        />
+      </VisuallyHidden>
+      {/* <Text>{errors.domainOwner?.message?.toString()}</Text> */}
       <FormControl isInvalid={!!errors.commissionRate}>
         <FormLabel>Commission rate</FormLabel>
         <HStack align="center">

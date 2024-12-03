@@ -14,13 +14,13 @@ import {
 } from '@chakra-ui/react'
 import { formatUnits, parseUnits } from 'viem'
 import { round } from '~/helpers/mantisa.js'
-import { fmtNum } from '~/helpers/format.js'
+import { fmtNum, tryBigInt } from '~/helpers/format.js'
 
 export interface AmountPickerProps {
   max: bigint
   value: string
   decimals: number
-  onChange?: (value: bigint) => void
+  onChange?: (value: any) => void
 }
 
 const AmountPicker: React.FC<AmountPickerProps> = ({
@@ -29,13 +29,14 @@ const AmountPicker: React.FC<AmountPickerProps> = ({
   max,
   decimals
 }) => {
-  const val = Number(formatUnits(BigInt(value), decimals))
+  const val = Number(formatUnits(tryBigInt(value) ?? 0n, decimals))
 
   const maxVal = Number(formatUnits(max, decimals))
 
   const change = onChange
     ? (value: string | number) => {
-        onChange(parseUnits(`${value}`, decimals))
+        onChange(value)
+        // onChange(parseUnits(`${value}`, decimals))
       }
     : undefined
 

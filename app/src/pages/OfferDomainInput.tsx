@@ -3,11 +3,19 @@ import { readContract } from '@wagmi/core'
 import { config } from '~/helpers/config.js'
 import { idcContract, otcContract } from '~/helpers/contracts.js'
 import type { Address } from 'abitype'
-import { useAccount, useReadContract } from 'wagmi'
+import { useAccount } from 'wagmi'
 import useShowError from '~/hooks/useShowError.js'
 import { useDebounce } from 'use-debounce'
 import DomainInput from '~/components/DomainInput.js'
-import { Alert, AlertIcon, Text, VStack } from '@chakra-ui/react'
+import {
+  Alert,
+  AlertIcon,
+  Button,
+  HStack,
+  Input,
+  Text,
+  VStack
+} from '@chakra-ui/react'
 import { formatEther, zeroAddress } from 'viem'
 import Offer from '~/pages/Offer.js'
 import { useNewDomain } from '~/hooks/useNewOfferHooks.js'
@@ -19,6 +27,8 @@ interface OfferDomainInputProps {
   offerAddress?: Address
   domain: string
   setDomain: (domain: string) => void
+  onNext: () => any
+  onPrev: () => any
 }
 
 const OfferDomainInput: React.FC<OfferDomainInputProps> = ({
@@ -27,7 +37,9 @@ const OfferDomainInput: React.FC<OfferDomainInputProps> = ({
   isFetching,
   offerAddress,
   domain,
-  setDomain
+  setDomain,
+  onPrev,
+  onNext
 }) => {
   const { isConnected, address } = useAccount()
   const [error, setError] = useState<any>()
@@ -127,29 +139,21 @@ const OfferDomainInput: React.FC<OfferDomainInputProps> = ({
 
   return (
     <VStack width="600px">
+      <Text color={'grey'} fontSize={10} width={'100%'}>
+        Buy a new domain, or use one you already own
+      </Text>
       <DomainInput
         value={domain}
         onChange={setDomain}
         loading={!error && isFetching}
       />
-      <Text>Buy a new domain, or use an existing one</Text>
       {!domain && (
         <Alert status="warning">
           <AlertIcon />
           Please select the domain name you want to purchase
         </Alert>
       )}
-      {/* <FormControl isInvalid={!!errors.domainOwner}> */}
-      {/* <FormLabel>Domain owner</FormLabel> */}
-      {/* <Input */}
-      {/*   value={`${address} (YOU)`} */}
-      {/*   disabled */}
-      {/*   {...register('domainOwner', rules.domainOwner)} */}
-      {/* /> */}
-      {/* <FormErrorMessage> */}
-      {/*   {errors.domainOwner?.message?.toString()} */}
-      {/* </FormErrorMessage> */}
-      {/* </FormControl> */}
+
       {!isFetching && offerAddress && offerAddress !== zeroAddress && (
         <VStack>
           <Alert status="error">
@@ -188,6 +192,10 @@ const OfferDomainInput: React.FC<OfferDomainInputProps> = ({
           )}
         </>
       )}
+      <HStack>
+        <Button onClick={onPrev}>Back</Button>
+        <Button onClick={onNext}>Next</Button>
+      </HStack>
     </VStack>
   )
 }

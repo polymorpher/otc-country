@@ -8,7 +8,9 @@ import {
   TabList,
   TabPanels,
   Tab,
-  TabPanel
+  TabPanel,
+  Button,
+  HStack
 } from '@chakra-ui/react'
 import { type Address } from 'abitype'
 import { zeroAddress } from 'viem'
@@ -82,6 +84,12 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
               setIsFetching={setIsFetching}
               setOfferAddress={setOfferAddress}
               offerAddress={offerAddress}
+              onPrev={() => {
+                setTabIndex(0)
+              }}
+              onNext={() => {
+                setTabIndex(2)
+              }}
             />
           </TabPanel>
           <TabPanel>
@@ -94,11 +102,13 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
               setFocus={setFocus}
               setValue={setValue}
               handleSubmit={handleSubmit}
+              onPrev={() => {
+                setTabIndex(1)
+              }}
             />
           </TabPanel>
         </TabPanels>
       </Tabs>
-
       {/* {!isFetching && offerAddress === zeroAddress && isConnected && ( */}
       {/*  // <OfferAssetInput */}
       {/*  //   domain={domain} */}

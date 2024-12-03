@@ -80,3 +80,14 @@ export const abbreviateAddress = (
   const end = address.slice(-endChars)
   return `${start}...${end}`
 }
+
+export const tryBigInt = (s?: string | number): bigint | undefined => {
+  if (!s) {
+    return undefined
+  }
+  try {
+    return BigInt(s)
+  } catch (ex: any) {
+    return undefined
+  }
+}
