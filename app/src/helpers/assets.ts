@@ -1,6 +1,13 @@
 import { ADDITIONAL_ASSETS } from '~/helpers/config.js'
 import { type Address } from 'abitype'
 
+export interface AssetInfo {
+  icon: string
+  label: string
+  rate: string
+  address: string
+}
+
 /**
  * should be defined class as it is shared in subgraph mapping (assemblyscript) doesn't support object
  */
@@ -120,15 +127,7 @@ for (const [address, name, icon, rate] of ADDITIONAL_ASSETS) {
   ASSETS.push(new Asset(address, name, icon, rate))
 }
 
-export const AssetLookup: Record<
-  string,
-  {
-    icon: string
-    label: string
-    rate: string
-    address: string
-  }
-> = Object.fromEntries(
+export const AssetLookup: Record<string, AssetInfo> = Object.fromEntries(
   DEPEGGED.concat(ASSETS).map((a) => [
     a.value.toLowerCase(),
     { icon: a.icon, label: a.label, address: a.value, rate: a.rate }

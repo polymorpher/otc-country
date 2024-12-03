@@ -7,7 +7,9 @@ import offerAbi from '~/../../contract/artifacts/contracts/Offer.sol/Offer.json'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import idcAbi from '~/../../contract/artifacts/contracts/externals/IDC.sol/IDC.json' assert { type: 'json' }
 // eslint-disable-next-line import/no-extraneous-dependencies
-import erc20Abi from '~/../../contract/artifacts/contracts/mocks/ERC20.sol/ERC20Mock.json' assert { type: 'json' }
+import erc20Abi from '~/../../contract/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json' assert { type: 'json' }
+// eslint-disable-next-line import/no-extraneous-dependencies
+import erc20MetadataAbi from '~/../../contract/artifacts/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol/IERC20Metadata.json' assert { type: 'json' }
 import * as config from '~/helpers/config.js'
 
 export interface ContractType {
@@ -33,6 +35,11 @@ export const idcContract = (domainContractAddress: Address): ContractType => ({
 export const erc20Contract = (erc20Address: Address): ContractType => ({
   address: erc20Address,
   abi: erc20Abi.abi as Abi
+})
+
+export const erc20MetadataContract = (erc20Address: Address): ContractType => ({
+  address: erc20Address,
+  abi: erc20MetadataAbi.abi as Abi
 })
 
 // export const ierc20Abi

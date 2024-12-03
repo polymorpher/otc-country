@@ -7,27 +7,22 @@ import {
   type UseFormRegister
 } from 'react-hook-form'
 import {
-  Alert,
-  AlertIcon,
+  UnorderedList,
+  ListItem,
   FormControl,
-  FormErrorMessage,
-  FormHelperText,
-  FormLabel,
   HStack,
   Input,
   VStack,
   Text,
-  Box
+  Button
 } from '@chakra-ui/react'
 import { formatUnits } from 'viem'
-import { useAccount } from 'wagmi'
 import AmountPicker from '~/components/AmountPicker.js'
 import AssetSelect from '~/components/AssetSelect.js'
 import { useAssets } from '~/hooks/useNewOfferHooks.js'
 import useTokenRates from '~/hooks/useTokenRates.js'
 import { ASSETS, DEPEGGED } from '~/helpers/assets.js'
 import { fmtNum } from '~/helpers/format.js'
-import useToast from '~/hooks/useToast.js'
 import { type FormFields, rules } from '~/pages/OfferCommon.js'
 
 interface OfferAssetInputProps {
@@ -35,18 +30,21 @@ interface OfferAssetInputProps {
   watch: UseFormWatch<FormFields>
   errors: FieldErrors<FormFields>
   register: UseFormRegister<FormFields>
+  onNext: () => any
 }
 
 const OfferAssetInput: React.FC<OfferAssetInputProps> = ({
   watch,
   control,
   errors,
-  register
+  register,
+  onNext
 }) => {
-  const { srcBalance, srcDecimals, destBalance, destDecimals } = useAssets({
-    srcAsset: watch('srcAsset'),
-    destAsset: watch('destAsset')
-  })
+  const { srcBalance, srcDecimals, srcSymbol, destSymbol, srcInfo, destInfo } =
+    useAssets({
+      srcAsset: watch('srcAsset'),
+      destAsset: watch('destAsset')
+    })
 
   const [srcRate, destRate] = useTokenRates(
     watch('srcAsset'),
@@ -69,7 +67,7 @@ const OfferAssetInput: React.FC<OfferAssetInputProps> = ({
           width={'100%'}
           textAlign={'left'}
         >
-          Deposit
+          I would pay
         </Text>
         <HStack width="100%">
           <FormControl flex={1} isInvalid={!!errors.depositAmount}>
@@ -104,21 +102,22 @@ const OfferAssetInput: React.FC<OfferAssetInputProps> = ({
             />
           </FormControl>
         </HStack>
-        <HStack justifyContent={'space-between'} width="100%">
-          <Box>
-            {BigInt(watch('depositAmount')) > srcBalance ? (
-              <Text color="red">Exceed the current balance</Text>
-            ) : (
-              <Text color="green">
-                ${fmtNum(depositAmountInBase * srcRate)}
-              </Text>
+        <HStack fontSize={10} justifyContent={'space-between'} width="100%">
+          <HStack>
+            <Text color="grey">${fmtNum(depositAmountInBase * srcRate)}</Text>
+            {BigInt(watch('depositAmount')) > srcBalance && (
+              <Text color="red">(Insufficient balance)</Text>
             )}
             <Text color="red">{errors.depositAmount?.message?.toString()}</Text>
-          </Box>
-          <Box>
-            <Text color="green"> value = ${fmtNum(srcRate)}</Text>
-            <Text>{errors.srcAsset?.message?.toString()}</Text>
-          </Box>
+          </HStack>
+          <HStack>
+            <Text color="grey">
+              {' '}
+              1 {srcInfo?.label ?? srcSymbol ?? 'Unit of Asset'} = $
+              {fmtNum(srcRate)}
+            </Text>
+            <Text color={'red'}>{errors.srcAsset?.message?.toString()}</Text>
+          </HStack>
         </HStack>
         <Text
           mt={6}
@@ -127,7 +126,7 @@ const OfferAssetInput: React.FC<OfferAssetInputProps> = ({
           width={'100%'}
           textAlign={'left'}
         >
-          Accept
+          In exchange for
         </Text>
         <HStack width="100%">
           <FormControl flex={1} isInvalid={!!errors.acceptAmount}>
@@ -152,35 +151,49 @@ const OfferAssetInput: React.FC<OfferAssetInputProps> = ({
             />
           </FormControl>
         </HStack>
-        <HStack justifyContent={'space-between'} width="100%">
-          <VStack>
-            <Text color="green">
+        <HStack fontSize={10} justifyContent={'space-between'} width="100%">
+          <HStack>
+            <Text color="grey">
               ${fmtNum(Number(watch('acceptAmount')) * destRate)}
             </Text>
             <Text color={'red'}>
               {errors.acceptAmount?.message?.toString()}
             </Text>
-          </VStack>
-          <VStack>
-            <Text color="green">${fmtNum(destRate)}</Text>
+          </HStack>
+          <HStack>
+            <Text color="grey">
+              {' '}
+              1 {destInfo?.label ?? destSymbol ?? 'Unit of Asset'} = $
+              {fmtNum(destRate)}
+            </Text>
             <Text color={'red'}>{errors.destAsset?.message?.toString()}</Text>
-          </VStack>
+          </HStack>
         </HStack>
 
-        <FormControl isInvalid={!!errors.acceptAmount}>
-          <FormLabel>Exchange Rate</FormLabel>
-          <FormHelperText color="green">
-            % {fmtNum(100 * exchangeRate)}
-          </FormHelperText>
-        </FormControl>
-
-        <Alert status="info">
-          <AlertIcon />
-          Tips: You can retract the offer at any time after it is created. Other
-          people can join your offer by depositing asset there. The domain owner
-          earns commission if the offer is accepted by someone (who has to
-          deposit).
-        </Alert>
+        <HStack
+          mt={4}
+          justifyContent={'space-between'}
+          width={'100%'}
+          alignItems={'start'}
+        >
+          <VStack>
+            <Text color="grey" width={'100%'} fontSize={10} textAlign={'left'}>
+              Effective Rate:{' '}
+              <Text display={'inline'} color="black">
+                {errors.acceptAmount ? 'N/A' : fmtNum(exchangeRate)}
+              </Text>
+            </Text>
+            <UnorderedList fontSize={10}>
+              <ListItem whiteSpace={'nowrap'}>
+                You will deposit <b>{srcInfo?.label ?? srcSymbol}</b> into your
+                offer{' '}
+              </ListItem>
+              <ListItem>Offer is retractable at any time </ListItem>
+              <ListItem>Others can join your offer </ListItem>
+            </UnorderedList>
+          </VStack>
+          <Button onClick={onNext}>Next</Button>
+        </HStack>
       </VStack>
     </VStack>
   )

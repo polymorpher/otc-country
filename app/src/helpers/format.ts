@@ -3,6 +3,11 @@ const numFormatter = new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 2
 })
 
+const smallNumFormatter = new Intl.NumberFormat('en-US', {
+  maximumFractionDigits: 4,
+  minimumFractionDigits: 2
+})
+
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
   month: 'long',
@@ -16,8 +21,13 @@ const timeFormatter = new Intl.DateTimeFormat('en-US', {
   hour12: true
 })
 
-export const fmtNum = (value: number | string): string =>
-  numFormatter.format(Number(value))
+export const fmtNum = (value: number | string): string => {
+  const n = Number(value)
+  if (n > 1) {
+    return numFormatter.format(n)
+  }
+  return smallNumFormatter.format(n)
+}
 
 export const fmtTime = (value: string): string => {
   const date = new Date(value)

@@ -2,10 +2,16 @@ import { useCallback } from 'react'
 import { type Address } from 'abitype'
 import { type Hex, keccak256, toHex } from 'viem'
 import { useAccount, useBalance, useReadContract } from 'wagmi'
-import { idcContract, erc20Contract, otcContract } from '~/helpers/contracts.js'
+import {
+  idcContract,
+  erc20Contract,
+  otcContract,
+  erc20MetadataContract
+} from '~/helpers/contracts.js'
 import useContractWriteComplete from './useContractWriteComplete.js'
+import { type AssetInfo, AssetLookup } from '~/helpers/assets.js'
 
-interface NewOfferAssets {
+interface UseAssetsProps {
   srcAsset: Address
   destAsset: Address
 }
@@ -42,10 +48,14 @@ export interface UseNewDomainInfo {
 export interface UseAssetInfo {
   srcAsset: Address
   destAsset: Address
+  srcSymbol: string
+  destSymbol: string
   srcBalance: bigint
   destBalance: bigint
   srcDecimals: bigint
   destDecimals: bigint
+  srcInfo?: AssetInfo
+  destInfo?: AssetInfo
 }
 
 export const useNewDomain = (domain: string): UseNewDomainInfo => {
@@ -130,7 +140,7 @@ export const useNewDomain = (domain: string): UseNewDomainInfo => {
 export const useAssets = ({
   srcAsset,
   destAsset
-}: NewOfferAssets): UseAssetInfo => {
+}: UseAssetsProps): UseAssetInfo => {
   const { address } = useAccount()
 
   const { data: srcBalance } = useReadContract({
@@ -144,6 +154,16 @@ export const useAssets = ({
     args: [address]
   })
 
+  const { data: srcSymbol } = useReadContract({
+    ...erc20MetadataContract(srcAsset),
+    functionName: 'symbol'
+  })
+
+  const { data: destSymbol } = useReadContract({
+    ...erc20MetadataContract(srcAsset),
+    functionName: 'symbol'
+  })
+
   const { data: srcDecimals } = useReadContract({
     ...erc20Contract(srcAsset),
     functionName: 'decimals'
@@ -153,9 +173,16 @@ export const useAssets = ({
     ...erc20Contract(destAsset),
     functionName: 'decimals'
   })
+
+  const srcInfo = AssetLookup[srcAsset.toLowerCase()]
+  const destInfo = AssetLookup[destAsset.toLowerCase()]
   return {
     srcAsset,
     destAsset,
+    srcInfo,
+    destInfo,
+    srcSymbol: srcSymbol as string,
+    destSymbol: destSymbol as string,
     srcBalance: srcBalance as bigint,
     destBalance: destBalance as bigint,
     srcDecimals: srcDecimals as bigint,

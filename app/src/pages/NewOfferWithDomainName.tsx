@@ -26,6 +26,7 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
   const [offerAddress, setOfferAddress] = useState<Address>()
   const [domain, setDomain] = useState<string>(newName())
   const [error, setError] = useState<any>()
+  const [tabIndex, setTabIndex] = useState<number>(0)
 
   // const showError = useShowError()
 
@@ -49,10 +50,16 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
       <Text fontSize={20} m={8}>
         Create a new offer
       </Text>
-      <Tabs orientation={'vertical'}>
+      <Tabs
+        index={tabIndex}
+        onChange={(v) => {
+          setTabIndex(v)
+        }}
+        orientation={'vertical'}
+      >
         <TabList gap={'16px'} alignItems={'start'} width={'240px'}>
           <Tab textAlign={'left'}>1. Choose assets</Tab>
-          <Tab textAlign={'left'}>2. Setup domain</Tab>
+          <Tab textAlign={'left'}>2. Pick domain</Tab>
           <Tab textAlign={'left'}>3. Confirm</Tab>
         </TabList>
         <TabPanels>
@@ -62,6 +69,9 @@ const NewOfferWithDomainName = (): React.JSX.Element => {
               control={control}
               errors={errors}
               register={register}
+              onNext={() => {
+                setTabIndex(1)
+              }}
             />
           </TabPanel>
           <TabPanel>
