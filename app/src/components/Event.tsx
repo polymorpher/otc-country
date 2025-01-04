@@ -10,6 +10,7 @@ import cloneDeep from 'lodash/cloneDeep.js'
 import { type Address } from 'abitype'
 import CoinWithAmount from '~/components/CoinWithAmount.js'
 import { ArrowDownIcon } from '@chakra-ui/icons'
+import { buildTarget } from '~/helpers/link.js'
 
 interface Asset {
   address: string
@@ -107,9 +108,7 @@ const Event: React.FC<EventProps> = ({ event, asTableRow }) => {
         ? `${Math.round(elapsed / 60)} mins`
         : `${fmrHr(Math.round(elapsed / 3600))}`
 
-  const target = LOCAL_TARGET
-    ? `/offer/${event.offer.domainName}`
-    : `https://${event.offer.domainName}.${TLD}`
+  const target = buildTarget(event.offer.domainName)
 
   // return (
   //   <SimpleGrid
