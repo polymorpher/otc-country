@@ -24,6 +24,8 @@ const DomainInput: React.FC<DomainInputProps> = ({
       borderRadius={'0'}
       border={'none'}
       borderBottom={'1px solid'}
+      borderColor={!value ? 'red' : 'black'}
+      _focus={{ boxShadow: 'none' }}
       value={value}
       placeholder="my-offer"
       onChange={(e) => {
