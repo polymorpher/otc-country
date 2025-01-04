@@ -1,6 +1,6 @@
 import { Bytes, ethereum } from '@graphprotocol/graph-ts'
 import { Asset, Event } from '../types/schema'
-import { Asset as AssetType, DEPEGGED, ASSETS } from '../../app/src/helpers/assets'
+import { Asset as AssetType, DEPEGGED, ASSETS } from './assets'
 
 
 export const getAssetByAddress = (address: string): AssetType => {
