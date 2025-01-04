@@ -1,20 +1,8 @@
 import React from 'react'
-import {
-  Flex,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  Slider,
-  SliderFilledTrack,
-  SliderMark,
-  SliderThumb,
-  SliderTrack
-} from '@chakra-ui/react'
-import { formatUnits, parseUnits } from 'viem'
-import { round } from '~/helpers/mantisa.js'
-import { fmtNum, tryBigInt } from '~/helpers/format.js'
+import { Flex, NumberInput, NumberInputField } from '@chakra-ui/react'
+import { formatUnits } from 'viem'
+
+import { tryBigInt } from '~/helpers/format.js'
 
 export interface AmountPickerProps {
   max: bigint

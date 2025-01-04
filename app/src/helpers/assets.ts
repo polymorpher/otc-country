@@ -1,5 +1,4 @@
 import { ADDITIONAL_ASSETS } from '~/helpers/config.js'
-import { type Address } from 'abitype'
 
 export interface AssetInfo {
   icon: string
@@ -9,7 +8,7 @@ export interface AssetInfo {
 }
 
 /**
- * should be defined class as it is shared in subgraph mapping (assemblyscript) doesn't support object
+ * made into class for max compatibility with assemblyscript, see /subgraph/src/assets.ts
  */
 export class Asset {
   constructor(

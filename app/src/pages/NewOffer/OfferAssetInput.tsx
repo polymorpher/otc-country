@@ -16,8 +16,6 @@ import {
   Text,
   Button
 } from '@chakra-ui/react'
-import { formatUnits } from 'viem'
-import AmountPicker from '~/components/AmountPicker.js'
 import AssetSelect from '~/components/AssetSelect.js'
 import { useAssets } from '~/hooks/useNewOfferHooks.js'
 import useTokenRates from '~/hooks/useTokenRates.js'
