@@ -10,7 +10,6 @@ import {
   Tab,
   TabPanel
 } from '@chakra-ui/react'
-import { type Address } from 'abitype'
 import { zeroAddress } from 'viem'
 import { useAccount } from 'wagmi'
 import { newName } from '~/helpers/names.js'
@@ -22,9 +21,9 @@ import { defaultValues } from '~/pages/NewOffer/OfferCommon.js'
 
 const NewOffer = (): React.JSX.Element => {
   const { isConnected, address } = useAccount()
-  const [isFetching, setIsFetching] = useState<boolean>(false)
-  const [offerAddress, setOfferAddress] = useState<Address>()
+
   const [domain, setDomain] = useState<string>(newName())
+
   const [error, setError] = useState<any>()
   const [tabIndex, setTabIndex] = useState<number>(0)
 
@@ -78,10 +77,6 @@ const NewOffer = (): React.JSX.Element => {
             <OfferDomainInput
               domain={domain}
               setDomain={setDomain}
-              isFetching={isFetching}
-              setIsFetching={setIsFetching}
-              setOfferAddress={setOfferAddress}
-              offerAddress={offerAddress}
               onPrev={() => {
                 setTabIndex(0)
               }}

@@ -4,7 +4,6 @@ import {
   useNewDomain,
   useNewOffer
 } from '~/hooks/useNewOfferHooks.js'
-import { type Address } from 'abitype'
 import { parseUnits } from 'viem'
 import {
   Button,
@@ -20,7 +19,6 @@ import {
   SliderMark,
   SliderThumb,
   SliderTrack,
-  Text,
   VStack
 } from '@chakra-ui/react'
 import {
@@ -38,6 +36,7 @@ import { type FormFields, rules } from '~/pages/NewOffer/OfferCommon.js'
 import useToast from '~/hooks/useToast.js'
 import { useAccount } from 'wagmi'
 import { VisuallyHidden } from '@chakra-ui/icons'
+import { useDebounce } from 'use-debounce'
 interface OfferConfirmationProps {
   domain: string
 
@@ -53,7 +52,7 @@ interface OfferConfirmationProps {
 }
 
 const OfferConfirmation: React.FC<OfferConfirmationProps> = ({
-  domain,
+  domain: domainState,
   watch,
   onCreate,
   register,
@@ -63,6 +62,7 @@ const OfferConfirmation: React.FC<OfferConfirmationProps> = ({
   setValue,
   handleSubmit
 }) => {
+  const [domain] = useDebounce(domainState, 300)
   const {
     registerWeb2Domain,
     generateMetadata,
