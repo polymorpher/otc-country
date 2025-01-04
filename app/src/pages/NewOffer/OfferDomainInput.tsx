@@ -1,30 +1,18 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { readContract } from '@wagmi/core'
-import { config } from '~/helpers/config.js'
+import { config, TLD } from '~/helpers/config.js'
 import { idcContract, otcContract } from '~/helpers/contracts.js'
 import type { Address } from 'abitype'
 import { useAccount } from 'wagmi'
 import useShowError from '~/hooks/useShowError.js'
-import { useDebounce } from 'use-debounce'
 import DomainInput from '~/components/DomainInput.js'
-import {
-  Alert,
-  AlertIcon,
-  Button,
-  HStack,
-  Input,
-  Text,
-  VStack
-} from '@chakra-ui/react'
+import { Box, Button, HStack, Link, Text, VStack } from '@chakra-ui/react'
 import { formatEther, zeroAddress } from 'viem'
-import Offer from '~/pages/Offer.js'
 import { useNewDomain } from '~/hooks/useNewOfferHooks.js'
+import { buildTarget } from '~/helpers/link.js'
+import { useDebounce } from 'use-debounce'
 
 interface OfferDomainInputProps {
-  setOfferAddress: (address?: Address) => void
-  setIsFetching: (isFetching: boolean) => void
-  isFetching: boolean
-  offerAddress?: Address
   domain: string
   setDomain: (domain: string) => void
   onNext: () => any
@@ -32,20 +20,17 @@ interface OfferDomainInputProps {
 }
 
 const OfferDomainInput: React.FC<OfferDomainInputProps> = ({
-  setOfferAddress,
-  setIsFetching,
-  isFetching,
-  offerAddress,
-  domain,
+  domain: domainState,
   setDomain,
   onPrev,
   onNext
 }) => {
   const { isConnected, address } = useAccount()
-  const [error, setError] = useState<any>()
+  const [error, setError] = useState<string | undefined>('')
   const showError = useShowError()
-  const [debouncedDomain] = useDebounce(domain, 300)
-
+  const [canDeployToAddress, setCanDeployToAddress] = useState<boolean>(false)
+  const [isFetching, setIsFetching] = useState<boolean>(false)
+  const [domain] = useDebounce(domainState, 500)
   const { domainOwner, domainPrice, balance, dcAddress, domainContractError } =
     useNewDomain(domain)
 
@@ -60,27 +45,35 @@ const OfferDomainInput: React.FC<OfferDomainInputProps> = ({
       }
 
       setError(undefined)
-      setOfferAddress(undefined)
+      setCanDeployToAddress(false)
       setIsFetching(true)
 
-      const [isAvailableOnChain, isAvailableOffChain] = await Promise.all([
-        readContract(config, {
-          ...idcContract(dcAddress),
-          functionName: 'available',
-          args: [newDomain]
-        }),
+      const availabilityCheck: [boolean, boolean] | undefined =
+        await Promise.all([
+          readContract(config, {
+            ...idcContract(dcAddress),
+            functionName: 'available',
+            args: [newDomain]
+          }) as Promise<boolean>,
 
-        fetch('https://1ns-registrar-relayer.hiddenstate.xyz/check-domain', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sld: newDomain })
+          fetch('https://1ns-registrar-relayer.hiddenstate.xyz/check-domain', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sld: newDomain })
+          })
+            .then(async (res) => await res.json())
+            .then((res) => res.isAvailable as boolean)
+        ]).catch((ex) => {
+          console.error(ex)
+          return undefined
         })
-          .then(async (res) => await res.json())
-          .then((res) => res.isAvailable)
-      ]).catch((ex) => {
-        console.error(ex)
-        return []
-      })
+      if (availabilityCheck === undefined) {
+        setError('Failed to check domain availability. Please try again later')
+        setIsFetching(false)
+        return
+      }
+
+      const [isAvailableOnChain, isAvailableOffChain] = availabilityCheck
 
       const isAvailable = isAvailableOnChain && isAvailableOffChain
 
@@ -97,10 +90,9 @@ const OfferDomainInput: React.FC<OfferDomainInputProps> = ({
         })
 
         if (!owner || owner !== address) {
-          setError({
-            details:
-              'The domain is not available. Please choose another domain name'
-          })
+          setError(
+            'The domain is not available. Please choose another domain name'
+          )
           setIsFetching(false)
           return
         }
@@ -112,21 +104,24 @@ const OfferDomainInput: React.FC<OfferDomainInputProps> = ({
         args: [newDomain]
       })
         .then((res) => {
-          setOfferAddress(res as Address)
+          console.log(newDomain, res)
+          setCanDeployToAddress((res as Address) === zeroAddress)
         })
-        .catch(setError)
+        .catch((ex: any) => {
+          setError(ex.toString())
+        })
         .finally(() => {
           setIsFetching(false)
         })
     },
-    [setIsFetching, setOfferAddress, address, dcAddress]
+    [address, dcAddress]
   )
 
   useEffect(() => {
-    onDomainChange(debouncedDomain).catch((ex: any) => {
+    onDomainChange(domain).catch((ex: any) => {
       setError(ex.toString())
     })
-  }, [debouncedDomain, onDomainChange])
+  }, [domain, onDomainChange])
 
   useEffect(() => {
     if (domainContractError) {
@@ -137,64 +132,69 @@ const OfferDomainInput: React.FC<OfferDomainInputProps> = ({
     }
   }, [domainContractError, showError])
 
+  const canProceed =
+    !isFetching &&
+    isConnected &&
+    ((canDeployToAddress && balance > domainPrice) || domainOwner === address)
+
+  // console.log('canProceed', canProceed)
   return (
     <VStack width="600px">
       <Text color={'grey'} fontSize={10} width={'100%'}>
         Buy a new domain, or use one you already own
       </Text>
       <DomainInput
-        value={domain}
+        value={domainState}
         onChange={setDomain}
         loading={!error && isFetching}
       />
-      {!domain && (
-        <Alert status="warning">
-          <AlertIcon />
-          Please select the domain name you want to purchase
-        </Alert>
-      )}
-
-      {!isFetching && offerAddress && offerAddress !== zeroAddress && (
-        <VStack>
-          <Alert status="error">
-            <AlertIcon />
-            There is already an offer at this domain
-          </Alert>
-
-          <Offer address={offerAddress} />
-        </VStack>
-      )}
-      {!isFetching && offerAddress === zeroAddress && !isConnected && (
-        <Alert status="info">
-          <AlertIcon />
-          Please connect your wallet to proceed.
-        </Alert>
-      )}
-      {domainOwner === address ? (
-        <Alert status="success">
-          <AlertIcon />
-          You already own the domain
-        </Alert>
-      ) : (
-        <>
-          <Text fontSize="2xl" my="10">
-            Choose an available domain for your offer
+      <Box width={'100%'} textAlign={'left'} fontSize={10}>
+        {isFetching && <Text color={'grey'}>Checking status of domain...</Text>}
+        {!isFetching && error && <Text color={'red'}>{error}</Text>}
+        {!isFetching && !canDeployToAddress && (
+          <Text color={'red'}>
+            There is already an offer at this domain:{' '}
+            <Link href={buildTarget(domain)} target="_blank">
+              <b>
+                {domain}.{TLD}
+              </b>
+            </Link>
           </Text>
-
-          {domainPrice !== undefined && (
-            <Alert status={balance > domainPrice ? 'info' : 'warning'}>
-              <AlertIcon />
-              Domain cost: {formatEther(domainPrice)} ONE <br />
-              {balance > domainPrice
-                ? 'You will own the domain. Your offer will be hosted there.'
-                : 'You have insufficient fund'}
-            </Alert>
+        )}
+        {!isFetching && !isConnected && (
+          <Text color={'red'}>Please connect your wallet to proceed</Text>
+        )}
+        {!isFetching && domainOwner === address && !canDeployToAddress && (
+          <Text color={'green'}>You already own the domain</Text>
+        )}
+        {!isFetching &&
+          domainOwner !== address &&
+          canDeployToAddress &&
+          domainPrice !== undefined &&
+          balance > domainPrice && (
+            <Text color={'black'}>
+              <b>
+                {domain}.{TLD}
+              </b>{' '}
+              will cost you {formatEther(domainPrice)} ONE
+            </Text>
           )}
-        </>
-      )}
-      <HStack>
+        {!isFetching &&
+          domainOwner !== address &&
+          canDeployToAddress &&
+          domainPrice !== undefined &&
+          !(balance > domainPrice) && (
+            <Text color={'red'}>
+              {domain}.{TLD} costs {formatEther(domainPrice)} ONE. You have
+              insufficient funds.
+            </Text>
+          )}
+      </Box>
+      <HStack width={'100%'} mt={4} justifyContent={'space-between'}>
         <Button onClick={onPrev}>Back</Button>
-        <Button onClick={onNext}>Next</Button>
+        <Button onClick={onNext} isDisabled={!canProceed}>
+          Next
+        </Button>
       </HStack>
     </VStack>
   )
