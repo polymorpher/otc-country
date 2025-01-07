@@ -184,9 +184,9 @@ const OfferAssetInput: React.FC<OfferAssetInputProps> = ({
           <VStack>
             <Text color="grey" width={'100%'} fontSize={10} textAlign={'left'}>
               Effective Rate:{' '}
-              <Text display={'inline'} color="black">
+              <span style={{ color: 'black' }}>
                 {errors.acceptAmount ? 'N/A' : fmtNum(exchangeRate)}
-              </Text>
+              </span>
             </Text>
             <UnorderedList fontSize={10}>
               <ListItem whiteSpace={'nowrap'}>

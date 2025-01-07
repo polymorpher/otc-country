@@ -62,7 +62,7 @@ const NewOffer = (): React.JSX.Element => {
           <Tab textAlign={'left'}>3. Confirm</Tab>
         </TabList>
         <TabPanels>
-          <TabPanel>
+          <TabPanel display={'flex'} justifyContent={'center'}>
             <OfferAssetInput
               watch={watch}
               control={control}
@@ -73,7 +73,7 @@ const NewOffer = (): React.JSX.Element => {
               }}
             />
           </TabPanel>
-          <TabPanel>
+          <TabPanel display={'flex'} justifyContent={'center'}>
             <OfferDomainInput
               domain={domain}
               setDomain={setDomain}
@@ -85,7 +85,7 @@ const NewOffer = (): React.JSX.Element => {
               }}
             />
           </TabPanel>
-          <TabPanel>
+          <TabPanel display={'flex'} justifyContent={'center'}>
             <OfferConfirmation
               domain={domain}
               watch={watch}
@@ -102,6 +102,7 @@ const NewOffer = (): React.JSX.Element => {
           </TabPanel>
         </TabPanels>
       </Tabs>
+
       {/* {!isFetching && offerAddress === zeroAddress && isConnected && ( */}
       {/*  // <OfferAssetInput */}
       {/*  //   domain={domain} */}

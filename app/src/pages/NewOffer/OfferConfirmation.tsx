@@ -4,7 +4,7 @@ import {
   useNewDomain,
   useNewOffer
 } from '~/hooks/useNewOfferHooks.js'
-import { parseUnits } from 'viem'
+import { formatEther, parseUnits } from 'viem'
 import {
   Button,
   FormControl,
@@ -19,7 +19,9 @@ import {
   SliderMark,
   SliderThumb,
   SliderTrack,
-  VStack
+  VStack,
+  Box,
+  Text
 } from '@chakra-ui/react'
 import {
   type Control,
@@ -37,9 +39,9 @@ import useToast from '~/hooks/useToast.js'
 import { useAccount } from 'wagmi'
 import { VisuallyHidden } from '@chakra-ui/icons'
 import { useDebounce } from 'use-debounce'
+
 interface OfferConfirmationProps {
   domain: string
-
   control: Control<FormFields>
   watch: UseFormWatch<FormFields>
   errors: FieldErrors<FormFields>
@@ -85,6 +87,7 @@ const OfferConfirmation: React.FC<OfferConfirmationProps> = ({
 
   const handleOfferSubmit = useCallback(
     async (data: FormFields) => {
+      console.log(data)
       const { transactionHash: txHash } = await createOffer({
         ...data,
         depositAmount: BigInt(data.depositAmount),
@@ -116,15 +119,28 @@ const OfferConfirmation: React.FC<OfferConfirmationProps> = ({
       onCreate
     ]
   )
+  const handleError = (ex: any) => {
+    let message = ''
+    for (const [, value] of Object.entries(ex)) {
+      message += `${(value as any).message}; `
+    }
+    console.log(ex)
+    toastError({
+      title: 'Unexpected Error',
+      description: message
+    })
+  }
 
   const commissionRate = Number(watch('commissionRate'))
 
   return (
     <VStack
-      onSubmit={handleSubmit(handleOfferSubmit)}
-      as="form"
+      // onSubmit={handleSubmit(handleOfferSubmit, handleError)}
+      // as="form"
       width="600px"
-      spacing={4}
+      spacing={8}
+      pl={4}
+      pr={4}
     >
       <VisuallyHidden>
         <Input
@@ -134,10 +150,9 @@ const OfferConfirmation: React.FC<OfferConfirmationProps> = ({
           {...register('domainOwner', rules.domainOwner)}
         />
       </VisuallyHidden>
-      {/* <Text>{errors.domainOwner?.message?.toString()}</Text> */}
       <FormControl isInvalid={!!errors.commissionRate}>
         <FormLabel>Commission rate</FormLabel>
-        <HStack align="center">
+        <HStack align="center" padding={4}>
           {[0.1, 0.5, 1].map((value, key) => (
             <Button
               key={key}
@@ -181,56 +196,61 @@ const OfferConfirmation: React.FC<OfferConfirmationProps> = ({
 
       <FormControl isInvalid={!!errors.lockWithdrawDuration}>
         <FormLabel>Lock withdraw duration</FormLabel>
-        <Controller
-          control={control}
-          name="lockWithdrawDuration"
-          render={({ field }) => (
-            <Slider
-              min={6}
-              max={24 * 7}
-              value={field.value}
-              my={8}
-              onChange={(value) => {
-                field.onChange(value)
-              }}
-            >
-              <SliderMark value={6} mt={2} w={12}>
-                6 hr
-              </SliderMark>
-              <SliderMark value={24 * 7} mt={2} ml={-12} w={24}>
-                a week
-              </SliderMark>
-              <SliderMark
-                value={watch('lockWithdrawDuration')}
-                textAlign="center"
-                bg="blue.500"
-                color="white"
-                mt="-10"
-                w="36"
-                transform="translateX(-50%)"
+        <Box py={4} px={8}>
+          <Controller
+            control={control}
+            name="lockWithdrawDuration"
+            render={({ field }) => (
+              <Slider
+                min={6}
+                max={24 * 7}
+                value={field.value}
+                my={8}
+                onChange={(value) => {
+                  field.onChange(value)
+                }}
               >
-                {fmrHr(watch('lockWithdrawDuration'))}
-              </SliderMark>
-              <SliderTrack>
-                <SliderFilledTrack />
-              </SliderTrack>
-              <SliderThumb />
-            </Slider>
-          )}
-        />
-        <Button
-          type="submit"
-          isLoading={isCreatingOffer}
-          loadingText="Create"
-          size="lg"
-          isDisabled={domainOwner !== address && balance <= domainPrice}
-        >
-          Create
-        </Button>
+                <SliderMark value={6} mt={2} w={12}>
+                  6 hr
+                </SliderMark>
+                <SliderMark value={24 * 7} mt={2} ml={-12} w={24}>
+                  a week
+                </SliderMark>
+                <SliderMark
+                  value={watch('lockWithdrawDuration')}
+                  textAlign="center"
+                  bg="blue.500"
+                  color="white"
+                  whiteSpace={'nowrap'}
+                  mt="-10"
+                  pl={4}
+                  pr={4}
+                  transform="translateX(-50%)"
+                >
+                  {fmrHr(watch('lockWithdrawDuration'))}
+                </SliderMark>
+                <SliderTrack>
+                  <SliderFilledTrack />
+                </SliderTrack>
+                <SliderThumb />
+              </Slider>
+            )}
+          />
+        </Box>
         <FormErrorMessage>
           {errors.lockWithdrawDuration?.message?.toString()}
         </FormErrorMessage>
       </FormControl>
+
+      <Button
+        onClick={() => handleSubmit(handleOfferSubmit, handleError)()}
+        isLoading={isCreatingOffer}
+        loadingText="Create"
+        size="lg"
+        isDisabled={domainOwner !== address && balance <= domainPrice}
+      >
+        Create Offer
+      </Button>
     </VStack>
   )
 }

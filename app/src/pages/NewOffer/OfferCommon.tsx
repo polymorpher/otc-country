@@ -35,39 +35,39 @@ export const defaultValues: FormFields = {
 
 export const rules: Record<keyof FormFields, RegisterOptions> = {
   domainOwner: {
-    required: 'required',
+    required: 'Domain owner is required',
     validate: {
       address: (v: string) =>
         (isAddress(v) && v !== zeroAddress) || 'not address format'
     }
   },
   srcAsset: {
-    required: 'required',
+    required: 'Source asset must be specified',
     validate: {
       address: (v: string) => isAddress(v) || 'not address format',
       available: async (v: string) =>
-        (await checkAssetAvailable(v)) || 'not available'
+        (await checkAssetAvailable(v)) || `asset ${v} is not available`
     }
   },
   destAsset: {
-    required: 'required',
+    required: 'Target asset must be specified',
     validate: {
       address: (v: string) => isAddress(v) || 'not address format',
       sameAsSrc: (v: string, values) =>
         values.srcAsset !== v || 'should not be the same as source asset',
       available: async (v: string) =>
-        (await checkAssetAvailable(v)) || 'not available'
+        (await checkAssetAvailable(v)) || `asset ${v} is not available`
     }
   },
   depositAmount: {
-    required: 'required',
+    required: 'Deposit amount is required',
     validate: {
       number: (v: string) => !isNaN(Number(v)) || 'should be number',
       notZero: (v: string) => Number(v) > 0 || 'should be not zero'
     }
   },
   acceptAmount: {
-    required: 'required',
+    required: 'Desirable amount is required',
     validate: {
       number: (v: string) => !isNaN(Number(v)) || 'should be number',
       notZero: (v: string) => Number(v) > 0 || 'should be not zero'
