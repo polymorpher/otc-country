@@ -221,12 +221,12 @@ const Event: React.FC<EventProps> = ({ event, asTableRow }) => {
     )
   }
   return (
-    <Link
+    <Box
       width={60}
-      href={target}
-      target={'_blank'}
-      rel={'noreferrer'}
-      _hover={{ textDecoration: 'none' }}
+      // href={target}
+      // target={'_blank'}
+      // rel={'noreferrer'}
+      // _hover={{ textDecoration: 'none' }}
     >
       <VStack gap={0}>
         <Box
@@ -238,7 +238,14 @@ const Event: React.FC<EventProps> = ({ event, asTableRow }) => {
           background={event.type === 'ACCEPTED' ? 'grey' : 'lightgreen'}
           color={event.type === 'ACCEPTED' ? 'white' : 'auto'}
         >
-          <Text>{event.type === 'ACCEPTED' ? 'Filled' : 'Open Offer'}</Text>
+          <Link
+            href={target}
+            target={'_blank'}
+            rel={'noreferrer'}
+            _hover={{ textDecoration: 'none' }}
+          >
+            <Text>{event.type === 'ACCEPTED' ? 'Filled' : 'Open Offer'}</Text>
+          </Link>
         </Box>
         <Box flex={1} width={'100%'} flexDirection={'column'} display={'flex'}>
           <CoinWithAmount
@@ -297,7 +304,7 @@ const Event: React.FC<EventProps> = ({ event, asTableRow }) => {
           </Text>
         </HStack>
       </VStack>
-    </Link>
+    </Box>
   )
 }
 
