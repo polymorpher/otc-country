@@ -54,16 +54,16 @@ const useAccept = ({
   > => {
     if (allowance < acceptAmount) {
       await approveDestAsset([offerAddress, acceptAmount], {
-        pendingTitle: 'Approving deposition',
-        failTitle: 'Failed to approve',
-        successTitle: 'Deposition has been approved'
+        pendingTitle: 'Approving contract to use your tokens',
+        failTitle: 'Failed to finalize approval',
+        successTitle: 'Contract has been approved to use your tokens'
       })
     }
 
     return await acceptOffer([userAddress], {
       pendingTitle: 'Accepting offer',
-      failTitle: 'Failed to deposit',
-      successTitle: 'Offer has been accepted'
+      failTitle: 'Failed to accept the offer',
+      successTitle: 'Offer has been accepted successfully'
     })
   }, [
     acceptAmount,

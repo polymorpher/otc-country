@@ -47,9 +47,9 @@ const useDeposit = ({
 
       if ((allowance as bigint) < amount) {
         return await approveSrcAsset([offerAddress, amount], {
-          pendingTitle: 'Approving deposition',
-          successTitle: 'Approve succeeded',
-          failTitle: 'Failed to approve'
+          pendingTitle: 'Approving contract to use your tokens',
+          failTitle: 'Failed to finalize approval',
+          successTitle: 'Contract has been approved to use your tokens'
         })
       }
 

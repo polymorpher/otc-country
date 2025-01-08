@@ -224,7 +224,7 @@ contract OTC is AccessControl, Pausable {
      * @param depositAmount_ source asset deposit amount of the offer creator
      * @param acceptAmount_ destination asset amount at which the offer will be closed
      * @param commissionRate_ commission rate at which the fee in destination asset is sent to the domain owner when the offer is accepted
-     * @param lockWithdrawDuration_ depositors cannot withdraw until the time is passed by this value after the deposition time
+     * @param lockWithdrawDuration_ depositors cannot withdraw until such amount of time is passed
      */
     function createOffer(
         string calldata domainName_,

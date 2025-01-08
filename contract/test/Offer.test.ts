@@ -70,7 +70,7 @@ describe('Offer', () => {
       )
     })
 
-    it('deposition second time increases amount', async () => {
+    it('deposit second time with increased amount', async () => {
       const {
         offer,
         accounts: [depositor]

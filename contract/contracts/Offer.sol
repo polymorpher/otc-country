@@ -14,10 +14,10 @@ contract Offer is Initializable, IOffer {
     /// @notice OTC address
     IOTC public otc;
 
-    /// @notice depositors cannot withdraw their depositions before the time is passed by this value
+    /// @notice depositors cannot withdraw their deposits before the time is passed by this value
     uint256 public lockWithdrawDuration;
 
-    /// @notice fee of commssion rate in destination asset is sent to the domain owner when the offer is accepted
+    /// @notice fee of commission rate in destination asset is sent to the domain owner when the offer is accepted
     uint256 public commissionRate;
 
     /// @notice destination asset amount at which the offer will be closed
@@ -82,7 +82,7 @@ contract Offer is Initializable, IOffer {
     event PaymentWithdrawn(address indexed payee, uint256 amount);
 
     /**
-     * @notice Initializes the offer and sets deposition value for the creator
+     * @notice Initializes the offer and sets deposit value for the creator
      * @param otc_ OTC address
      * @param creator_ address of the offer creator
      * @param domainOwner_ address of user that the domain will belongs to
@@ -91,7 +91,7 @@ contract Offer is Initializable, IOffer {
      * @param depositAmount_ source asset deposit amount of the offer creator
      * @param acceptAmount_ destination asset amount at which the offer will be closed
      * @param commissionRate_ commission rate at which the fee in destination asset is sent to the domain owner when the offer is accepted
-     * @param lockWithdrawDuration_ depositors cannot withdraw until the time is passed by this value after the deposition time
+     * @param lockWithdrawDuration_ depositors cannot withdraw until such amount of time is passed
      */
     function initialize(
         IOTC otc_,

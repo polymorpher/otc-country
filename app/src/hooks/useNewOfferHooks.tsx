@@ -234,9 +234,9 @@ export const useNewOffer = ({
 
       if ((allowance as bigint) < depositAmount) {
         await approveSrcAsset([computedOfferAddress, depositAmount], {
-          pendingTitle: 'Approving deposition',
-          failTitle: 'Failed to approve',
-          successTitle: 'Deposition has been approved'
+          pendingTitle: 'Approving contract to use your tokens',
+          failTitle: 'Failed to finalize approval',
+          successTitle: 'Contract has been approved to use your tokens'
         })
       }
 
@@ -254,8 +254,8 @@ export const useNewOffer = ({
         ],
         {
           pendingTitle: 'Creating offer',
-          failTitle: 'Failed to create the offer',
-          successTitle: 'Offer has been approved'
+          failTitle: 'Failed to finalize offer creation',
+          successTitle: 'Offer was created successfully'
         },
         domainPrice
       )
