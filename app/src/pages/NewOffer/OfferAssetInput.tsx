@@ -22,6 +22,7 @@ import useTokenRates from '~/hooks/useTokenRates.js'
 import { ASSETS, DEPEGGED } from '~/helpers/assets.js'
 import { fmtNum, tryBigInt } from '~/helpers/format.js'
 import { type FormFields, rules } from '~/pages/NewOffer/OfferCommon.js'
+import { formatUnits, parseEther } from 'viem'
 
 interface OfferAssetInputProps {
   control: Control<FormFields>
@@ -38,10 +39,11 @@ const OfferAssetInput: React.FC<OfferAssetInputProps> = ({
   register,
   onNext
 }) => {
-  const { srcBalance, srcSymbol, destSymbol, srcInfo, destInfo } = useAssets({
-    srcAsset: watch('srcAsset'),
-    destAsset: watch('destAsset')
-  })
+  const { srcBalance, srcSymbol, destSymbol, srcInfo, destInfo, srcDecimals } =
+    useAssets({
+      srcAsset: watch('srcAsset'),
+      destAsset: watch('destAsset')
+    })
 
   const [srcRate, destRate] = useTokenRates(
     watch('srcAsset'),
@@ -51,6 +53,14 @@ const OfferAssetInput: React.FC<OfferAssetInputProps> = ({
   const exchangeRate =
     (Number(watch('acceptAmount')) * destRate) /
     (Number(watch('depositAmount')) * srcRate)
+
+  const srcBalanceFormatted =
+    srcDecimals && (srcBalance || srcBalance === 0n)
+      ? formatUnits(srcBalance, Number(srcDecimals))
+      : 'N/A'
+
+  const isInsufficientBalance =
+    Number(srcBalanceFormatted) < Number(watch('depositAmount'))
 
   return (
     <VStack>
@@ -105,24 +115,29 @@ const OfferAssetInput: React.FC<OfferAssetInputProps> = ({
             />
           </FormControl>
         </HStack>
-        <HStack fontSize={10} justifyContent={'space-between'} width="100%">
+        <HStack
+          fontSize={10}
+          justifyContent={'space-between'}
+          width="100%"
+          alignItems={'start'}
+        >
           <HStack>
             <Text color="grey">
               ${fmtNum(Number(watch('depositAmount')) * srcRate)}
             </Text>
-            {(tryBigInt(watch('depositAmount')) ?? 0n) > srcBalance && (
+            {isInsufficientBalance && (
               <Text color="red">(Insufficient balance)</Text>
             )}
             <Text color="red">{errors.depositAmount?.message?.toString()}</Text>
           </HStack>
-          <HStack>
+          <VStack alignItems={'end'}>
             <Text color="grey">
-              {' '}
               1 {srcInfo?.label ?? srcSymbol ?? 'Unit of Asset'} = $
               {fmtNum(srcRate)}
             </Text>
+            <Text color="grey">Your balance: {srcBalanceFormatted}</Text>
             <Text color={'red'}>{errors.srcAsset?.message?.toString()}</Text>
-          </HStack>
+          </VStack>
         </HStack>
         <Text
           mt={6}
@@ -197,7 +212,18 @@ const OfferAssetInput: React.FC<OfferAssetInputProps> = ({
               <ListItem>Others can join your offer </ListItem>
             </UnorderedList>
           </VStack>
-          <Button onClick={onNext}>Next</Button>
+          <Button
+            onClick={onNext}
+            isDisabled={
+              isInsufficientBalance ||
+              !!errors.depositAmount ||
+              !!errors.acceptAmount ||
+              !!errors.destAsset ||
+              !!errors.srcAsset
+            }
+          >
+            Next
+          </Button>
         </HStack>
       </VStack>
     </VStack>
