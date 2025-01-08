@@ -42,8 +42,6 @@ const User = () => {
       </Text>
       <HStack justifyContent={'center'} gap={8} mt={4}>
         {data?.events.map((event, key) => <Event event={event} key={key} />)}
-        {data?.events.map((event, key) => <Event event={event} key={key} />)}
-        {data?.events.map((event, key) => <Event event={event} key={key} />)}
       </HStack>
       <NewOffer />
     </Box>

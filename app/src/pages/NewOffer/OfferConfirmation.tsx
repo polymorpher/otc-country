@@ -39,6 +39,7 @@ import useToast from '~/hooks/useToast.js'
 import { useAccount } from 'wagmi'
 import { VisuallyHidden } from '@chakra-ui/icons'
 import { useDebounce } from 'use-debounce'
+import { isTest } from '~/helpers/config.js'
 
 interface OfferConfirmationProps {
   domain: string
@@ -97,9 +98,11 @@ const OfferConfirmation: React.FC<OfferConfirmationProps> = ({
       })
       const address = data.domainOwner
       try {
-        await registerWeb2Domain(txHash, address, domain)
-        await generateMetadata(domain)
-        await setDns(txHash, domain)
+        if (!isTest) {
+          await registerWeb2Domain(txHash, address, domain)
+          await generateMetadata(domain)
+          await setDns(txHash, domain)
+        }
         onCreate?.()
       } catch (ex: any) {
         toastError({

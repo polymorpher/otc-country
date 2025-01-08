@@ -14,7 +14,9 @@ export const THEGRAPH = import.meta.env.VITE_THEGRAPH
 
 export const OTC_ADDRESS = import.meta.env.VITE_OTC_ADDRESS
 
-export const chain = import.meta.env.VITE_TEST ? localhost : harmonyOne
+export const isTest = !!import.meta.env.VITE_TEST
+
+export const chain = isTest ? localhost : harmonyOne
 
 export const config = createConfig({
   chains: [chain],
