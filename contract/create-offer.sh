@@ -10,7 +10,7 @@ echo SALT=${SALT}
 echo USER=${USER}
 
 # type(uint256).max
-cast send ${TOKEN_A} "approve(address,uint256)" ${OFFER_ADDRESS} "115792089237316195423570985008687907853269984665640564039457584007913129639935" --private-key ${PRIVATE_KEY}
+cast send ${TOKEN_A} "approve(address,uint256)" ${OFFER_ADDRESS} "115792089237316195423570985008687907853269984665640564039457584007913129639935" --private-key ${PRIVATE_KEY} --legacy
 
 
 #    function createOffer(
@@ -32,6 +32,7 @@ echo PRICE=${PRICE}
 cast send ${OTC} "createOffer(string,bytes32,address,address,address,uint256,uint256,uint256,uint256)" \
   ${TEST_DOMAIN} 0x0000000000000000000000000000000000000000000000000000000000000000 ${USER} ${TOKEN_A} ${TOKEN_B} 1500000000000000000 3000000000000000000 100 3600 \
   --value ${PRICE} \
-  --private-key ${PRIVATE_KEY}
+  --private-key ${PRIVATE_KEY} \
+  --legacy
 
 
