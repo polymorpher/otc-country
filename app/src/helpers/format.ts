@@ -91,3 +91,13 @@ export const tryBigInt = (s?: string | number): bigint | undefined => {
     return undefined
   }
 }
+
+export const abbrHash = (hash: string): string => {
+  if (!hash) {
+    return hash
+  }
+  if (hash.length < 10) {
+    return hash
+  }
+  return hash.slice(0, 8) + '...' + hash.slice(hash.length - 2, hash.length)
+}
