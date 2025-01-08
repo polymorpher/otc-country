@@ -1,5 +1,5 @@
 import { http, createConfig } from 'wagmi'
-import { harmonyOne, sepolia, anvil } from 'wagmi/chains'
+import { harmonyOne, sepolia, localhost } from 'wagmi/chains'
 import { type Address } from 'abitype'
 
 export const debounceTimeout = 500
@@ -14,7 +14,7 @@ export const THEGRAPH = import.meta.env.VITE_THEGRAPH
 
 export const OTC_ADDRESS = import.meta.env.VITE_OTC_ADDRESS
 
-export const chain = import.meta.env.VITE_TEST ? anvil : harmonyOne
+export const chain = import.meta.env.VITE_TEST ? localhost : harmonyOne
 
 export const config = createConfig({
   chains: [chain],
@@ -23,7 +23,7 @@ export const config = createConfig({
       import.meta.env.VITE_HARMONY_RPC ?? 'https://api.harmony.one'
     ),
     [sepolia.id]: http(),
-    [anvil.id]: http('http://127.0.0.1:8545')
+    [localhost.id]: http('http://127.0.0.1:8545')
   }
 })
 

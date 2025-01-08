@@ -73,7 +73,7 @@ const OfferConfirmation: React.FC<OfferConfirmationProps> = ({
     balance,
     domainOwner
   } = useNewDomain(domain)
-  const { srcAsset, destDecimals } = useAssets({
+  const { srcAsset, destDecimals, srcDecimals } = useAssets({
     srcAsset: watch('srcAsset'),
     destAsset: watch('destAsset')
   })
@@ -90,7 +90,7 @@ const OfferConfirmation: React.FC<OfferConfirmationProps> = ({
       console.log(data)
       const { transactionHash: txHash } = await createOffer({
         ...data,
-        depositAmount: BigInt(data.depositAmount),
+        depositAmount: parseUnits(data.depositAmount, Number(srcDecimals)),
         acceptAmount: parseUnits(data.acceptAmount, Number(destDecimals)),
         commissionRate: BigInt(Math.round(data.commissionRate * 1000)),
         lockWithdrawDuration: BigInt(data.lockWithdrawDuration * 3600)
@@ -109,6 +109,7 @@ const OfferConfirmation: React.FC<OfferConfirmationProps> = ({
       }
     },
     [
+      srcDecimals,
       toastError,
       domain,
       setDns,
